@@ -151,16 +151,16 @@ class Sheets(QTableWidget):
         self.horizontalHeaderItem(10).setFlags(self.horizontalHeaderItem(9).flags() | Qt.ItemFlag.ItemIsUserCheckable)
 
         # Setup shortcuts:
-        ctrl_c = QShortcut(QKeySequence("Ctrl+C"), self)
-        ctrl_v = QShortcut(QKeySequence("Ctrl+V"), self)
-        shift_add = QShortcut(QKeySequence(Qt.Key.Key_Plus), self)
-        shift_del = QShortcut(QKeySequence(Qt.Key.Key_Delete), self)
+        ctrl_c = QShortcut(QKeySequence.StandardKey.Copy, self)
+        ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
+        param_add = QShortcut(QKeySequence(Qt.Key.Key_Plus), self)
+        param_del = QShortcut(QKeySequence(Qt.Key.Key_Delete), self)
 
         # Connect shortcuts to slots:
         ctrl_c.activated.connect(self.on_copy )
         ctrl_v.activated.connect(self.on_paste)
-        shift_add.activated.connect(self.on_insert_row)
-        shift_del.activated.connect(self.on_delete_row)
+        param_add.activated.connect(self.on_insert_row)
+        param_del.activated.connect(self.on_delete_row)
 
         # Connect cellChanged() signal to slot:
         self.cellChanged.connect(self.on_data_changed)
@@ -191,7 +191,6 @@ class Sheets(QTableWidget):
                 handle.info = self.item(row, 2).text()
                 handle.unit = self.item(row, 3).text()
 
-                print(f"Handle data: {value} {lower} {upper} {sigma}")
                 handle.value = handle.value if value is None else value
                 handle.lower = handle.lower if lower is None else lower
                 handle.upper = handle.upper if upper is None else upper

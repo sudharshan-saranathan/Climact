@@ -198,6 +198,10 @@ class Canvas(QGraphicsScene):
         # Reset the hash-map:
         Handle.cmap = {}
 
+        if not len(self.selectedItems()):
+            print(f"INFO: No items in the clipboard!")
+            return
+
         # Loop over selected nodes and duplicate them:
         for item in self.selectedItems():
 

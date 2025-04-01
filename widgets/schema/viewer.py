@@ -65,6 +65,15 @@ class Viewer(QGraphicsView):
         __layout.setColumnStretch(0, 10)
         __layout.setColumnStretch(2, 10)
 
+        # Define shortcuts:
+        shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self)
+        shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
+        shortcut_delete = QShortcut(QKeySequence.StandardKey.Delete, self)
+
+        shortcut_ctrl_a.activated.connect(self.canvas.select)
+        shortcut_ctrl_v.activated.connect(self.canvas.copy)
+        shortcut_delete.activated.connect(self.canvas.delete)
+
     @property
     # GUI of the AI assistant:
     def assistant(self):
@@ -130,9 +139,7 @@ class Viewer(QGraphicsView):
         self.scale(factor, factor)
 
     def reset_scale(self):
-
         factor = 1.0 / self.__zoom.val
-
         self.scale(factor, factor)
         self.__zoom.val = 1.0
 

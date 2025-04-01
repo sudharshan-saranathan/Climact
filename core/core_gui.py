@@ -150,13 +150,7 @@ class Gui(QMainWindow):
         action_quit   = __file_menu.addAction("Quit", QKeySequence.StandardKey.Quit)
 
         __edit_menu.addSeparator()
-        action_select = __edit_menu.addAction("Select All", QKeySequence.StandardKey.SelectAll)
-        action_delete = __edit_menu.addAction("Delete All", QKeySequence.StandardKey.Delete)
-
-        __edit_menu.addSeparator()
         action_settings = __edit_menu.addAction("Settings", QKeySequence("Ctrl+,"))
-        action_copy     = __edit_menu.addAction("Copy" , QKeySequence.StandardKey.Copy)
-        action_paste    = __edit_menu.addAction("Paste", QKeySequence.StandardKey.Paste)
 
         action_zoom_in  = __view_menu.addAction("Zoom In" , QKeySequence("Ctrl+="))
         action_zoom_out = __view_menu.addAction("Zoom Out", QKeySequence("Ctrl+-"))
@@ -169,16 +163,13 @@ class Gui(QMainWindow):
         action_help      = __help_menu.addAction("About", QKeySequence("Ctrl+I"))
         action_shortcuts = __help_menu.addAction("Shortcuts", QKeySequence("Ctrl+."))
 
-        # Connect to slots:
-        action_select.triggered.connect(self.__viewer.canvas.select)
-        action_delete.triggered.connect(self.__viewer.canvas.delete)
-
         action_zoom_in.triggered.connect(lambda: self.__viewer.zoom( 120))
         action_zoom_out.triggered.connect(lambda: self.__viewer.zoom(-120))
-        action_fullscreen.triggered.connect(self.showFullScreen)
-        action_reset.triggered.connect(self.__viewer.reset_scale)
 
-        action_paste .triggered.connect(self.__viewer.canvas.copy)
+        action_toolbar.triggered.connect(lambda: self.__navbar.setVisible(not self.__navbar.isVisible()))
+        action_reset.triggered.connect(self.__viewer.reset_scale)
+        action_fullscreen.triggered.connect(self.showFullScreen)
+
         action_import.triggered.connect(self.__viewer.canvas.import_json)
         action_export.triggered.connect(self.__viewer.canvas.export_json)
 
