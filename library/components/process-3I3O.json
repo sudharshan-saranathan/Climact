@@ -1,0 +1,102 @@
+{
+    "NODES": [
+        {
+            "handles": [
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "R00",
+                    "handle-symbol": "R00",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Default",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": -46.40677778689678
+                    }
+                },
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "R01",
+                    "handle-symbol": "R01",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Default",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": 6.960927842095771
+                    }
+                },
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "R02",
+                    "handle-symbol": "R02",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Default",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": 70.90148081268126
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "P00",
+                    "handle-symbol": "P00",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Default",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -47.91718454998227
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "P01",
+                    "handle-symbol": "P01",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Default",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": 5.953990000038175
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "P02",
+                    "handle-symbol": "P02",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Default",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": 72.91535649679463
+                    }
+                }
+            ],
+            "node-name": "PROCESS",
+            "node-type": 0,
+            "node-height": 200.0,
+            "node-position": {
+                "x": 12790.0458844027,
+                "y": 12531.429081444976
+            },
+            "parameters": [],
+            "equations": []
+        }
+    ],
+    "CONNECTORS": []
+}

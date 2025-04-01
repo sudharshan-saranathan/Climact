@@ -1,0 +1,554 @@
+* {
+	border					: none;
+	background				: white;
+}
+
+QMessageBox {
+    background-color: #393E41;
+    border: 1px solid #393E41;
+    border-radius: 10px;
+    color: #333;
+    padding: 20px;
+}
+
+QFrame {
+    border                  : none;
+    background              : white;
+}
+
+QInputDialog {
+    border                  : 2px solid black;
+    border-radius           : 8px;
+    padding                 : 2px;
+    background              : lightslategray;
+}
+
+QInputDialog QLabel {
+    font    : 12pt 'Trebuchet MS';
+    border  : none;
+    color   : white;
+}
+
+QInputDialog QLineEdit {
+    color           : black;
+    padding         : 2px;
+    border-radius   : 4px;
+    background      : white;
+}
+
+QComboBox
+{
+    font                : 12pt "Trebuchet MS";
+    color               : black;
+    width               : 80px;
+    height              : 12px;
+    border              : 1px solid black;
+    background-color    : lightgray;
+}
+
+QComboBox:drop-down
+{
+    font                : 12pt "Trebuchet MS";
+    color               : black;
+    width               : 20px;
+    background-color    : lightgray;
+}
+
+QComboBox::down-arrow
+{
+    image                   : url(rss/icons/caret-down.png);
+    width                   : 10px;
+    height                  : 10px;
+}
+
+QComboBox QListView {
+    color                   : black;
+    font                    : 12pt "Trebuchet MS";
+    selection-color         : black;
+    background-color        : white;
+    padding-left            : 4px;
+}
+/*
+// Needed to complete the rule set
+QComboBox::item:alternate {
+    background: white;
+    padding-left: 2px;
+    color: #187795;
+}
+*/
+
+QComboBox::item:selected {
+    background          : white;
+    color               : #187795;
+}
+
+QTextEdit {
+    font                    : 13pt "Trebuchet MS";
+    color                   : white;
+    background-color        : lightslategray;
+    border-radius           : 6px;
+}
+
+QTextEdit:focus {
+    font                    : 13pt "Trebuchet MS";
+    color                   : white;
+    border-radius           : 6px;
+    background-color        : #81909C;
+}
+
+QMenu {
+    font                    : 12pt "Trebuchet MS";
+    border                  : 1px solid black;
+    padding                 : 4px 4px 4px 4px;
+    color                   : black;
+    background              : white;
+    border-radius           : 8px;
+}
+
+QMenu::right-arrow {
+    width                   : 12px;
+    height                  : 12px;
+    image                   : url(rss/icons/caret-right.png);
+}
+
+QMenu::item {
+    padding                 : 4px 4px 4px 4px;
+    color                   : black;
+    min-width               : 100px;
+    background-color        : white;
+}
+
+QMenu::item:disabled {
+    padding                 : 4px 4px 4px 4px;
+    color                   : gray;
+    background-color        : white;
+}
+
+QMenu::item:selected {
+    padding                 : 4px 4px 4px 4px;
+    color                   : #187795;
+    background              : #dddddd;
+    border-radius           : 6px;
+}
+
+QLabel {
+    font                    : 13pt "Trebuchet MS";
+    color                   : black;
+    margin                  : 0px;
+    background              : transparent;
+    border-radius           : 4px;
+}
+
+QPushButton {
+    font                    : 12pt 'Trebuchet MS';
+    color                   : black;
+    border                  : 1px solid black;
+    padding                 : 2px;
+    border-radius           : 6px;
+    background-color        : #ffa51f;
+}
+
+QPushButton:hover {
+    background-color        : #F6BF51;
+}
+
+QPushButton:pressed {
+    margin      : 1px;
+}
+
+QPushButton:disabled {
+    background  : lightgray;
+    color       : darkgray;
+}
+
+QToolTip {
+    border                  : 1px solid black;
+    font                    : 13pt "Trebuchet MS";
+    color                   : black;
+    background              : white;
+}
+
+QRadioButton {
+    font                    : 13pt 'Trebuchet MS';
+    color                   : black;
+    background              : transparent;
+}
+
+QSplitter {
+	border-top              : 1px solid darkgray;
+	border-radius           : 1px;
+	background              : #81909C;
+}
+
+QSplitter::handle:vertical {
+    width                   : 1px;
+	margin                  : 1px;
+    border                  : 1px solid black;
+    border-radius           : 2px;
+    background				: #D8E9DF;
+}
+
+QSplitter::handle:horizontal {
+	margin                  : 1px;
+	border                  : 1px solid black;
+	border-radius           : 2px;
+	background				: #D8E9DF;
+}
+
+QMenuBar {
+    font                    : 12pt "Trebuchet MS";
+	color              		: black;
+	border-bottom           : 1px solid black;
+	background				: #CED3DC;
+}
+
+QMenuBar::item {
+    background          : transparent;
+    width               : 30px;
+    margin              : 4px;
+}
+
+QMenuBar::item:selected {
+    color               : #a1a1a1;
+}
+
+QStatusBar {
+	font                    : 13pt "Trebuchet MS";
+	border-top              : 1px solid black;
+	color                   : black;
+    background              : white;
+	/*background				: #81909C;*/
+}
+
+QGroupBox {
+    border                  : 1px solid black;
+    padding                 : 0px;
+    border-radius           : 16px;
+    background              : #64a6bd;
+}
+
+QStackedWidget {
+    border-left             : 1px solid white;
+}
+
+/*
+QTabWidget::pane {
+    background              : white;
+}
+
+QTabWidget::tab-bar:left {
+    right                   : 2px;
+}
+*/
+
+QTabBar::tab:!selected:hover {
+    background              : white;
+    background-clip         : content;
+}
+
+QToolBar {
+    border                  : none;
+    padding                 : 2px;
+    background              : lightslategray;
+}
+
+QToolBar QToolButton, QToolButton {
+    margin: 8px 2px 8px 2px;
+    padding: 4px;
+    border-radius: 8px;
+    background: transparent;
+}
+
+QToolBar QToolButton:checked, QToolButton:checked {
+    border          : none;
+    border-radius   : 8px;
+    background      : #c6dee7;
+}
+
+QToolBar QToolButton:pressed, QToolButton:pressed {
+    padding         : 6px;
+    border-radius   : 8px;
+}
+
+QToolBar QToolButton:hover, QToolButton:hover {
+    background: white;
+}
+
+QCheckBox {
+    font                    : 13pt "Trebuchet MS";
+    margin                  : 8px;
+    border                  : none;
+    color                   : black;
+	background-color		: transparent;
+}
+
+QCheckBox:disabled {
+    font                    : 13pt "Trebuchet MS";
+    color                   : gray;
+	background-color		: white;
+}
+
+/* Default unchecked state */
+QCheckBox::indicator {
+     width              : 10px;
+     height             : 10px;
+     border-radius      : 4px;
+     border             : 2px solid #007BFF;  /* Blue border */
+     background-color   : white;  /* White background */
+}
+
+QCheckBox::indicator:hover {
+    background-color    : #E0E0E0;
+}
+
+QCheckBox::indicator:checked {
+    background-color    : #007BFF;
+    border              : 2px solid #007BFF;
+}
+
+QLineEdit {
+	border					: none;
+	font                    : 12pt "Trebuchet MS";
+	border-radius           : 1px;
+	padding                 : 3px;
+	color                   : black;
+	background-color      	: white;
+}
+
+QLineEdit:focus{
+    color                   : black;
+    background              : #e0e0e0;
+}
+
+QScrollBar:horizontal {
+    height					: 12px;
+	border                  : none;
+	margin                  : 1px 1px 1px 1px;
+    background				: transparent;
+}
+
+QScrollBar::handle:horizontal {
+	border					: 1px solid gray;
+	height                  : 6px;
+	min-width           	: 50px;
+    background				: gray;
+	border-radius			: 4px;
+}
+
+QScrollBar::handle:hover:horizontal {
+	border					: 1px solid #aaaaaa;
+	min-width               : 50px;
+    background				: #aaaaaa;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+	border					: none;
+	background-image        : transparent;
+}
+
+QScrollBar:vertical {
+    width					: 12px;
+	border            		: none;
+	margin                  : 1px 1px 1px 1px;
+    background				: transparent;
+}
+
+QScrollBar::handle:vertical {
+	border					: 1px solid gray;
+	width                   : 6px;
+	min-height              : 50px;
+    background				: gray;
+	border-radius			: 4px;
+}
+
+QScrollBar::handle:hover:vertical {
+	border					: 2px solid #aaaaaa;
+	min-width               : 50px;
+    background				: #aaaaaa;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical{
+	border					: none;
+	background 				: transparent;
+}
+
+QHeaderView {
+    margin                  : 2px;
+    padding                 : 2px 2px 2px -3px;
+    color                   : white;
+    border                  : 1px solid black;
+    border-radius           : 6px;
+    font                    : 12pt "Trebuchet MS";
+    background              : #D8E9DF;
+}
+
+QHeaderView::down-arrow {
+    image       : url(rss/icons/expand.svg);
+    width       : 12px;
+    height      : 12px;
+    margin      : -2px;
+}
+
+QHeaderView::up-arrow {
+    image       : url(rss/icons/shrink.svg);
+    width       : 12px;
+    height      : 12px;
+    margin      : -2px;
+}
+
+QHeaderView::section:horizontal, QTreeWidget::header {
+    padding                 : 2px;
+    border-right            : 1px solid black;
+    color                   : black;
+    border-radius           : 0px;
+    background              : transparent;
+}
+
+QHeaderView::section:horizontal:last {
+    border  : none;
+}
+
+QHeaderView::section:vertical {
+    color                   : black;
+    padding-left            : 4px;
+    padding-bottom          : 12px;
+    background              : transparent;
+}
+
+QHeaderView::section:vertical:hover {
+    color                   : darkgray;
+}
+
+QTreeWidget {
+    font                        : 13pt "Trebuchet MS";
+    padding                     : 1px;
+    border-right                : 1px solid darkgray;
+    border-radius               : 0px;
+    background                  : lightslategray;
+    selection-background-color  : transparent;
+}
+
+/*
+QTreeWidget:focus {
+    font                        : 13pt "Trebuchet MS";
+    padding                     : 1px;
+    border                      : 2px solid #ffab38;
+    background                  : lightslategray;
+}
+*/
+
+QListWidget {
+    font                        : 13pt "Trebuchet MS";
+    background                  : lightslategray;
+    border-radius               : 6px;
+}
+
+QListWidget:focus {
+    font                        : 13pt "Trebuchet MS";
+    border-radius               : 6px;
+    background                  : #81909C;
+}
+
+QListWidget::item {
+    padding                 : 2px;
+    margin                  : 2px;
+    color                   : white;
+    background-color        : transparent;
+}
+
+QTreeWidget::item {
+    color                   : white;
+    margin-top              : 2px;
+    margin-bottom           : 2px;
+    padding-top             : 2px;
+    padding-bottom          : 2px;
+    background-color        : transparent;
+}
+
+QListWidget::item:disabled, QTreeWidget::item:disabled {
+    padding                 : 1px;
+    color                   : gray;
+    background-color        : white;
+}
+
+QListWidget::item:selected {
+    margin                  : 2px;
+    padding                 : 2px;
+    color                   : #187795;
+    background              : #e0e0e0;
+    border-radius           : 8px;
+}
+
+QTreeWidget::item:selected {
+    color                   : #187795;
+    background              : #e0e0e0;
+}
+
+QTreeWidget::item:selected:first {
+    color                               : #187795;
+    background                          : #e0e0e0;
+}
+
+QTreeWidget::item:selected:last {
+    border-top-right-radius             : 6px;
+    border-bottom-right-radius          : 6px;
+    color                               : #187795;
+    background                          : #e0e0e0;
+}
+
+QDialog {
+    border                  : none;
+    border-radius           : 4px;
+    background              : #81909C;
+}
+
+QTableWidget, QTableView {
+    font                    : 12pt "Trebuchet MS";
+    padding                 : 2px;
+    border                  : 0px solid black;
+    border-radius           : 0px;
+    background              : #efefef;
+    gridline-color          : black;
+}
+
+QTableCornerButton::section {
+    background-color        : transparent;
+}
+
+QTableWidget:focus, QTableView:focus {
+    font                    : 12pt "Trebuchet MS";
+    padding                 : 2px;
+    border                  : 0px solid black;
+    border-radius           : 0px;
+    background              : white;
+    gridline-color          : black;
+}
+
+QTableWidget::item {
+    color                   : black;
+}
+
+QTableWidget::item:selected, QTableView::item:selected {
+    font-weight             : bold;
+    border                  : none;
+    background-color        : #81909C;
+    selection-color         : white;
+}
+
+QTreeWidget::branch:has-children:closed {
+    margin          : 2px;
+    border-radius   : 8px;
+    background      : transparent;
+    image           : url(rss/icons/caret-right-green.svg);
+}
+
+QTreeWidget::branch:has-children:open {
+    margin          : 2px;
+    background      : transparent;
+    image           : url(rss/icons/caret-down-green.svg);
+}
+
+QTreeWidget::branch:!has-children {
+    margin          : 2px;
+    background      : transparent;
+}

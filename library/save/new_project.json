@@ -1,0 +1,96 @@
+{
+    "NODES": [
+        {
+            "handles": [
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#0eb1d2",
+                    "handle-label": null,
+                    "handle-symbol": "P00",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Mass",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -45.0
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#ffba49",
+                    "handle-label": null,
+                    "handle-symbol": "P01",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Energy",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -18.0
+                    }
+                }
+            ],
+            "node-name": "NODE",
+            "node-type": 0,
+            "node-delta": 0,
+            "node-position": {
+                "x": 11979.0,
+                "y": 12419.0
+            }
+        },
+        {
+            "handles": [
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#0eb1d2",
+                    "handle-label": null,
+                    "handle-symbol": "R00",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Mass",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": -48.0
+                    }
+                },
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#ffba49",
+                    "handle-label": null,
+                    "handle-symbol": "R01",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Energy",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": 73.0
+                    }
+                }
+            ],
+            "node-name": "NODE",
+            "node-type": 0,
+            "node-delta": 0,
+            "node-position": {
+                "x": 12601.0,
+                "y": 12370.0
+            }
+        }
+    ],
+    "CONNECTORS": [
+        {
+            "connection-origin": {
+                "x": 12123.0,
+                "y": 12374.0
+            },
+            "connection-target": {
+                "x": 12457.0,
+                "y": 12322.0
+            }
+        },
+        {
+            "connection-origin": {
+                "x": 12123.0,
+                "y": 12401.0
+            },
+            "connection-target": {
+                "x": 12457.0,
+                "y": 12443.0
+            }
+        }
+    ]
+}

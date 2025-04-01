@@ -1,0 +1,130 @@
+{
+    "NODES": [
+        {
+            "handles": [
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#0eb1d2",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "Fuel (kg)",
+                    "handle-symbol": "R00",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "mass",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": -28.9784795145697
+                    }
+                },
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#0eb1d2",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "Air (kg)",
+                    "handle-symbol": "R01",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "mass",
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": 56.93895708614582
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#0eb1d2",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "CO2 (kg)",
+                    "handle-symbol": "P00",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Mass",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -41.99894289724034
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#ffba49",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "Energy (kJ)",
+                    "handle-symbol": "P01",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "energy",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": 73.2420979628223
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#0eb1d2",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "Other Gases (kg)",
+                    "handle-symbol": "P02",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Mass",
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": 13.832765281491447
+                    }
+                }
+            ],
+            "node-name": "COMBUSTOR",
+            "node-type": 0,
+            "node-height": 200.0,
+            "node-position": {
+                "x": 12606.14869082628,
+                "y": 12387.15225994866
+            },
+            "parameters": [
+                {
+                    "parameter-id": "L#0661",
+                    "parameter-info": "",
+                    "parameter-unit": "",
+                    "parameter-label": null,
+                    "parameter-symbol": "calorie",
+                    "parameter-category": "Default",
+                    "parameter-value": 45000.0,
+                    "parameter-lower": null,
+                    "parameter-upper": null,
+                    "parameter-sigma": null
+                },
+                {
+                    "parameter-id": "L#0953",
+                    "parameter-info": "",
+                    "parameter-unit": "",
+                    "parameter-label": null,
+                    "parameter-symbol": "air_to_fuel",
+                    "parameter-category": "Default",
+                    "parameter-value": 3.0,
+                    "parameter-lower": null,
+                    "parameter-upper": null,
+                    "parameter-sigma": null
+                },
+                {
+                    "parameter-id": "L#7203",
+                    "parameter-info": "",
+                    "parameter-unit": "",
+                    "parameter-label": null,
+                    "parameter-symbol": "emissions_co2",
+                    "parameter-category": "Default",
+                    "parameter-value": 2.43,
+                    "parameter-lower": null,
+                    "parameter-upper": null,
+                    "parameter-sigma": null
+                }
+            ],
+            "equations": [
+                "P01 - calorie * R00 = 0.0",
+                "P00 - emissions_co2 * R00 = 0.0",
+                "R01 - air_to_fuel * R00 = 0.0",
+                "P00 + P02 - R00 - R01 = 0.0"
+            ]
+        }
+    ],
+    "CONNECTORS": []
+}

@@ -1,0 +1,17 @@
+{
+    "NODES": [
+        {
+            "handles": [],
+            "node-name": "NODE",
+            "node-type": 0,
+            "node-height": 200.0,
+            "node-position": {
+                "x": 12878.0,
+                "y": 12663.0
+            },
+            "parameters": [],
+            "equations": []
+        }
+    ],
+    "CONNECTORS": []
+}

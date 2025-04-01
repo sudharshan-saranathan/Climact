@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <file>style/macos.qss</file>
+</qresource>
+<qresource prefix="/">
+    <file>icons/click.png</file>
+    <file>icons/vsplit.png</file>
+    <file>icons/canvas.png</file>
+    <file>icons/optima.png</file>
+    <file>icons/folder.png</file>
+    <file>icons/floppy.png</file>
+    <file>icons/delete.svg</file>
+    <file>icons/cpanel.svg</file>
+    <file>icons/warning.png</file>
+    <file>icons/edit.svg</file>
+    <file>icons/line.png</file>
+    <file>icons/caret-right.png</file>
+    <file>icons/caret-down.png</file>
+    </qresource>
+</RCC>
