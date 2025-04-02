@@ -102,7 +102,7 @@ class Optimizer(QWidget):
         # Clear the editor:
         self._editor.clear()
 
-        script = ""
+        ecount = 0
         prefix = "# AMPL Optimization\n# Solver: IPOPT\n\n"
 
         _var_decl = "# Variable(s):\n"
@@ -122,7 +122,7 @@ class Optimizer(QWidget):
                 # If the variable has a fixed value, declare it as a parameter instead:
                 if var.value is not None:
                     _par_name = f"{_prfx}_{var.symbol}"
-                    _par_decl = _par_decl + f"param {_par_name} = {str(var.value)};\n"
+                    _par_decl = _par_decl + f"param {_par_name}\t= {str(var.value)};\n"
                     self.pars_set.add(_par_name)
 
                 # Otherwise, declare the connector's symbol as a variable:
@@ -137,10 +137,11 @@ class Optimizer(QWidget):
 
                 # Parameter declaration:
                 else:
-                    _par_decl = _par_decl + f"param {_prfx}_{par.symbol} = {par.value};\n"
+                    _par_decl = _par_decl + f"param {_prfx}_{par.symbol}\t= {par.value};\n"
 
             for equation in node.substituted:
-                _eqn_decl = _eqn_decl + f"{equation};\n"
+                _eqprefix = f"subject to equation_{ecount}"
+                _eqn_decl = _eqn_decl + f"{_eqprefix}: {equation};\n"
 
         script = f"{prefix}\n{_par_decl}\n{_var_decl}\n{_eqn_decl}"
         self._editor.setText(script)
