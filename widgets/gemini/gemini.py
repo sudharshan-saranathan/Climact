@@ -34,13 +34,19 @@ class Gemini:
                 QMessageBox.StandardButton.Ok,
             )
 
-        # Initialize generative AI:
-        self.__genai_client = genai.Client(api_key=self.__api_key)
-        self.__genai_stream = self.__genai_client.chats.create(model="gemini-2.0-flash")
-        self.__genai_config = types.GenerateContentConfig(
-            temperature=0.7,
-            system_instruction=self.__instructions,
-        )
+        try:
+            # Initialize generative AI:
+            self.__genai_client = genai.Client(api_key=self.__api_key)
+            self.__genai_stream = self.__genai_client.chats.create(model="gemini-2.0-flash")
+            self.__genai_config = types.GenerateContentConfig(
+                temperature=0.7,
+                system_instruction=self.__instructions,
+            )
+
+        except Exception as exception:
+            print(f"INFO: An exception occurred: {exception}")
+            print(f"AI - assistant has been disabled")
+            self.__enabled = False
 
     def get_response(self, message: str):
 

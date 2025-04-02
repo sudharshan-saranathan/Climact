@@ -19,67 +19,6 @@ def convert_to_float(arg: str):
     except ValueError:
         return None
 
-class Header(QHeaderView):
-
-    # Signals:
-    sig_action_copy   = pyqtSignal(name="Copy")
-    sig_action_paste  = pyqtSignal(name="Paste")
-    sig_action_insert = pyqtSignal(name="Insert Row")
-    sig_action_delete = pyqtSignal(name="Delete Row")
-
-    # Constructor:
-    def __init__(self, orientation: Qt.Orientation):
-
-        # Initialize base-class:
-        super().__init__(orientation)
-
-        # Make sections clickable (to enable selections):
-        self.setSectionsClickable(True)
-        self.setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Initialize menu:
-        self.__menu__()
-
-    def __menu__(self):
-
-        self._menu = QMenu()
-        self._menu.setTitle("Table Actions")
-
-        if self.orientation() == Qt.Orientation.Horizontal:
-            _set_value = self._menu.addAction("Set Value")
-            _reset     = self._menu.addAction("Reset")
-
-        else:
-            _copy   = self._menu.addAction("Copy")
-            _paste  = self._menu.addAction("Paste")
-
-            self._menu.addSeparator()
-            _insert = self._menu.addAction("Insert")
-            _insert = self._menu.addAction("Delete")
-
-            _copy  .triggered.connect(self.sig_action_copy.emit)
-            _paste .triggered.connect(self.sig_action_paste.emit)
-            _insert.triggered.connect(self.sig_action_insert.emit)
-
-    def contextMenuEvent(self, event):
-
-        actions  = self._menu.actions()
-        parent   = self.parentWidget()
-        position = self.mapToGlobal(event.pos())
-
-        if not isinstance(parent, QTableWidget):
-            return
-
-        selected = bool(len(parent.selectedItems()))
-        for action in actions:
-            action.setEnabled(selected)
-
-        # Display menu:
-        self._menu.exec(position)
-
-        # Call super-class implementation:
-        super().contextMenuEvent(event)
-
 class Sheets(QTableWidget):
 
     # Signals:
@@ -176,6 +115,7 @@ class Sheets(QTableWidget):
         _cls_value = self._menu.addAction("Clear")
 
         _set_value.triggered.connect(self.set_value)
+        _cls_value.triggered.connect(self.val_reset)
 
     def contextMenuEvent(self, event):
         self._menu.exec(self.mapToGlobal(event.pos()))
@@ -278,6 +218,11 @@ class Sheets(QTableWidget):
         items = self.selectedItems()
         for item in items:
             item.setText(str(dialog.field))
+
+    def val_reset(self):
+        items = self.selectedItems()
+        for item in items:
+            item.setText("")
 
     def insert_row(self):
 
