@@ -1,0 +1,69 @@
+{
+    "NODES": [
+        {
+            "handles": [
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "R00",
+                    "handle-symbol": "R00",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Default",
+                    "handle-value": null,
+                    "handle-lower": null,
+                    "handle-upper": null,
+                    "handle-sigma": null,
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": -32.688849277410554
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "P00",
+                    "handle-symbol": "P00",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Default",
+                    "handle-value": null,
+                    "handle-lower": null,
+                    "handle-upper": null,
+                    "handle-sigma": null,
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -30.302253816278608
+                    }
+                }
+            ],
+            "node-name": "LINEAR SCALER",
+            "node-type": 0,
+            "node-height": 200.0,
+            "node-position": {
+                "x": 12484.632562532146,
+                "y": 12586.180974826439
+            },
+            "parameters": [
+                {
+                    "parameter-id": "L#4954",
+                    "parameter-info": "Proportionality Constant",
+                    "parameter-unit": "",
+                    "parameter-label": null,
+                    "parameter-symbol": "alpha",
+                    "parameter-category": "Dimensionless",
+                    "parameter-value": 1.0,
+                    "parameter-lower": null,
+                    "parameter-upper": null,
+                    "parameter-sigma": null
+                }
+            ],
+            "equations": [
+                "P00 - alpha * R00 = 0.0"
+            ]
+        }
+    ],
+    "CONNECTORS": []
+}
