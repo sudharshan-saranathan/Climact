@@ -267,7 +267,7 @@ class Canvas(QGraphicsScene):
     # Delete all nodes:
     def delete(self):
 
-        items = self.items()
+        items = self.selectedItems()
         for item in items:
             if isinstance(item, Node):
                 item.delete()
