@@ -186,5 +186,6 @@ class Gui(QMainWindow):
         self.__navbar.button_library.triggered.connect(lambda: self.__viewer.library.setVisible(self.__navbar.button_library.isChecked()))
         self.__viewer.library.sig_close.connect(self.__navbar.button_library.trigger)
 
+        self.__config.sig_auto_open_config.connect(lambda: self.__wstack.setCurrentWidget(self.__config))
 
 

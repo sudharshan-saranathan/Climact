@@ -42,16 +42,19 @@ class Eqlist(QListWidget):
             self.takeItem(self.row(item))
 
     # Replace symbols in equations:
-    def replace_symbols(self, symbol: str):
+    def replace_symbols(self, symbol: str, replacement: str):
         items = self.findItems(symbol, Qt.MatchFlag.MatchContains)
         for item in items:
             equation = item.text()
-            equation.replace()
+            equation = equation.replace(symbol, replacement)
+            item.setText(equation)
+
+        self.update()
 
     # Retrieve stored equations:
     def fetch_equations(self):
 
-        equations = []
+        equations = list()
         for index in range(self.count()):
             equations.append(self.item(index).text())
 

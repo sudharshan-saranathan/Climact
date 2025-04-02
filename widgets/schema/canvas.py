@@ -14,6 +14,8 @@ class Canvas(QGraphicsScene):
 
     # Signals:
     sig_canvas_updated = pyqtSignal()       # Emitted when items in the scene are added, modified, or deleted
+    sig_canvas_cleared = pyqtSignal()       # Emitted when the scene is cleared
+    sig_open_node_data = pyqtSignal(Node)   # Emitted when a node is double-clicked.
 
     # Reusable connector for temporarily connecting nodes:
     class Meta:
@@ -73,12 +75,8 @@ class Canvas(QGraphicsScene):
         __node.triggered.connect(self.create_node)
         __open.triggered.connect(self.import_json)
         __save.triggered.connect(self.export_json)
-
-        __clear.triggered.connect(self.delete)
-
-        # Behaviour:
-        self.__menu.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
-        self.__subm.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        __clear.triggered.connect(self.clear)
+        __clear.triggered.connect(self.sig_canvas_cleared.emit)
 
     # Event-handler for context menus:
     def contextMenuEvent(self, event):
@@ -88,8 +86,8 @@ class Canvas(QGraphicsScene):
         if event.isAccepted():
             return
 
-        self.__menu.exec(event.screenPos())  # Open menu
-        event.accept()  # Accept event to stop further processing
+        self.__menu.exec(event.screenPos())     # Open menu
+        event.accept()                          # Accept event to stop further processing
 
     # Event-handler for mouse-clicks:
     def mousePressEvent(self, event):
@@ -255,6 +253,13 @@ class Canvas(QGraphicsScene):
         for connection in self.edges:
             print(f"- {connection.nuid()} connects {connection.origin.nuid()} and {connection.target.nuid()}")
 
+    @pyqtSlot(name="Canvas.clear")
+    def clear(self):
+
+        # Delete all nodes sequentially:
+        while len(self.nodes):
+            self.nodes[0].delete()
+
     @pyqtSlot()
     # Select all nodes:
     def select(self):
@@ -264,9 +269,8 @@ class Canvas(QGraphicsScene):
                 item.setSelected(True)  # Select them
 
     @pyqtSlot()
-    # Delete all nodes:
+    # Delete selected nodes:
     def delete(self):
-
         items = self.selectedItems()
         for item in items:
             if isinstance(item, Node):
@@ -288,6 +292,14 @@ class Canvas(QGraphicsScene):
 
         # Trigger database update:
         self.sig_canvas_updated.emit()
+
+    # When the node is double-clicked:
+    def on_item_clicked(self):
+        node = self.sender()
+        if not isinstance(node, Node):
+            return
+
+        self.sig_open_node_data.emit(node)
 
     # Find node by nuid:
     def find_by_nuid(self, nuid: str):

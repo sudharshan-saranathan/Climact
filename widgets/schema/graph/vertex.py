@@ -12,6 +12,7 @@ class Node(QGraphicsObject):
     # User-defined signals:
     sig_item_updated   = pyqtSignal()       # Emitted to notify the database (triggers the canvas' sig_tree_refresh())
     sig_item_deleted   = pyqtSignal()       # Emitted to notify the database (triggers the canvas' sig_tree_refresh())
+    sig_item_clicked   = pyqtSignal()
 
     sig_handle_clicked = pyqtSignal(Handle)
     sig_handle_created = pyqtSignal(Handle)
@@ -257,6 +258,7 @@ class Node(QGraphicsObject):
                 # self.sig_item_updated.connect(value.sig_tree_refresh.emit)
                 self.sig_item_updated.connect(value.sig_canvas_updated.emit)
                 self.sig_item_deleted.connect(value.on_item_deleted)
+                self.sig_item_clicked.connect(value.on_item_clicked)
 
                 # Connect signals to the scene's event-handlers:
                 self.sig_handle_clicked.connect(value.start_connection)
@@ -275,12 +277,7 @@ class Node(QGraphicsObject):
         # super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-
-        nvar = len(self[Stream.INP] + self[Stream.OUT])
-        npar = len(self[Stream.PAR])
-        neqn = len(self.equations)
-
-        print(f"Node {self.nuid()} has {nvar} handles, {npar} parameters, and {neqn} equations")
+        self.sig_item_clicked.emit()
 
     def mouseReleaseEvent(self, event):
 

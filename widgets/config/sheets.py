@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem, QWidget
     QMenu, QInputDialog
 
 from core.core_qss import QSS
+from custom import Message
 from custom.input import Input
 from widgets.schema.graph import Stream
 from widgets.schema.graph.handle import Handle, Resource
@@ -23,11 +24,13 @@ class Sheets(QTableWidget):
 
     # Signals:
     sig_insert_equations = pyqtSignal(list, name="Signal emitted to insert equations")
+    sig_modify_equations = pyqtSignal(str, str)
     sig_notify_config    = pyqtSignal(str , name="Signal emitted to display a message")
     sig_data_modified    = pyqtSignal(Node, bool, name="Signal emitted when spreadsheet is modified")
 
     # Item map, and clipboard:
     __hmap = {}
+    __pmap = {}
     __cmap = {}
     __node = None
     __modified = False
@@ -54,7 +57,6 @@ class Sheets(QTableWidget):
         # Set sorting enabled:
         self.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
-        self.verticalHeader().setVisible(True)  # Ensure it's visible
         self.verticalHeader().setFixedWidth(24)
 
         if not cols:
@@ -105,7 +107,7 @@ class Sheets(QTableWidget):
         param_add.activated.connect(self.on_insert_row)
         param_del.activated.connect(self.on_delete_row)
 
-        # Connect cellChanged() signal to slot:
+        # Connect QTableWidget's built-in cellChanged signal to event-handler:
         self.cellChanged.connect(self.on_data_changed)
 
     def __menu__(self):
@@ -161,15 +163,13 @@ class Sheets(QTableWidget):
                 resource.lower    = convert_to_float(self.item(row, 6).text())
                 resource.upper    = convert_to_float(self.item(row, 7).text())
                 resource.sigma    = convert_to_float(self.item(row, 8).text())
+
                 par.append(resource)
+                self.__pmap[row] = resource.symbol
 
         self.__modified = True
         self.__node[Stream.PAR] = par.copy()
         self.__node.equations = self.__eqwidget.fetch_equations()
-
-        nvar = len(self.__node[Stream.INP] + self.__node[Stream.OUT])
-        npar = len(self.__node[Stream.PAR])
-        neqn = len(self.__node.equations)
 
         self.__modified = False
         self.sig_notify_config.emit("Changes committed")
@@ -213,6 +213,27 @@ class Sheets(QTableWidget):
         # Notify config:
         self.__modified = False
         self.sig_data_modified.emit(self.__node, self.__modified)
+
+    # Method to return unique column-values:
+    def unique(self, column: int):
+
+        if column >= self.columnCount():
+            return None
+
+        fields = set()
+        for row in range(self.rowCount()):
+            if self.item(row, column):
+                fields.add(self.item(row, column).text())
+
+        return fields
+
+    def clear(self):
+        self.__hmap     = {}        # Clear hash-map
+        self.__pmap     = {}
+        self.__cmap     = {}        # Clear column-map
+        self.__node     = None      # Remove reference (Important to ensure the node is properly deleted)
+        self.__modified = False     # Reset the modification state
+        self.setRowCount(0)         # Clear the table's contents
 
     def set_value(self):
 
@@ -354,7 +375,16 @@ class Sheets(QTableWidget):
         label_item = self.item(row, 2)
         label_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-    def on_data_changed(self):
+        # Store the symbol in parameter-map:
+        self.__pmap[row] = parameter.symbol()
+
+    def on_data_changed(self, row: int, column: int):
+
+        # If a parameter name was changed
+        if column == 1 and row in self.__pmap.keys():
+            self.sig_modify_equations.emit(self.__pmap[row], self.item(row, column).text())
+            self.__pmap[row] = self.item(row, column).text()
+
         self.sig_data_modified.emit(self.__node, True)
         self.sig_notify_config.emit("Spreadsheet-data modified. There are unsaved changes!")
 
@@ -400,30 +430,32 @@ class Sheets(QTableWidget):
 
     def validate(self, symlist: dict):
 
-        valid_equations = []
-        valid_flag      = False
+        valid_equations = set()
+        unknown_symbols = set()
+        defined_symbols = set(self.unique(1))
 
         for equation in symlist.keys():
 
-            is_valid = True
-            symbols  = symlist[equation]
+            symbols = set(symlist[equation])
+            symdiff = symbols - defined_symbols
 
-            for symbol in symbols:
-                is_valid &= bool(self.findItems(symbol, Qt.MatchFlag.MatchExactly))
+            if len(symdiff):
+                unknown_symbols = unknown_symbols.union(symdiff)
 
-            if is_valid:
-                valid_equations.append(equation)
             else:
-                self.sig_notify_config.emit(f"Equation: {equation} has invalid symbols")
+                valid_equations.add(equation)
+
+        if len(unknown_symbols):
+            message = "The following symbols are unknown: " + ', '.join(unknown_symbols)
+            dialog  = Message(QtMsgType.QtWarningMsg, message)
+            dialog.exec()
 
         self.sig_insert_equations.emit(valid_equations)
 
     def closeEvent(self, event):
 
-        self.__hmap     = {}          # Clear hash-map
-        self.__cmap     = {}          # Clear column-map
-        self.__node     = None        # Remove reference (Important to ensure the node is properly deleted)
-        self.__modified = False       # Reset the modification state
+        # Reset spreadsheet to blank state:
+        self.clear()
 
         # Call base-class implementation:
         super().closeEvent(event)

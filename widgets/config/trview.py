@@ -10,6 +10,10 @@ class Trview(QTreeWidget):
 
     # Signals:
     sig_notify_config = pyqtSignal(str)
+    sig_toggle_widget = pyqtSignal()
+
+    # Selected item:
+    current_nuid = None
 
     # Constructor:
     def __init__(self, canvas, parent: QWidget = None):
@@ -19,7 +23,6 @@ class Trview(QTreeWidget):
 
         # Store canvas
         self._canvas = canvas
-        self._canvas.sig_canvas_updated.connect(self.refresh, Qt.ConnectionType.UniqueConnection)
 
         self.setColumnCount(4)
         self.header().setStretchLastSection(False)
@@ -112,13 +115,11 @@ class Trview(QTreeWidget):
             self.addTopLevelItem(node_item)
             self.collapseAll()
 
+        # Highlight node:
+        self.select()
+
         # Log message:
         print(f"INFO: Tree refreshed")
-
-        # Automatically select the first item:
-        if self.topLevelItemCount():
-            self.topLevelItem(0).setSelected(True)
-            self.setFocus(Qt.FocusReason.NoFocusReason)
 
     @pyqtSlot(str)
     def search(self, string):
@@ -144,6 +145,21 @@ class Trview(QTreeWidget):
 
                 else:
                     node.child(j).setSelected(False)
+
+    def select(self):
+
+        if not bool(self.current_nuid):
+            return
+
+        # Find item using node-id:
+        item = self.findItems(self.current_nuid, Qt.MatchFlag.MatchContains)
+
+        # Select node in the tree:
+        if len(item):
+            self.setCurrentItem(item[0])
+
+        else:
+            self.current_nuid = ""
 
     def update_icon(self, node: graph.Node, is_modified: bool):
 

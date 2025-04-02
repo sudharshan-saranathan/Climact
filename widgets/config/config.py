@@ -7,8 +7,13 @@ from .editor import Editor
 from .eqlist import Eqlist
 from .sheets import Sheets
 from .trview import Trview
+from ..schema.graph import Node
+
 
 class Config(QWidget):
+
+    # Signals:
+    sig_auto_open_config = pyqtSignal()
 
     # Initializer:
     def __init__(self, canvas, parent: QWidget = None):
@@ -22,21 +27,14 @@ class Config(QWidget):
         # Splitter:
         self.__split  = QSplitter(Qt.Orientation.Horizontal)
 
-        # Layout:
-        __grid_layout = QGridLayout(self)
-        __grid_layout.setSpacing(0)
-        __grid_layout.setContentsMargins(0, 0, 0, 0)
-        __grid_layout.setRowStretch(0, 1)
-        __grid_layout.setColumnStretch(1, 10)
-
         # Main widgets:
         self.__eqlist = Eqlist()
         self.__editor = Editor(self)
         self.__trview = Trview(self.__canvas)
-        self.__sheets = Sheets(self,self.__eqlist, columns=11,
-                               headers=  ['ID', 'Symbol', 'Description', 'Unit', 'Type', 'Value',
-                                          'Lower', 'Upper', 'Sigma', 'Interpolate', 'Auto'
-                                         ])
+        self.__sheets = Sheets(None,self.__eqlist, columns=11,
+                               headers=['ID', 'Symbol', 'Description', 'Unit', 'Type', 'Value',
+                                        'Lower', 'Upper', 'Sigma', 'Interpolate', 'Auto'
+                                       ])
 
         self.__editor.setEnabled(False)
         self.__status = QStatusBar(None)
@@ -58,22 +56,33 @@ class Config(QWidget):
         self.__status.addPermanentWidget(self.__save)
 
         # Layout:
+        __grid_layout = QGridLayout(self)
+        __grid_layout.setSpacing(0)
+        __grid_layout.setContentsMargins(0, 0, 0, 0)
+        __grid_layout.setRowStretch(0, 1)
+        __grid_layout.setColumnStretch(1, 10)
+
         __grid_layout.addWidget(self.__trview, 0, 0, 3, 1)
         __grid_layout.addWidget(self.__sheets, 0, 1)
         __grid_layout.addWidget(self.__hsplit, 1, 1, Qt.AlignmentFlag.AlignBottom)
-        #__grid_layout.addWidget(self.__save  , 1, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft)
         __grid_layout.addWidget(self.__status, 2, 1, Qt.AlignmentFlag.AlignBottom)
 
         # Connect signals to event-handlers:
         self.__trview.itemSelectionChanged.connect(self.on_item_selected)
         self.__editor.sig_validate_symbols.connect(self.__sheets.validate)
+
         self.__sheets.sig_insert_equations.connect(self.__eqlist.insert_equations)
+        self.__sheets.sig_modify_equations.connect(self.__eqlist.replace_symbols)
 
         self.__trview.sig_notify_config.connect(self.__status.showMessage)
         self.__sheets.sig_notify_config.connect(self.__status.showMessage)
         self.__editor.sig_notify_config.connect(self.__status.showMessage)
         self.__eqlist.sig_notify_config.connect(self.__status.showMessage)
         self.__sheets.sig_data_modified.connect(self.__trview.update_icon)
+
+        # Connect the scene's slots:
+        self.__canvas.sig_canvas_updated.connect(self.reset)
+        self.__canvas.sig_open_node_data.connect(self.focus)
 
         # Define shortcuts:
         focus_trview = QShortcut(QKeySequence("Ctrl+1"), self)
@@ -88,8 +97,13 @@ class Config(QWidget):
         focus_eqlist.activated.connect(lambda: self.__eqlist.setFocus(Qt.FocusReason.OtherFocusReason))
         sheet_commit.activated.connect(self.__sheets.commit)
 
+    # Tree Widget:
+    @property
+    def tree(self):
+        return self.__trview
+
     # Event-handler to display node data:
-    @pyqtSlot(name="Fetch and display data")
+    @pyqtSlot(name="Config.on_item_selected")
     def on_item_selected(self):
 
         item = self.__trview.selectedItems()
@@ -104,6 +118,17 @@ class Config(QWidget):
 
         if node:
             self.__sheets.fetch(node)               # Fetch data for the new node
+
+    def reset(self):
+        self.__trview.refresh()
+        self.__eqlist.clear()
+        self.__editor.clear()
+        self.__sheets.clear()
+
+    pyqtSlot(Node, name="Config.focus")
+    def focus(self, node: Node):
+        self.__trview.current_nuid = node.nuid()
+        self.sig_auto_open_config.emit()
 
     def showEvent(self, event):
 
