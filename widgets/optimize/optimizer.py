@@ -142,6 +142,7 @@ class Optimizer(QWidget):
             for equation in node.substituted:
                 _eqprefix = f"subject to equation_{ecount}"
                 _eqn_decl = _eqn_decl + f"{_eqprefix}: {equation};\n"
+                ecount = ecount + 1
 
         script = f"{prefix}\n{_par_decl}\n{_var_decl}\n{_eqn_decl}"
         self._editor.setText(script)
