@@ -120,6 +120,10 @@ class Sheets(QTableWidget):
     def contextMenuEvent(self, event):
         self._menu.exec(self.mapToGlobal(event.pos()))
 
+    @property
+    def modified(self):
+        return self.__modified
+
     @pyqtSlot(name="Sheets.commit")
     def commit(self):
 

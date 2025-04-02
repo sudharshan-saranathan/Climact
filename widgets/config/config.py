@@ -1,3 +1,6 @@
+from PyQt6.QtWidgets             import QWidget
+
+from custom import Message
 from widgets.schema.graph.handle import *
 
 from .editor import Editor
@@ -44,14 +47,21 @@ class Config(QWidget):
         self.__hsplit.addWidget(self.__eqlist)
         self.__hsplit.setMinimumHeight(250)
         self.__editor.setPlaceholderText("1. Enter equations in residual form\n"
-                                        "2. Enter one equation per line \n"
-                                        "3. Press <Enter> to start a new line\n"
-                                        "4. Press <Alt+Enter> to save equations\n")
+                                         "2. Enter one equation per line \n"
+                                         "3. Press <Enter> to start a new line\n"
+                                         "4. Press <Alt+Enter> to save equations\n")
+
+        # Buttons:
+        self.__save = QPushButton("Save Equations")
+        self.__save.setStyleSheet("QPushButton {margin: 0px; padding: 2px;}")
+        self.__save.pressed.connect(self.__editor.parse)
+        self.__status.addPermanentWidget(self.__save)
 
         # Layout:
         __grid_layout.addWidget(self.__trview, 0, 0, 3, 1)
         __grid_layout.addWidget(self.__sheets, 0, 1)
         __grid_layout.addWidget(self.__hsplit, 1, 1, Qt.AlignmentFlag.AlignBottom)
+        #__grid_layout.addWidget(self.__save  , 1, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft)
         __grid_layout.addWidget(self.__status, 2, 1, Qt.AlignmentFlag.AlignBottom)
 
         # Connect signals to event-handlers:
@@ -93,14 +103,9 @@ class Config(QWidget):
         node = self.__canvas.find_by_nuid(nuid)
 
         if node:
-            self.__sheets.fetch(node)                    # Fetch data for the new node
+            self.__sheets.fetch(node)               # Fetch data for the new node
 
-    def showEvent(self, a0):
+    def showEvent(self, event):
+
         self.__trview.refresh()
-        super().showEvent(a0)
-
-    def closeEvent(self, a0):
-
-        # Clear the spreadsheet, use QTableWidget.setRowCount(0) instead of QTableWidget.clearContents()
-        self.__sheets.setRowCount(0)
-        super().closeEvent(a0)
+        super().showEvent(event)

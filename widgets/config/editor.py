@@ -18,7 +18,7 @@ class Editor(QTextEdit):
         self.setCursorWidth(8)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        accept = QShortcut(QKeySequence("Meta+Return"), self)
+        accept = QShortcut(QKeySequence("Ctrl+Return"), self)
         accept.activated.connect(self.parse)
 
     def parse(self):

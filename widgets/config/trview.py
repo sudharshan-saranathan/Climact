@@ -19,7 +19,7 @@ class Trview(QTreeWidget):
 
         # Store canvas
         self._canvas = canvas
-        self._canvas.sig_canvas_updated.connect(self.refresh, Qt.ConnectionType.DirectConnection)
+        self._canvas.sig_canvas_updated.connect(self.refresh, Qt.ConnectionType.UniqueConnection)
 
         self.setColumnCount(4)
         self.header().setStretchLastSection(False)
@@ -112,7 +112,8 @@ class Trview(QTreeWidget):
             self.addTopLevelItem(node_item)
             self.collapseAll()
 
-        print(f"INFO: Database update triggered, tree-items have been updated")
+        # Log message:
+        print(f"INFO: Tree refreshed")
 
         # Automatically select the first item:
         if self.topLevelItemCount():

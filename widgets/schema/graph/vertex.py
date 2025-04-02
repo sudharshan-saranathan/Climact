@@ -255,6 +255,7 @@ class Node(QGraphicsObject):
             if isinstance(value, schema.Canvas):
 
                 # self.sig_item_updated.connect(value.sig_tree_refresh.emit)
+                self.sig_item_updated.connect(value.sig_canvas_updated.emit)
                 self.sig_item_deleted.connect(value.on_item_deleted)
 
                 # Connect signals to the scene's event-handlers:
