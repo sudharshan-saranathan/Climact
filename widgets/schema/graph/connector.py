@@ -181,6 +181,10 @@ class Connector(QGraphicsObject):
         return self._attr.type
 
     @property
+    def symbol(self):
+        return self._text.label
+
+    @property
     def color(self):
         return self._styl.pen_default.color()
 

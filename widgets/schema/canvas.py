@@ -341,22 +341,16 @@ class Canvas(QGraphicsScene):
             print(f"An exception occurred: {exception}")
 
     # Json write:
+    @staticmethod
     def export_json(self):
 
         root = JsonLib.encode_json()
-        if not bool(self._file):
+        path = QFileDialog.getSaveFileName(None, "Save File", "", "JSON files (*.json)")
+        if not bool(path[0]):
+            return
 
-            path = QFileDialog.getSaveFileName(None, "Save File", "", "JSON files (*.json)")
-            if not bool(path[0]):
-                return
-
-            file = Path(path[0])
-            file.write_text(root)
-            self._file = path[0]
-
-        else:
-            file = Path(self._file)
-            file.write_text(root)
+        file = Path(path[0])
+        file.write_text(root)
 
     # AMPL script:
     def script_ampl(self):

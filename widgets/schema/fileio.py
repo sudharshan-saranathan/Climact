@@ -173,8 +173,8 @@ class JsonLib:
                     handle.upper = float(upper)
                     handle.sigma = float(sigma)
 
-                except Exception as exception:
-                    print(f"ERROR: An exception occurred: {exception}")
+                except TypeError as error:
+                    print(f"WARNING: An exception occurred: {error}")
 
             # Deserialize parameters
             for param_obj in element.get("parameters", []):

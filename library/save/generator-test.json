@@ -1,0 +1,154 @@
+{
+    "NODES": [
+        {
+            "handles": [
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "P00",
+                    "handle-symbol": "P00",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Default",
+                    "handle-value": null,
+                    "handle-lower": null,
+                    "handle-upper": null,
+                    "handle-sigma": null,
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -48.8896191922704
+                    }
+                },
+                {
+                    "handle-snap": 144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "P01",
+                    "handle-symbol": "P01",
+                    "handle-stream": "Stream.OUT",
+                    "handle-category": "Default",
+                    "handle-value": null,
+                    "handle-lower": null,
+                    "handle-upper": null,
+                    "handle-sigma": null,
+                    "handle-position": {
+                        "x": 144.0,
+                        "y": -1.6175462163682823
+                    }
+                }
+            ],
+            "node-name": "NODE",
+            "node-type": 0,
+            "node-height": 200.0,
+            "node-position": {
+                "x": 12533.28315105426,
+                "y": 12527.824958925145
+            },
+            "parameters": [
+                {
+                    "parameter-id": "L#3354",
+                    "parameter-info": "",
+                    "parameter-unit": "",
+                    "parameter-label": null,
+                    "parameter-symbol": "alpha",
+                    "parameter-category": "",
+                    "parameter-value": 100.0,
+                    "parameter-lower": null,
+                    "parameter-upper": null,
+                    "parameter-sigma": null
+                }
+            ],
+            "equations": [
+                "P00 - alpha * P01 = 0.0"
+            ]
+        },
+        {
+            "handles": [
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "R00",
+                    "handle-symbol": "R00",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Default",
+                    "handle-value": null,
+                    "handle-lower": null,
+                    "handle-upper": null,
+                    "handle-sigma": null,
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": -45.63995135938421
+                    }
+                },
+                {
+                    "handle-snap": -144.0,
+                    "handle-color": "#808080",
+                    "handle-info": "",
+                    "handle-unit": "",
+                    "handle-label": "R01",
+                    "handle-symbol": "R01",
+                    "handle-stream": "Stream.INP",
+                    "handle-category": "Default",
+                    "handle-value": null,
+                    "handle-lower": null,
+                    "handle-upper": null,
+                    "handle-sigma": null,
+                    "handle-position": {
+                        "x": -144.0,
+                        "y": 69.41849041215028
+                    }
+                }
+            ],
+            "node-name": "NODE-COPY",
+            "node-type": 0,
+            "node-height": 200.0,
+            "node-position": {
+                "x": 13303.167070311085,
+                "y": 12611.092103897212
+            },
+            "parameters": [
+                {
+                    "parameter-id": "L#5556",
+                    "parameter-info": "",
+                    "parameter-unit": "",
+                    "parameter-label": null,
+                    "parameter-symbol": "beta",
+                    "parameter-category": "",
+                    "parameter-value": 100.0,
+                    "parameter-lower": null,
+                    "parameter-upper": null,
+                    "parameter-sigma": null
+                }
+            ],
+            "equations": [
+                "R00 - beta * R01 = 0.0"
+            ]
+        }
+    ],
+    "CONNECTORS": [
+        {
+            "connection-origin": {
+                "x": 12677.28315105426,
+                "y": 12478.935339732874
+            },
+            "connection-target": {
+                "x": 13159.167070311085,
+                "y": 12565.452152537828
+            }
+        },
+        {
+            "connection-origin": {
+                "x": 12677.28315105426,
+                "y": 12526.207412708776
+            },
+            "connection-target": {
+                "x": 13159.167070311085,
+                "y": 12680.510594309362
+            }
+        }
+    ]
+}

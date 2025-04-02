@@ -183,7 +183,7 @@ class Sheets(QTableWidget):
     @pyqtSlot(name="Sheets.commit")
     def commit(self):
 
-        if self.__node is None or not len(self.__hmap):
+        if self.__node is None:
             return
 
         par = list()
@@ -228,7 +228,7 @@ class Sheets(QTableWidget):
         neqn = len(self.__node.equations)
 
         self.__modified = False
-        self.sig_notify_config.emit(f"Node {self.__node.nuid()} updated ({nvar} handles, {npar} parameters, {neqn} equations")
+        self.sig_notify_config.emit("Changes committed")
         self.sig_data_modified.emit(self.__node, self.__modified)
 
     @pyqtSlot(Node, name="Sheets.fetch")

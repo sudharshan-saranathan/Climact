@@ -172,6 +172,37 @@ class Node(QGraphicsObject):
         self._meta.eqn = eqlist
 
     @property
+    def substituted(self):
+
+        substituted = list()
+        equations   = self.equations.copy()
+        node_prefix = self.nuid().replace('#', '', 1)
+
+        var_dict = {}
+        par_dict = {}
+
+        for var in self[Stream.INP] + self[Stream.OUT]:
+            if var.connected:
+                var_dict[var.symbol] = var.connector.symbol
+
+        for par in self[Stream.PAR]:
+            par_dict[par.symbol] = f"{node_prefix}_{par.symbol}"
+
+        for equation in equations:
+            for var_key in var_dict:
+                equation = equation.replace(var_key, var_dict[var_key])
+
+            for par_key in par_dict:
+                equation = equation.replace(par_key, par_dict[par_key])
+
+            substituted.append(equation)
+
+        if not len(substituted):
+            print(f"INFO: {self.nuid()} is not connected! No equations have been transformed.")
+
+        return substituted
+
+    @property
     def group(self):
         return self._sect.group
 

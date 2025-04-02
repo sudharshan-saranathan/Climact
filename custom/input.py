@@ -33,8 +33,8 @@ class Input(QDialog):
         self.__input.setTextMargins(0, 0, 0, 0)
 
         # Checkboxes and button-group:
-        self.__sys_check = QCheckBox(first)
-        self.__com_check = QCheckBox(second)
+        self.__sys_check = QCheckBox(second)
+        self.__com_check = QCheckBox(first)
         self.__com_check.setChecked(True)
 
         __button_group = QButtonGroup(self)
