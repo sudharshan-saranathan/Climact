@@ -439,7 +439,11 @@ class Node(QGraphicsObject):
     def as_component(self):
 
         json_arr = [schema.JsonLib.serialize(self)]
-        dialog   = Input(None)
+        dialog   = Input(None,
+                         prompt="Enter name",
+                         option=True,
+                         option_first="Components",
+                         option_second="Systems")
 
         template = {"NODES": json_arr, "CONNECTORS": []}
         folder   = dialog.option.lower()

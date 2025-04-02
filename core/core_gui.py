@@ -111,7 +111,7 @@ class Gui(QMainWindow):
         # Stack elements:
         self.__viewer = Viewer(self, min_zoom = 0.20, max_zoom = 4.0)
         self.__config = Config(self.__viewer.canvas, self.__wstack)
-        self.__optima = Optimizer(self)
+        self.__optima = Optimizer(self.__viewer.canvas, self)
 
         # Stack viewport and config widgets:
         self.__wstack.addWidget(self.__viewer)

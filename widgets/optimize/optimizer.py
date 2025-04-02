@@ -3,12 +3,12 @@ from PyQt6.QtWidgets import QWidget, QSplitter, QGridLayout, QToolButton, QTextE
 from PyQt6.QtCore    import Qt
 
 from custom.separator import Separator
+from widgets import Canvas
 from widgets.optimize.objective import Container, TimeHorizon, ObjectiveSetup
-
 
 class Optimizer(QWidget):
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, canvas: Canvas, parent: QWidget = None):
 
         # Initialize base-class:
         super().__init__(parent)
@@ -42,7 +42,7 @@ class Optimizer(QWidget):
         __hline_bot = Separator(QFrame.Shape.HLine, None)
 
         # Buttons:
-        self.__gen = QPushButton("Generate")
+        self.__gen = QPushButton("Generate Script")
         self.__run = QPushButton("Optimize")
         self.__run.setEnabled(False)
 
@@ -61,8 +61,8 @@ class Optimizer(QWidget):
         self.__setup_layout.setSpacing(12)
 
         self.__setup_layout.addWidget(QLabel("OPTIMIZATION SETUP"), 0, 0, 1, 4)
-        self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 1, 0, 1, 4)
         self.__setup_layout.addWidget(ObjectiveSetup(None), 2, 0, 1, 4)
+        self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 1, 0, 1, 4)
         self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 3, 0, 1, 4)
         self.__setup_layout.setRowStretch(4, 10)
 

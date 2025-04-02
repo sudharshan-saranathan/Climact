@@ -1,9 +1,10 @@
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem, QWidget, \
-    QMenu
+    QMenu, QInputDialog
 
 from core.core_qss import QSS
+from custom.input import Input
 from widgets.schema.graph import Stream
 from widgets.schema.graph.handle import Handle, Resource
 from widgets.schema.graph.vertex import Node
@@ -120,6 +121,9 @@ class Sheets(QTableWidget):
         if not cols:
             return
 
+        # Initialize menu:
+        self.__menu__()
+
         # Customize horizontal header:
         self.setColumnCount(cols)
         self.setHorizontalHeaderLabels(hdrs)
@@ -168,8 +172,13 @@ class Sheets(QTableWidget):
     def __menu__(self):
 
         self._menu  = QMenu(self)
-        _insert_row = self._menu.addAction("Insert Row")
-        _delete_row = self._menu.addAction("Delete Row")
+        _set_value = self._menu.addAction("Set Value")
+        _cls_value = self._menu.addAction("Clear")
+
+        _set_value.triggered.connect(self.set_value)
+
+    def contextMenuEvent(self, event):
+        self._menu.exec(self.mapToGlobal(event.pos()))
 
     @pyqtSlot(name="Sheets.commit")
     def commit(self):
@@ -261,6 +270,15 @@ class Sheets(QTableWidget):
         self.__modified = False
         self.sig_data_modified.emit(self.__node, self.__modified)
 
+    def set_value(self):
+
+        dialog = Input(None, prompt="Enter Value")
+        dialog.exec()
+
+        items = self.selectedItems()
+        for item in items:
+            item.setText(str(dialog.field))
+
     def insert_row(self):
 
         row = self.rowCount()
@@ -334,8 +352,6 @@ class Sheets(QTableWidget):
         color    = QColor(0x98B6B1) if handle.stream() == Stream.INP else QColor(0xffb10a)
 
         row = self.rowCount() - 1
-        print(f"INFO: Sheets.fetch(): {handle.label} with data {handle.value} {handle.lower} {handle.upper} {handle.sigma}")
-
         self.item(row, 0).setText(handle.id)
         self.item(row, 1).setText(handle.symbol)
         self.item(row, 2).setText(handle.info)

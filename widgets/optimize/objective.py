@@ -72,6 +72,8 @@ class ObjectiveSetup(QFrame):
         __button_ampl     = QRadioButton("AMPL")
         __button_pymoo    = QRadioButton("Pymoo")
         __button_platypus = QRadioButton("Platypus")
+        __button_scalarized.setChecked(True)
+        __button_ampl.setChecked(True)
 
         self.__group_1 = QButtonGroup(None)
         self.__group_2 = QButtonGroup(None)
