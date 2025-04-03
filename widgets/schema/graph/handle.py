@@ -238,6 +238,7 @@ class Handle(QGraphicsObject, Resource):
         # Resource-attrib:
         self.label  = symbol
         self.symbol = symbol
+        self.color  = Qt.GlobalColor.gray
 
         # Initialize context-menu:
         self.__menu__()
@@ -252,9 +253,6 @@ class Handle(QGraphicsObject, Resource):
         # Create menu:
         self._menu = QMenu()
         self._subm = self._menu.addMenu("Configure")
-
-        self._menu.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
-        self._subm.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self._subm.addSeparator()
 
         # Add actions:

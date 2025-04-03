@@ -376,7 +376,7 @@ class Sheets(QTableWidget):
         label_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         # Store the symbol in parameter-map:
-        self.__pmap[row] = parameter.symbol()
+        self.__pmap[row] = parameter.symbol
 
     def on_data_changed(self, row: int, column: int):
 

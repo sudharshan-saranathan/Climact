@@ -24,7 +24,7 @@ QInputDialog {
 }
 
 QInputDialog QLabel {
-    font    : 12pt 'Trebuchet MS';
+    font    : 13pt "Osaka";
     border  : none;
     color   : white;
 }
@@ -38,7 +38,7 @@ QInputDialog QLineEdit {
 
 QComboBox
 {
-    font                : 12pt "Trebuchet MS";
+    font                : 13pt "Osaka";
     color               : black;
     width               : 80px;
     height              : 12px;
@@ -48,7 +48,7 @@ QComboBox
 
 QComboBox:drop-down
 {
-    font                : 12pt "Trebuchet MS";
+    font                : 13pt "Osaka";
     color               : black;
     width               : 20px;
     background-color    : lightgray;
@@ -63,7 +63,7 @@ QComboBox::down-arrow
 
 QComboBox QListView {
     color                   : black;
-    font                    : 12pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     selection-color         : black;
     background-color        : white;
     padding-left            : 4px;
@@ -83,21 +83,21 @@ QComboBox::item:selected {
 }
 
 QTextEdit {
-    font                    : 13pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     color                   : white;
     background-color        : lightslategray;
     border-radius           : 6px;
 }
 
 QTextEdit:focus {
-    font                    : 13pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     color                   : white;
     border-radius           : 6px;
     background-color        : #81909C;
 }
 
 QMenu {
-    font                    : 12pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     border                  : 1px solid black;
     padding                 : 4px 4px 4px 4px;
     color                   : black;
@@ -132,7 +132,7 @@ QMenu::item:selected {
 }
 
 QLabel {
-    font                    : 13pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     color                   : black;
     margin                  : 0px;
     background              : transparent;
@@ -140,7 +140,7 @@ QLabel {
 }
 
 QPushButton {
-    font                    : 12pt 'Trebuchet MS';
+    font                    : 13pt "Osaka";
     color                   : black;
     padding                 : 2px;
     border-radius           : 6px;
@@ -162,7 +162,7 @@ QPushButton:disabled {
 
 QToolTip {
     border                  : 1px solid black;
-    font                    : 13pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     color                   : black;
     background              : white;
 }
@@ -195,7 +195,7 @@ QSplitter::handle:horizontal {
 }
 
 QMenuBar {
-    font                    : 12pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
 	color              		: black;
 	border-bottom           : 1px solid black;
 	background				: #CED3DC;
@@ -212,7 +212,7 @@ QMenuBar::item:selected {
 }
 
 QStatusBar {
-	font                    : 13pt "Trebuchet MS";
+	font                    : 13pt "Osaka";
 	border-top              : 1px solid black;
 	color                   : black;
     background              : white;
@@ -310,7 +310,7 @@ QToolBar QToolButton:hover, QToolButton:hover {
 }
 
 QCheckBox {
-    font                    : 13pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     margin                  : 8px;
     border                  : none;
     color                   : black;
@@ -318,7 +318,7 @@ QCheckBox {
 }
 
 QCheckBox:disabled {
-    font                    : 13pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     color                   : gray;
 	background-color		: white;
 }
@@ -343,7 +343,7 @@ QCheckBox::indicator:checked {
 
 QLineEdit {
 	border					: none;
-	font                    : 12pt "Trebuchet MS";
+	font                    : 13pt "Osaka";
 	border-radius           : 1px;
 	padding                 : 3px;
 	color                   : black;
@@ -413,7 +413,7 @@ QHeaderView {
     color                   : white;
     border                  : 1px solid black;
     border-radius           : 6px;
-    font                    : 12pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     background              : #D8E9DF;
 }
 
@@ -455,7 +455,7 @@ QHeaderView::section:vertical:hover {
 }
 
 QTreeWidget {
-    font                        : 13pt "Trebuchet MS";
+    font                        : 13pt "Osaka";
     padding                     : 1px;
     border-right                : 1px solid darkgray;
     border-radius               : 0px;
@@ -465,7 +465,7 @@ QTreeWidget {
 
 /*
 QTreeWidget:focus {
-    font                        : 13pt "Trebuchet MS";
+    font                        : 13pt "Osaka";
     padding                     : 1px;
     border                      : 2px solid #ffab38;
     background                  : lightslategray;
@@ -473,13 +473,13 @@ QTreeWidget:focus {
 */
 
 QListWidget {
-    font                        : 13pt "Trebuchet MS";
+    font                        : 13pt "Osaka";
     background                  : lightslategray;
     border-radius               : 6px;
 }
 
 QListWidget:focus {
-    font                        : 13pt "Trebuchet MS";
+    font                        : 13pt "Osaka";
     border-radius               : 6px;
     background                  : #81909C;
 }
@@ -538,7 +538,7 @@ QDialog {
 }
 
 QTableWidget, QTableView {
-    font                    : 12pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     padding                 : 2px;
     border                  : 0px solid black;
     border-radius           : 0px;
@@ -551,7 +551,7 @@ QTableCornerButton::section {
 }
 
 QTableWidget:focus, QTableView:focus {
-    font                    : 12pt "Trebuchet MS";
+    font                    : 13pt "Osaka";
     padding                 : 2px;
     border                  : 0px solid black;
     border-radius           : 0px;
