@@ -1,6 +1,6 @@
 # TODO: Improve performance by updating instead of refreshing the whole tree when scene items are modified
 from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtWidgets import QTreeWidget, QWidget, QHeaderView, QGridLayout, QTreeWidgetItem, QLineEdit, \
     QPushButton
 
@@ -66,6 +66,13 @@ class Trview(QTreeWidget):
         _layout.addWidget(_search_icon, 1, 0, Qt.AlignmentFlag.AlignLeft)
         _layout.addWidget(_expand_icon, 1, 1, Qt.AlignmentFlag.AlignCenter)
         _layout.addWidget(_shrink_icon, 1, 2, Qt.AlignmentFlag.AlignCenter)
+
+        # Add shortcuts:
+        _expand_all = QShortcut(QKeySequence("Shift+Down"), self)
+        _shrink_all = QShortcut(QKeySequence("Shift+Up"), self)
+
+        _expand_all.activated.connect(self.expandAll)
+        _shrink_all.activated.connect(self.collapseAll)
 
     def refresh(self):
 

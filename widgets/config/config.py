@@ -31,7 +31,7 @@ class Config(QWidget):
         self.__eqlist = Eqlist()
         self.__editor = Editor(self)
         self.__trview = Trview(self.__canvas)
-        self.__sheets = Sheets(None,self.__eqlist, columns=11,
+        self.__sheets = Sheets(None,self.__eqlist, canvas=self.__canvas, columns=11,
                                headers=['ID', 'Symbol', 'Description', 'Unit', 'Type', 'Value',
                                         'Lower', 'Upper', 'Sigma', 'Interpolate', 'Auto'
                                        ])
@@ -73,6 +73,7 @@ class Config(QWidget):
 
         self.__sheets.sig_insert_equations.connect(self.__eqlist.insert_equations)
         self.__sheets.sig_modify_equations.connect(self.__eqlist.replace_symbols)
+        self.__sheets.sig_item_highlighted.connect(self.__trview.search)
 
         self.__trview.sig_notify_config.connect(self.__status.showMessage)
         self.__sheets.sig_notify_config.connect(self.__status.showMessage)

@@ -28,6 +28,7 @@ class Sheets(QTableWidget):
     sig_modify_equations = pyqtSignal(str, str)
     sig_notify_config    = pyqtSignal(str , name="Signal emitted to display a message")
     sig_data_modified    = pyqtSignal(Node, bool, name="Signal emitted when spreadsheet is modified")
+    sig_item_highlighted = pyqtSignal(str)
 
     # Item map, and clipboard:
     __hmap = {}
@@ -111,6 +112,7 @@ class Sheets(QTableWidget):
 
         # Connect QTableWidget's built-in cellChanged signal to event-handler:
         self.cellChanged.connect(self.on_data_changed)
+        self.currentCellChanged.connect(self.on_cell_highlighted)
 
     def __menu__(self):
 
@@ -394,6 +396,14 @@ class Sheets(QTableWidget):
         self.sig_data_modified.emit(self.__node, True)
         self.sig_notify_config.emit("Spreadsheet-data modified. There are unsaved changes!")
 
+    def on_cell_highlighted(self, row, col, prow, pcol):
+
+        item = self.item(row, col)
+        if item is None or col:
+            return
+
+        self.sig_item_highlighted.emit(item.text())
+
     def on_copy(self):
 
         # Empty current clipboard:
@@ -441,7 +451,7 @@ class Sheets(QTableWidget):
         defined_symbols = set(self.unique(1))
 
         if isinstance(self.__canvas, Canvas):
-            defined_symbols.union(self.__canvas.variables())
+            defined_symbols = defined_symbols.union(self.__canvas.variables())
 
         for equation in symlist.keys():
 
