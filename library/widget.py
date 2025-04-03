@@ -5,6 +5,27 @@ from PyQt6.QtWidgets    import *
 from PyQt6.QtCore       import *
 from PyQt6.QtGui        import *
 
+import os
+
+class FileSystem(QTreeView):
+
+    # Initializer:
+    def __init__(self, parent: QWidget | None):
+
+        # Initialize base-class:
+        super().__init__(parent)
+
+        # Initialize model:
+        path = os.getcwd() + "/library/systems"
+        self.__model = QFileSystemModel(self)
+        self.__model.setRootPath(path)
+
+        print(os.getcwd())
+
+        # Set model:
+        self.setModel(self.__model)
+        self.setRootIndex(self.__model.index(path))
+
 class Library(QScrollArea):
 
     # Signals:
@@ -102,8 +123,8 @@ class ComponentLibrary(QFrame):
         # Main widgets:
         self.__components = QWidget()
         self.__systems    = QWidget()
-        self.__close      = QToolButton()
-        self.__refresh    = QToolButton()
+        self.__close      = QToolButton(self)
+        self.__refresh    = QToolButton(self)
 
         self.__close.setStyleSheet("margin: 0px; padding: 0px;")
         self.__close.setIcon(QIcon("rss/icons/close.png"))
@@ -115,8 +136,8 @@ class ComponentLibrary(QFrame):
         self.__refresh.setIconSize(QSize(24, 24))
         self.__refresh.pressed.connect(self.index_library)
 
-        self.__hline_top = QFrame()
-        self.__hline_mid = QFrame()
+        self.__hline_top = QFrame(self)
+        self.__hline_mid = QFrame(self)
         self.__hline_top.setFrameShape(QFrame.Shape.HLine)
         self.__hline_mid.setFrameShape(QFrame.Shape.HLine)
         self.__hline_top.setFixedHeight(1)
@@ -125,9 +146,8 @@ class ComponentLibrary(QFrame):
         self.__hline_mid.setStyleSheet("background: lightgray;")
 
         self.__com_library = Library("COMPONENTS", self)
-        self.__sys_library = Library("SYSTEMS"   , self)
-        # self.__com_library.sig_template_selected.connect(self.sig_close)
-        # self.__sys_library.sig_template_selected.connect(self.sig_close)
+        self.__sys_library = FileSystem(self)
+        # self.__sys_library = Library("SYSTEMS"   , self)
 
         self.index_library()
 
@@ -155,7 +175,7 @@ class ComponentLibrary(QFrame):
     def index_library(self):
 
         self.__com_library.clear_grid()
-        self.__sys_library.clear_grid()
+        # self.__sys_library.clear_grid()
 
         __com_files = {file.name : file for file in Path("library/components/").glob("*.json")}
         __sys_files = {file.name : file for file in Path("library/systems/").glob("*.json")}
@@ -163,10 +183,4 @@ class ComponentLibrary(QFrame):
         for file in __com_files:
             self.__com_library.insert_icon("rss/icons/node.png", file.split('.')[0])
 
-        self.__sys_library.insert_icon("rss/icons/json.png", "Aluminium")
-        self.__sys_library.insert_icon("rss/icons/json.png", "CCUS")
-        self.__sys_library.insert_icon("rss/icons/json.png", "Cement")
-        self.__sys_library.insert_icon("rss/icons/json.png", "Fertilizer")
-        self.__sys_library.insert_icon("rss/icons/json.png", "Iron/Steel")
-        self.__sys_library.insert_icon("rss/icons/json.png", "Refineries")
-        self.__sys_library.insert_icon("rss/icons/json.png", "Petrochemicals")
+

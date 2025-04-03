@@ -53,7 +53,7 @@ class Viewer(QGraphicsView):
         self.__library.setFixedWidth(400)
 
         self.__library.library['Components'].sig_template_selected.connect(self.import_template)
-        self.__library.library['Systems']   .sig_template_selected.connect(self.import_template)
+        # self.__library.library['Systems']   .sig_template_selected.connect(self.import_template)
 
         # Gemini AI assistant:
         self.__gemini = gemini.Gui(self.canvas, None)

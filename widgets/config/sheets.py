@@ -1,12 +1,13 @@
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem, QWidget, \
-    QMenu, QInputDialog
+from PyQt6.QtCore    import *
+from PyQt6.QtGui     import *
+from PyQt6.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem, QWidget, QMenu, QMessageBox
 
-from core.core_qss import QSS
-from custom import Message
-from custom.input import Input
-from widgets.schema.graph import Stream
+from core.core_qss  import QSS
+from custom         import Message
+from custom.input   import Input
+
+from widgets.schema.canvas import Canvas
+from widgets.schema.graph  import Stream
 from widgets.schema.graph.handle import Handle, Resource
 from widgets.schema.graph.vertex import Node
 from widgets.config.eqlist import Eqlist
@@ -47,8 +48,9 @@ class Sheets(QTableWidget):
         super().__init__(parent)
 
         # Setup keywords:
-        cols = kwargs.get("columns")
-        hdrs = kwargs.get("headers")
+        self.__columns = kwargs.get("columns")
+        self.__headers = kwargs.get("headers")
+        self.__canvas  = kwargs.get("canvas")
 
         # Save equations widget:
         self.__eqwidget = eqwidget
@@ -59,15 +61,15 @@ class Sheets(QTableWidget):
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.verticalHeader().setFixedWidth(24)
 
-        if not cols:
+        if not self.__columns:
             return
 
         # Initialize menu:
         self.__menu__()
 
         # Customize horizontal header:
-        self.setColumnCount(cols)
-        self.setHorizontalHeaderLabels(hdrs)
+        self.setColumnCount(self.__columns)
+        self.setHorizontalHeaderLabels(self.__headers)
         self.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         self.horizontalHeader().setSectionResizeMode(0 , QHeaderView.ResizeMode.Fixed)               # ID
         self.horizontalHeader().setSectionResizeMode(1 , QHeaderView.ResizeMode.Fixed)               # Symbol
@@ -82,7 +84,7 @@ class Sheets(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(10, QHeaderView.ResizeMode.ResizeToContents)    # Auto-balance
 
         # Customize column widths:
-        self.setColumnWidth(0, 80)
+        self.setColumnWidth(0, 90)
         self.setColumnWidth(1, 65)
         self.setColumnWidth(3, 50)
         self.setColumnWidth(4, 80)
@@ -130,6 +132,10 @@ class Sheets(QTableWidget):
     def commit(self):
 
         if self.__node is None:
+            message = Message(QtMsgType.QtWarningMsg,
+                              "No node selected, aborting commit!",
+                              QMessageBox.StandardButton.Ok)
+            message.exec()
             return
 
         par = list()
@@ -433,6 +439,9 @@ class Sheets(QTableWidget):
         valid_equations = set()
         unknown_symbols = set()
         defined_symbols = set(self.unique(1))
+
+        if isinstance(self.__canvas, Canvas):
+            defined_symbols.union(self.__canvas.variables())
 
         for equation in symlist.keys():
 

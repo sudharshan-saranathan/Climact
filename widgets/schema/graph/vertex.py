@@ -117,8 +117,9 @@ class Node(QGraphicsObject):
     def __menu__(self):
 
         self._menu = QMenu()
-        self._template = self._menu.addAction("Create Template")
-        self._delete   = self._menu.addAction("Delete")
+        self._randomize = self._menu.addAction("Copy and Randomize")
+        self._template  = self._menu.addAction("Save as Template")
+        self._delete    = self._menu.addAction("Delete")
 
         # Behaviour:
         self._menu.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
@@ -399,7 +400,7 @@ class Node(QGraphicsObject):
         node.adjust(delta)
 
         # Create handles:
-        for handle in (self._meta.inp + self._meta.out):
+        for handle in self[Stream.INP] + self[Stream.OUT]:
 
             copy = node.create_handle(handle.pos(), node.construct_symbol(handle.stream()), handle.stream(), False)
             copy.category = handle.category
@@ -407,6 +408,10 @@ class Node(QGraphicsObject):
             copy.snap     = handle.snap
 
             Handle.cmap[handle] = copy
+
+        for parameter in self[Stream.PAR]:
+            copied_par = parameter.duplicate()
+            node[Stream.PAR].append(copied_par)
 
         return node
 

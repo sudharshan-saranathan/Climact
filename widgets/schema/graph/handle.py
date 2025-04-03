@@ -78,6 +78,8 @@ class Resource(Category):
             "Upper"     : None,
             "Delta"     : None,
             "Sigma"     : None,
+            "Category"  : "Default",
+            "Color"     : QColor(Qt.GlobalColor.gray)
         }
 
     @property
@@ -168,6 +170,7 @@ class Resource(Category):
     def properties(self):
         return self.__property.keys()
 
+    # This method creates a new property for handle:
     def create_property(self, key: "str", value: str | float):
 
         if not bool(key):
@@ -175,6 +178,12 @@ class Resource(Category):
 
         # Create a new key-value pair:
         self.__property[key] = value
+
+    def duplicate(self):
+        new_resource = Resource()
+        new_resource.__property = self.__property.copy()
+
+        return new_resource
 
 class Handle(QGraphicsObject, Resource):
 

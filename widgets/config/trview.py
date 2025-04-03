@@ -32,7 +32,7 @@ class Trview(QTreeWidget):
         self.setColumnWidth(2, 60)
         self.setColumnWidth(3, 40)
 
-        self.setHeaderLabels(["ITEM", "STREAM", "PAIR", "EQS"])
+        self.setHeaderLabels(["ITEM", "STREAM", "VAR", "EQS"])
         self.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setMinimumWidth(400)
 
@@ -89,12 +89,12 @@ class Trview(QTreeWidget):
 
                 handle_item.setText(0, f"{handle.id}: {handle.label}")
                 handle_item.setText(1, "INP" if handle.stream() == graph.Stream.INP else "OUT")
-                handle_item.setText(2, handle.conjugate.id if handle.conjugate else "None")
+                handle_item.setText(2, handle.connector.symbol if handle.connected else "None")
                 handle_item.setCheckState(3, Qt.CheckState.Unchecked)
 
                 handle_item.setTextAlignment(1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-                handle_item.setTextAlignment(2, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-                handle_item.setTextAlignment(3, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+                handle_item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
+                handle_item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
 
             for parameter in node[graph.Stream.PAR]:
 
@@ -180,7 +180,7 @@ class Trview(QTreeWidget):
 
             handle_item.setText(0, f"{handle.id}: {handle.label}")
             handle_item.setText(1, "INP" if handle.stream() == graph.Stream.INP else "OUT")
-            handle_item.setText(2, handle.conjugate.id if handle.conjugate else "None")
+            handle_item.setText(2, handle.connector.symbol if handle.connected else "None")
             handle_item.setCheckState(3, Qt.CheckState.Unchecked)
 
             handle_item.setTextAlignment(1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)

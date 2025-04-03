@@ -150,6 +150,14 @@ class Canvas(QGraphicsScene):
         self.addItem(connector)
         self.reset_transient()
 
+    # Retrieve total symbols:
+    def variables(self):
+        variables = set()
+        for connector in self.edges:
+            variables.add(connector.symbol)
+
+        return variables
+
     # Node-creator:
     @pyqtSlot(name="Node Creator")
     def create_node(self, name: str = "Node", coordinate: QPoint = QPointF()):

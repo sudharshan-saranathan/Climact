@@ -1,4 +1,4 @@
-from PyQt6.QtCore       import QtMsgType
+from PyQt6.QtCore import QtMsgType, Qt
 from PyQt6.QtWidgets    import (QWidget,
                                 QMessageBox)
 
@@ -40,6 +40,6 @@ class Message(QMessageBox):
 
         # If the cancel button exists, change its style:
         if self.button(QMessageBox.StandardButton.Cancel):
-            self.button(QMessageBox.StandardButton.Cancel).setStyleSheet("background: white; color: black;")
+            self.button(QMessageBox.StandardButton.Cancel).setStyleSheet("QPushButton {padding: 4px; background: darkgray; color: white;}")
 
 
