@@ -4,10 +4,11 @@
 # GitHub    : https://github.com/sudharshan-saranathan/climact
 # Module(s) : PyQt6 (version 6.8.1)
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon, QActionGroup, QKeySequence
-from PyQt6.QtCore       import QSize
+from PyQt6.QtCore    import Qt
+from PyQt6.QtGui     import QIcon, QActionGroup, QKeySequence
+from PyQt6.QtCore    import QSize, QUrl
 from PyQt6.QtWidgets import QMainWindow, QWidget, QToolBar, QStackedWidget
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 
 from widgets.optimize import Optimizer
 from widgets.schema import Viewer
@@ -16,7 +17,6 @@ from dataclasses    import dataclass
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-
 # Navigator:
 class NavBar(QToolBar):
 

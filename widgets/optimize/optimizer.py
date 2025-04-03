@@ -5,6 +5,7 @@ from PyQt6.QtCore    import Qt
 
 from custom.separator import Separator
 from widgets import Canvas
+from widgets.optimize.ampl import AMPLEngine
 from widgets.optimize.objective import Container, TimeHorizon, ObjectiveSetup
 from widgets.schema.graph import Stream
 
@@ -46,17 +47,16 @@ class Optimizer(QWidget):
         self._setup  = QWidget(self)
 
         self._tabwid.setTabPosition(QTabWidget.TabPosition.North)
-        self._result.setEnabled(False)
         self._editor.setStyleSheet(style)
         self._result.setStyleSheet(style)
+        self._result.setEnabled(False)
         self._setup.setFixedWidth(600)
 
         # Organize tab-widget:
         self._tabwid.addTab(self._editor, "Editor")
         self._tabwid.addTab(self._result, "Terminal")
         self._tabwid.addTab(QWidget(), "Analysis")
-
-        # Organize opt-settings:
+        self._tabwid.addTab(QTextEdit() , "Log")
 
         # Separators:
         __hline_top = Separator(QFrame.Shape.HLine, None)
@@ -149,7 +149,10 @@ class Optimizer(QWidget):
 
     def run(self):
 
-        print("INFO: Optimizer.run()")
+        engine = AMPLEngine()
+        engine.optimize(self._editor.toPlainText())
+
+        self._result.setText(engine.output)
 
     def auto_enable(self):
 
