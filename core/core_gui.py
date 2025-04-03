@@ -8,13 +8,11 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QIcon, QActionGroup, QKeySequence
 from PyQt6.QtCore    import QSize, QUrl
 from PyQt6.QtWidgets import QMainWindow, QWidget, QToolBar, QStackedWidget
-from PyQt6.QtWebEngineWidgets import QWebEngineView
 
-from widgets.optimize import Optimizer
-from widgets.schema import Viewer
-from widgets.schema import Config
-from dataclasses    import dataclass
-
+from widgets.optimize   import Optimizer
+from widgets.schema     import Viewer
+from widgets.schema     import Config
+from dataclasses        import dataclass
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Navigator:

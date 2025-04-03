@@ -17,16 +17,16 @@ class Category:
         return self._category
 
     @category.setter
-    def category(self, value: str):
-        self._category = value if isinstance(value, str) else self._category
+    def category(self, __value: str):
+        self._category = __value
 
     @property
     def color(self):
         return self._color
 
     @color.setter
-    def color(self, value: QColor):
-        self._color = value if isinstance(value, QColor) else self._color
+    def color(self, __value: QColor):
+        self._color = __value if isinstance(__value, QColor) else self._color
         if isinstance(self, Handle):
             self._label.setDefaultTextColor(self._color)
             if self.connected and self._strm == Stream.OUT:
@@ -78,6 +78,7 @@ class Resource(Category):
             "Upper"     : None,
             "Delta"     : None,
             "Sigma"     : None,
+            "Result"    : None,
             "Category"  : "Default",
             "Color"     : QColor(Qt.GlobalColor.gray)
         }
@@ -87,91 +88,99 @@ class Resource(Category):
         return self.__property["ID"]
 
     @id.setter
-    def id(self, value):
-        self.__property["ID"] = value if isinstance(value, str) else self.__property["ID"]
+    def id(self, __value):
+        self.__property["ID"] = __value
 
     @property
     def symbol(self):
         return self.__property["Symbol"]
 
     @symbol.setter
-    def symbol(self, value):
-        self.__property["Symbol"] = value if isinstance(value, str) else self.__property["Symbol"]
+    def symbol(self, __value):
+        self.__property["Symbol"] = __value
 
     @property
     def label(self):
         return self.__property["Label"]
 
     @label.setter
-    def label(self, value):
-        self.__property["Label"] = value if isinstance(value, str) else self.__property["Label"]
+    def label(self, __value):
+        self.__property["Label"] = __value
         if isinstance(self, Handle):
-            self._label.setPlainText(value)
+            self._label.setPlainText(__value)
             if self.connected and self._strm == Stream.OUT:
-                self.conjugate.label = value
+                self.conjugate.label = __value
 
     @property
     def info(self):
         return self.__property["Info"]
 
     @info.setter
-    def info(self, value):
-        self.__property["Info"] = value if isinstance(value, str) else self.__property["Info"]
+    def info(self, __value):
+        self.__property["Info"] = __value
 
     @property
     def unit(self):
         return self.__property["Unit"]
 
     @unit.setter
-    def unit(self, value):
-        self.__property["Unit"] = value if isinstance(value, str) else self.__property["Unit"]
+    def unit(self, __value):
+        self.__property["Unit"] = __value
 
     @property
     def value(self):
         return self.__property["Value"]
 
     @value.setter
-    def value(self, value):
-        self.__property["Value"] = value if isinstance(value, float) else self.__property["Value"]
+    def value(self, __value: float):
+        self.__property["Value"] = __value if isinstance(__value, float) else self.value
 
     @property
     def lower(self):
         return self.__property["Lower"]
 
     @lower.setter
-    def lower(self, value):
-        self.__property["Lower"] = value if isinstance(value, float) else self.__property["Lower"]
+    def lower(self, __value: float):
+        self.__property["Lower"] = __value if isinstance(__value, float) else self.lower
 
     @property
     def upper(self):
         return self.__property["Upper"]
 
     @upper.setter
-    def upper(self, value):
-        self.__property["Upper"] = value if isinstance(value, float) else self.__property["Upper"]
+    def upper(self, __value: float):
+        self.__property["Upper"] = __value if isinstance(__value, float) else self.upper
 
     @property
     def delta(self):
         return self.__property["Delta"]
 
     @delta.setter
-    def delta(self, value):
-        self.__property["Delta"] = value if isinstance(value, float) else self.__property["Delta"]
+    def delta(self, __value: float):
+        self.__property["Delta"] = __value if isinstance(__value, float) else self.delta
 
     @property
     def sigma(self):
         return self.__property["Sigma"]
 
     @sigma.setter
-    def sigma(self, value):
-        self.__property["Sigma"] = value if isinstance(value, float) else self.__property["Sigma"]
+    def sigma(self, __value: float):
+        self.__property["Sigma"] = __value if isinstance(__value, float) else self.sigma
+
+    @property
+    def result(self):
+        return self.__property["Result"]
+
+    @result.setter
+    def result(self, __value: float):
+        self.__property["Result"] = __value if isinstance(__value, float) else self.result
 
     @property
     def properties(self):
         return self.__property.keys()
 
     # This method creates a new property for handle:
-    def create_property(self, key: "str", value: str | float):
+    def create_property(self, key: str, value: str | float):
 
         if not bool(key):
             return
@@ -291,8 +300,8 @@ class Handle(QGraphicsObject, Resource):
         return self._attr.offset
 
     @snap.setter
-    def snap(self, value: float):
-        self._attr.offset = value
+    def snap(self, __value: float):
+        self._attr.offset = __value
 
     def paint(self, painter, option, widget = ...):
         painter.setPen(self._styl.pen_default)

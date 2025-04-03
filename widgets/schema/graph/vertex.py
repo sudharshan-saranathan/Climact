@@ -1,6 +1,7 @@
+import re
 import json
-from pathlib import Path
 
+from pathlib import Path
 from widgets import schema
 
 from custom.button          import *
@@ -176,33 +177,28 @@ class Node(QGraphicsObject):
     @property
     def substituted(self):
 
-        substituted = list()
+        transformed = list()
         equations   = self.equations.copy()
         node_prefix = self.nuid().replace('#', '', 1)
 
-        var_dict = {}
-        par_dict = {}
+        # Create a dictionary of symbol-replacements:
+        replacements  = dict()
 
+        # Variable symbols (R00, P00, ...) are replaced with connector symbols (X0, X1, ...)
         for var in self[Stream.INP] + self[Stream.OUT]:
-            if var.connected:
-                var_dict[var.symbol] = var.connector.symbol
+            replacements[var.symbol] = var.connector.symbol if var.connected else None
 
+        # Parameters symbols are prefixed with the node's UID:
         for par in self[Stream.PAR]:
-            par_dict[par.symbol] = f"{node_prefix}_{par.symbol}"
+            replacements[par.symbol] = f"{node_prefix}_{par.symbol}"
 
+        # Modify all equations:
         for equation in equations:
-            for var_key in var_dict:
-                equation = equation.replace(var_key, var_dict[var_key])
+            tokens = equation.split(' ')
+            update = [replacements.get(token, token) for token in tokens]
+            transformed.append(str(" ").join(update))
 
-            for par_key in par_dict:
-                equation = equation.replace(par_key, par_dict[par_key])
-
-            substituted.append(equation)
-
-        if not len(substituted):
-            print(f"INFO: {self.nuid()} is not connected! No equations have been transformed.")
-
-        return substituted
+        return transformed
 
     @property
     def group(self):
@@ -340,7 +336,7 @@ class Node(QGraphicsObject):
 
         anchor = self.sender()
         if not isinstance(anchor, Anchor):
-            raise RuntimeError("Expected an anchor custom")
+            raise RuntimeError("Expected an anchor")
 
         if anchor.parentItem() is not self:
             raise RuntimeError("Unknown signal emitter")

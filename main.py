@@ -1,10 +1,5 @@
 # System-imports
 import sys
-import webview
-
-# User-defined:
-from flask           import Flask
-from threading       import Thread
 
 from core.core_gui   import Gui
 from PyQt6.QtGui     import QFont

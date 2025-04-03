@@ -2,6 +2,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QSplitter, QGridLayout, QToolButton, QTextEdit, QLabel, QPushButton, QFrame, \
     QStackedWidget, QTabBar, QTabWidget
 from PyQt6.QtCore    import Qt
+from amplpy import AMPLException
 
 from custom.separator import Separator
 from widgets import Canvas
@@ -16,6 +17,10 @@ class Optimizer(QWidget):
     pars_set = set()
     vars_set = set()
     eqns_set = set()
+
+    # Global dictionaries:
+    var_dict = dict()       # Dictionary to retrieve the handle's reference using symbol
+    par_dict = dict()       # Dictionary to retrieve the parameter's reference using symbol
 
     # Initializer:
     def __init__(self, canvas: Canvas, parent: QWidget = None):
@@ -49,14 +54,12 @@ class Optimizer(QWidget):
         self._tabwid.setTabPosition(QTabWidget.TabPosition.North)
         self._editor.setStyleSheet(style)
         self._result.setStyleSheet(style)
-        self._result.setEnabled(False)
         self._setup.setFixedWidth(600)
 
         # Organize tab-widget:
-        self._tabwid.addTab(self._editor, "Editor")
-        self._tabwid.addTab(self._result, "Terminal")
+        self._tabwid.addTab(self._editor, "Model")
+        self._tabwid.addTab(self._result, "Log")
         self._tabwid.addTab(QWidget(), "Analysis")
-        self._tabwid.addTab(QTextEdit() , "Log")
 
         # Separators:
         __hline_top = Separator(QFrame.Shape.HLine, None)
@@ -103,41 +106,49 @@ class Optimizer(QWidget):
         self._editor.clear()
 
         ecount = 0
-        prefix = "# AMPL Optimization\n# Solver: IPOPT\n\n"
+        prefix = "# AMPL Optimization\n"
 
         _var_decl = "# Variable(s):\n"
         _eqn_decl = "# Equation(s):\n"
         _par_decl = "# Parameter(s):\n"
 
         for node in self.__canvas.nodes:
+
             _vars = node[Stream.INP] + node[Stream.OUT]
             _pars = node[Stream.PAR]
             _prfx = node.nuid().replace('#', '', 1)     # Remove the '#' from the node-id
 
             for var in _vars:
+
                 # If the handle is not connected, skip:
                 if not var.connected:
                     continue
 
                 # If the variable has a fixed value, declare it as a parameter instead:
                 if var.value is not None:
-                    _par_name = f"{_prfx}_{var.symbol}"
-                    _par_decl = _par_decl + f"param {_par_name}\t= {str(var.value)};\n"
-                    self.pars_set.add(_par_name)
+                    _par_decl = _par_decl + f"param {var.connector.symbol}\t\t= {str(var.value)};\n"
+                    self.pars_set.add(var.symbol)
 
                 # Otherwise, declare the connector's symbol as a variable:
                 elif var.connector.symbol not in self.vars_set:
                     _var_decl = _var_decl + f"var {var.connector.symbol};\n"
                     self.vars_set.add(var.connector.symbol)
 
+                # Create a dictionary-map:
+                self.var_dict[var.connector.symbol] = var
+
             for par in _pars:
-                # Converse logic, if the parameter's value is undefined, declare it as a variable:
+
+                # Conversely, if the parameter's value is undefined, declare it as a variable:
                 if par.value is None:
                     _var_decl = _var_decl + f"var {_prfx}_{par.symbol};\n"
 
                 # Parameter declaration:
                 else:
                     _par_decl = _par_decl + f"param {_prfx}_{par.symbol}\t= {par.value};\n"
+
+                # Store in map:
+                self.par_dict[par.symbol] = par
 
             for equation in node.substituted:
                 _eqprefix = f"subject to equation_{ecount}"
@@ -149,10 +160,29 @@ class Optimizer(QWidget):
 
     def run(self):
 
-        engine = AMPLEngine()
-        engine.optimize(self._editor.toPlainText())
+        try:
+            engine = AMPLEngine()
+            result = engine.optimize(self._editor.toPlainText())
+            output = str()
 
-        self._result.setText(engine.output)
+            if result:
+                for key in result["var_dict"].keys():
+                    output += f"{key}\t= {result["var_dict"][key]}\n"
+
+                for key in result["par_dict"].keys():
+                    output += f"{key}\t= {result["par_dict"][key]}\n"
+
+                for key in result["obj_dict"].keys():
+                    output += f"{key}\t= {result["obj_dict"][key]}\n"
+
+                self._result.setText(output)
+
+        except Exception as exception:
+
+            # Log to application:
+            self._result.setText(f"Exception: {str(exception)}")
+
+        self._tabwid.setCurrentWidget(self._result)
 
     def auto_enable(self):
 

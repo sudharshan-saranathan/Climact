@@ -159,6 +159,12 @@ class Sheets(QTableWidget):
                 handle.upper = handle.upper if upper is None else upper
                 handle.sigma = handle.sigma if sigma is None else sigma
 
+                if handle.connected:
+                    handle.conjugate.value = handle.value if value is None else value
+                    handle.conjugate.lower = handle.lower if lower is None else lower
+                    handle.conjugate.upper = handle.upper if upper is None else upper
+                    handle.conjugate.sigma = handle.sigma if sigma is None else sigma
+
             elif item and item.text().startswith('L'):
 
                 resource = Resource()
@@ -180,7 +186,7 @@ class Sheets(QTableWidget):
         self.__node.equations = self.__eqwidget.fetch_equations()
 
         self.__modified = False
-        self.sig_notify_config.emit("Changes committed")
+        self.sig_notify_config.emit(f"Changes commited to node {self.__node.nuid()}")
         self.sig_data_modified.emit(self.__node, self.__modified)
 
     @pyqtSlot(Node, name="Sheets.fetch")
@@ -388,8 +394,8 @@ class Sheets(QTableWidget):
 
     def on_data_changed(self, row: int, column: int):
 
-        # If a parameter name was changed
-        if column == 1 and row in self.__pmap.keys():
+        if column == 1 and row in self.__pmap.keys() and bool(self.__pmap[row]):
+            print(f"Symbol changed from: {self.__pmap[row]} to {self.item(row, column).text()}")
             self.sig_modify_equations.emit(self.__pmap[row], self.item(row, column).text())
             self.__pmap[row] = self.item(row, column).text()
 
@@ -419,7 +425,7 @@ class Sheets(QTableWidget):
 
         # Abort copy-operation if all columns are not selected.
         if len(col_set) != self.columnCount():
-            self.sig_notify_config.emit("ERROR: For copy-paste, all columns must be selected")
+            self.sig_notify_config.emit("INFO: Select entire row for copy-paste")
             return
 
         for row in row_set:
