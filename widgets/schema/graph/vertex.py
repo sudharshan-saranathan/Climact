@@ -174,6 +174,15 @@ class Node(QGraphicsObject):
 
         self._meta.eqn = eqlist
 
+    def variables(self):
+
+        var_list = list()
+        for handle in self[Stream.INP] + self[Stream.OUT]:
+            if handle.connected:
+                var_list.append(handle)
+
+        return var_list
+
     @property
     def substituted(self):
 

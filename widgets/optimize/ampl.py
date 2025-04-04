@@ -20,18 +20,15 @@ class AMPLOutput(OutputHandler):
 class AMPLErrors(ErrorHandler):
 
     def __init__(self):
-        self.__errors = list()
+        self.__error = list()
 
     def error(self, exception):
-        self.__errors.append(exception)
+        self.__error.append(str(exception))
 
     def get_error(self):
-        return "".join(self.__errors)
+        return "".join(self.__error)
 
 class AMPLEngine:
-
-    # Signals:
-    sig_optimization_complete = pyqtSignal(str)
 
     # Initializer:
     def __init__(self):
@@ -80,7 +77,7 @@ class AMPLEngine:
 
         except AMPLException as ampl_exception:
             self.__errors.error(str(ampl_exception))
-            raise
+            print(f"{ampl_exception}")
 
     @property
     def result(self):

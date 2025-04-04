@@ -8,7 +8,7 @@ from custom.separator import Separator
 from widgets import Canvas
 from widgets.optimize.ampl import AMPLEngine
 from widgets.optimize.objective import ObjectiveSetup
-from widgets.schema.graph import Stream, Connector
+from widgets.schema.graph import Stream, Connector, Handle
 
 
 class Optimizer(QWidget):
@@ -16,14 +16,10 @@ class Optimizer(QWidget):
     # Signals:
     sig_modify_connectors = pyqtSignal(dict)
 
-    # Global sets:
-    pars_set = set()
-    vars_set = set()
-    eqns_set = set()
-
     # Global dictionaries:
     var_dict = dict()       # Dictionary to retrieve the handle's reference using symbol
     par_dict = dict()       # Dictionary to retrieve the parameter's reference using symbol
+    entity_map = dict()
 
     # Initializer:
     def __init__(self, canvas: Canvas, parent: QWidget = None):
@@ -109,110 +105,129 @@ class Optimizer(QWidget):
         # Clear editor:
         self._editor.clear()
 
-        # Clear sets and dictionaries:
-        self.vars_set.clear()
-        self.pars_set.clear()
-        self.eqns_set.clear()
-        self.var_dict.clear()
+        var_set = set()
+        par_set = set()
+
         self.par_dict.clear()
+        self.var_dict.clear()
+        self.entity_map.clear()
 
         ecount = 0
         ocount = 0
-        prefix = "# AMPL Optimization\n"
+        scr_prfx = "# AMPL Optimization\n"
+        eqn_prfx = f"subject to equation_"
 
         # Sections:
-        _var_decl = "# Variable(s):\n"
-        _eqn_decl = "# Equation(s):\n"
-        _obj_decl = "# Objective(s):\n"
-        _par_decl = "# Parameter(s):\n"
+        var_section = "# Variable(s):\n"
+        eqn_section = "# Equation(s):\n"
+        obj_section = "# Objective(s):\n"
+        par_section = "# Parameter(s):\n"
 
         for node in self.__canvas.nodes:
+            var_list = node.variables()
+            par_list = node[Stream.PAR]
+            n_prefix = node.nuid().replace('#', '', 1)     # Remove '#' from the node-id
 
-            _vars = node[Stream.INP] + node[Stream.OUT]
-            _pars = node[Stream.PAR]
-            _prfx = node.nuid().replace('#', '', 1)     # Remove the '#' from the node-id
+            for variable in var_list:
 
-            for var in _vars:
+                # Convenience variable:
+                symbol = variable.connector.symbol
+                self.entity_map[symbol] = variable
 
-                # If the handle is not connected, skip:
-                if not var.connected:
+                # If the variable is already declared, skip processing:
+                if variable.connector.symbol in var_set | par_set:
                     continue
 
-                # If the variable has a fixed value, declare it as a parameter instead:
-                if var.value is not None:
-                    _par_decl = _par_decl + f"param {var.connector.symbol}\t\t= {str(var.value)};\n"
-                    self.pars_set.add(var.connector.symbol)
+                # Declare variable (as a parameter if its value is defined):
+                if isinstance(variable.value, float):
+                    par_set.add(symbol)
+                    par_section += f"param {symbol} = {variable.value};\n"
 
-                # Otherwise, declare the connector's symbol as a variable:
-                elif var.connector.symbol not in self.vars_set:
-                    _var_decl = _var_decl + f"var {var.connector.symbol};\n"
-                    self.vars_set.add(var.connector.symbol)
-
-                # Create a dictionary-map:
-                self.var_dict[var.connector.symbol] = var.connector
-
-            for par in _pars:
-
-                # Conversely, if the parameter's value is undefined, declare it as a variable:
-                if par.value is None:
-                    _var_decl = _var_decl + f"var {_prfx}_{par.symbol};\n"
-
-                # Parameter declaration:
                 else:
-                    _par_decl = _par_decl + f"param {_prfx}_{par.symbol}\t= {par.value};\n"
+                    var_set.add(symbol)
+                    var_section += f"var {symbol};\n"
 
-                # Store in map:
-                self.par_dict[par.symbol] = par
+                    # If bounds are provided, add them as equations:
+                    if isinstance(variable.lower, float):
+                        eqn_section += f"{eqn_prfx}{ecount}: {symbol} - {variable.lower} >= 0.0;\n"
+                        ecount += 1
+
+                    if isinstance(variable.upper, float):
+                        eqn_section += f"{eqn_prfx}{ecount}: {symbol} - {variable.upper} <= 0.0;\n"
+                        ecount += 1
+
+            for parameter in par_list:
+
+                # Convenience variable:
+                symbol = f"{n_prefix}_{parameter.symbol}"
+                self.entity_map[symbol] = parameter
+
+                # If parameter has already been declared, skip processing:
+                if symbol in var_set | par_set:
+                    continue
+
+                # If the parameter doesn't have a value, declare it as a variable
+                if isinstance(parameter.value, float):
+                    par_set.add(symbol)
+                    par_section += f"param {symbol} = {parameter.value};\n"
+
+                else:
+                    var_set.add(symbol)
+                    var_section += f"var {symbol};\n"
+
+                    # If bounds are provided, add them as equations:
+                    if isinstance(parameter.lower, float):
+                        eqn_section += f"{eqn_prfx}{ecount}: {symbol} - {parameter.lower} >= 0.0;\n"
+                        ecount += 1
+
+                    if isinstance(parameter.upper, float):
+                        eqn_section += f"{eqn_prfx}{ecount}: {symbol} - {parameter.upper} <= 0.0;\n"
+                        ecount += 1
 
             for equation in node.substituted:
-                _eqprefix = f"subject to equation_{ecount}"
-                _eqn_decl = _eqn_decl + f"{_eqprefix}: {equation};\n"
-                ecount = ecount + 1
+                eqn_section += f"{eqn_prfx}{ecount}: {equation};"
+                ecount += 1
 
         dictionary = self._obj.get_objectives()
         objectives = dictionary.keys()
 
         for objective in objectives:
             if bool(objective):
-                _obj_decl += f"{dictionary[objective]} obj_{ocount}: {objective}\n"
+                obj_section += f"{dictionary[objective].lower()} obj_{ocount}: {objective};\n"
                 ocount    += 1
 
-        script = f"{prefix}\n{_par_decl}\n{_var_decl}\n{_obj_decl}\n{_eqn_decl}"
+        script = f"{scr_prfx}\n{par_section}\n{var_section}\n{obj_section}\n{eqn_section}"
         self._editor.setText(script)
 
     def run(self):
 
-        try:
-            engine = AMPLEngine()
-            result = engine.optimize(self._editor.toPlainText())
+        engine = AMPLEngine()
+        result = engine.optimize(self._editor.toPlainText())
+
+        self._result.setText(f"AMPL Result: [{engine.result}]")
+        self._result.append ("-" * 36)
+
+        if engine.result == "solved":
+
             output = str()
+            for key in result["var_dict"].keys():
+                output += f"{key}\t= {result["var_dict"][key]}\n"
+                # if isinstance(self.entity_map[key], Handle):
+                #     self.entity_map[key].connector.thickness = int(result["var_dict"][key])
 
-            if engine.result == "solved" and result:
+            for key in result["par_dict"].keys():
+                output += f"{key}\t= {result["par_dict"][key]}\n"
+                # if isinstance(self.entity_map[key], Handle):
+                #     self.entity_map[key].connector.thickness = int(result["var_dict"][key])
 
-                output += f"# AMPL Result [Solved]\n"
-                output += f"# Data:\n\n"
+            for key in result["obj_dict"].keys():
+                output += f"{key}\t= {result["obj_dict"][key]}\n"
 
-                for key in result["var_dict"].keys():
-                    output += f"{key}\t= {result["var_dict"][key]}\n"
+            self._result.append(output)
+            self.sig_modify_connectors.emit(result)
 
-                for key in result["par_dict"].keys():
-                    output += f"{key}\t= {result["par_dict"][key]}\n"
-
-                for key in result["obj_dict"].keys():
-                    output += f"{key}\t= {result["obj_dict"][key]}\n"
-
-                for key in result["var_dict"].keys():
-                    thickness = int(result["var_dict"][key])
-                    if isinstance(self.var_dict[key], Connector):
-                        self.var_dict[key].thickness = thickness
-
-                self._result.setText(output)
-                self.sig_modify_connectors.emit(result)
-
-        except Exception as exception:
-
-            # Log to application:
-            self._result.setText(f"Exception: {str(exception)}")
+        else:
+            self._result.append(engine.error)
 
         self._tabwid.setCurrentWidget(self._result)
 
