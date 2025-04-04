@@ -166,6 +166,9 @@ class Optimizer(QWidget):
             output = str()
 
             if result:
+                output += f"# AMPL Result [Solved]\n"
+                output += f"# Data:\n\n"
+
                 for key in result["var_dict"].keys():
                     output += f"{key}\t= {result["var_dict"][key]}\n"
 
