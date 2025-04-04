@@ -1,38 +1,6 @@
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import *
-
-from custom.separator import Separator
-
-
-class RadioButtonGroup(QFrame):
-
-    def __init__(self, labels: list[str], parent: QWidget | None):
-
-        # Initialize base-class:
-        super().__init__(parent)
-
-        # Main widgets:
-        self.__buttons = list()
-        self.__group   = QButtonGroup(None)
-
-        for label in labels:
-            self.__button = QRadioButton(label)
-            self.__button.setStyleSheet("QRadioButton {background: transparent;}")
-            self.__buttons.append(self.__button)
-            self.__group.addButton(self.__button)
-
-        self.__buttons[0].setChecked(True)
-
-        # Layout:
-        __layout = QHBoxLayout(self)
-        __layout.setContentsMargins(0, 0, 0, 0)
-        __layout.setSpacing(8)
-
-        for button in self.__buttons:
-            __layout.addWidget(button)
-
-        __layout.setStretch(2, 10)
+from custom import RadioButtonGroup
 
 class CostEditor(QLineEdit):
 
@@ -54,7 +22,7 @@ class CostEditor(QLineEdit):
 class ObjectiveSetup(QFrame):
 
     # Initializer:
-    def __init__(self, parent: QFrame | None):
+    def __init__(self, parent: QWidget | None):
 
         # Initialize base-class:
         super().__init__(parent)
@@ -93,7 +61,7 @@ class ObjectiveSetup(QFrame):
         self.__choice_3 = RadioButtonGroup(["Maximize", "Minimize"], self)
 
         # Separator:
-        __vline_left = QFrame()
+        __vline_left = QFrame(self)
         __vline_left.setFixedWidth(1)
         __vline_left.setFrameShape(QFrame.Shape.VLine)
         __vline_left.setStyleSheet("background: #efefef;")
@@ -124,75 +92,13 @@ class ObjectiveSetup(QFrame):
         __layout.setColumnStretch(4, 10)
         __layout.addWidget(__vline_left, 0, 1, 5, 1)
 
-class TimeHorizon(QFrame):
+    # Get objectives:
+    def get_objectives(self):
 
-    def __init__(self, parent: QWidget | None):
+        objectives = {
+            self.__editor_1.text() : self.__choice_1.selected(),
+            self.__editor_2.text() : self.__choice_2.selected(),
+            self.__editor_3.text() : self.__choice_3.selected()
+        }
 
-        # Initialize base-class:
-        super().__init__(parent)
-
-        # Main-widgets:
-        self.__label_1 = QLabel("Horizon: ")
-        self.__label_2 = QLabel("Cadence: ")
-
-        style = "QLineEdit {background: white; border: 1px solid black; border-radius: 4px;}"
-        self.__input_1 = QLineEdit()
-        self.__input_2 = QLineEdit()
-        self.__input_1.setStyleSheet(style)
-        self.__input_2.setStyleSheet(style)
-
-        self.__input_1.setFixedWidth(30)
-        self.__input_2.setFixedWidth(30)
-
-        # Layout:
-        __layout = QGridLayout(self)
-        __layout.setContentsMargins(0, 0, 0, 0)
-        __layout.setSpacing(2)
-
-        __layout.addWidget(self.__label_1, 0, 0)
-        __layout.addWidget(self.__label_2, 1, 0)
-        __layout.addWidget(self.__input_1, 0, 1, Qt.AlignmentFlag.AlignLeft)
-        __layout.addWidget(self.__input_2, 1, 1, Qt.AlignmentFlag.AlignLeft)
-
-class Container(QFrame):
-
-    def __init__(self, parent: QWidget | None):
-
-        # Initialize base-class:
-        super().__init__(parent)
-
-        # Adjust style:
-        self.setContentsMargins(2, 2, 2, 2)
-
-        # Main-widgets:
-        self.__section   = QLabel("OPTIMIZATION SETTINGS")
-        self.__horizon   = TimeHorizon(self)
-        self.__objective = ObjectiveSetup(self)
-
-        self.__hline_top = QFrame(None)
-        self.__hline_mid = QFrame(None)
-
-        self.__hline_top.setFrameShape(QFrame.Shape.HLine)
-        self.__hline_mid.setFrameShape(QFrame.Shape.HLine)
-
-        self.__hline_top.setFixedHeight(1)
-        self.__hline_mid.setFixedHeight(1)
-
-        self.__hline_top.setStyleSheet("QFrame {background: lightgray;}")
-        self.__hline_mid.setStyleSheet("QFrame {background: lightgray;}")
-
-        # Buttons:
-        self.__run_button = QPushButton("Run Optimization")
-        self.__gen_button = QPushButton("Generate script")
-        self.__run_button.setEnabled(False)
-
-        # Layout:
-        __layout = QGridLayout(self)
-        __layout.setContentsMargins(0, 0, 0, 0)
-        __layout.setSpacing(2)
-
-        __layout.addWidget(self.__section  , 0, 0)
-        __layout.addWidget(self.__hline_top, 1, 0)
-        __layout.addWidget(self.__objective, 2, 0)
-        __layout.addWidget(self.__hline_mid, 3, 0)
-        __layout.setRowStretch(4, 5)
+        return objectives

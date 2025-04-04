@@ -1,17 +1,20 @@
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QSplitter, QGridLayout, QToolButton, QTextEdit, QLabel, QPushButton, QFrame, \
     QStackedWidget, QTabBar, QTabWidget
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from amplpy import AMPLException
 
 from custom.separator import Separator
 from widgets import Canvas
 from widgets.optimize.ampl import AMPLEngine
-from widgets.optimize.objective import Container, TimeHorizon, ObjectiveSetup
-from widgets.schema.graph import Stream
+from widgets.optimize.objective import ObjectiveSetup
+from widgets.schema.graph import Stream, Connector
 
 
 class Optimizer(QWidget):
+
+    # Signals:
+    sig_modify_connectors = pyqtSignal(dict)
 
     # Global sets:
     pars_set = set()
@@ -50,6 +53,7 @@ class Optimizer(QWidget):
         self._editor = QTextEdit(self)
         self._result = QTextEdit(self)
         self._setup  = QWidget(self)
+        self._obj    = ObjectiveSetup(None)
 
         self._tabwid.setTabPosition(QTabWidget.TabPosition.North)
         self._editor.setStyleSheet(style)
@@ -87,7 +91,7 @@ class Optimizer(QWidget):
         self.__setup_layout.setSpacing(12)
 
         self.__setup_layout.addWidget(QLabel("OPTIMIZATION SETUP"), 0, 0, 1, 4)
-        self.__setup_layout.addWidget(ObjectiveSetup(None), 2, 0, 1, 4)
+        self.__setup_layout.addWidget(self._obj, 2, 0, 1, 4)
         self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 1, 0, 1, 4)
         self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 3, 0, 1, 4)
         self.__setup_layout.addWidget(self._wstack, 4, 0, 1, 4)
@@ -102,14 +106,24 @@ class Optimizer(QWidget):
     # Generates an AMPL script:
     def generate(self):
 
-        # Clear the editor:
+        # Clear editor:
         self._editor.clear()
 
+        # Clear sets and dictionaries:
+        self.vars_set.clear()
+        self.pars_set.clear()
+        self.eqns_set.clear()
+        self.var_dict.clear()
+        self.par_dict.clear()
+
         ecount = 0
+        ocount = 0
         prefix = "# AMPL Optimization\n"
 
+        # Sections:
         _var_decl = "# Variable(s):\n"
         _eqn_decl = "# Equation(s):\n"
+        _obj_decl = "# Objective(s):\n"
         _par_decl = "# Parameter(s):\n"
 
         for node in self.__canvas.nodes:
@@ -127,7 +141,7 @@ class Optimizer(QWidget):
                 # If the variable has a fixed value, declare it as a parameter instead:
                 if var.value is not None:
                     _par_decl = _par_decl + f"param {var.connector.symbol}\t\t= {str(var.value)};\n"
-                    self.pars_set.add(var.symbol)
+                    self.pars_set.add(var.connector.symbol)
 
                 # Otherwise, declare the connector's symbol as a variable:
                 elif var.connector.symbol not in self.vars_set:
@@ -135,7 +149,7 @@ class Optimizer(QWidget):
                     self.vars_set.add(var.connector.symbol)
 
                 # Create a dictionary-map:
-                self.var_dict[var.connector.symbol] = var
+                self.var_dict[var.connector.symbol] = var.connector
 
             for par in _pars:
 
@@ -155,7 +169,15 @@ class Optimizer(QWidget):
                 _eqn_decl = _eqn_decl + f"{_eqprefix}: {equation};\n"
                 ecount = ecount + 1
 
-        script = f"{prefix}\n{_par_decl}\n{_var_decl}\n{_eqn_decl}"
+        dictionary = self._obj.get_objectives()
+        objectives = dictionary.keys()
+
+        for objective in objectives:
+            if bool(objective):
+                _obj_decl += f"{dictionary[objective]} obj_{ocount}: {objective}\n"
+                ocount    += 1
+
+        script = f"{prefix}\n{_par_decl}\n{_var_decl}\n{_obj_decl}\n{_eqn_decl}"
         self._editor.setText(script)
 
     def run(self):
@@ -165,7 +187,8 @@ class Optimizer(QWidget):
             result = engine.optimize(self._editor.toPlainText())
             output = str()
 
-            if result:
+            if engine.result == "solved" and result:
+
                 output += f"# AMPL Result [Solved]\n"
                 output += f"# Data:\n\n"
 
@@ -178,7 +201,13 @@ class Optimizer(QWidget):
                 for key in result["obj_dict"].keys():
                     output += f"{key}\t= {result["obj_dict"][key]}\n"
 
+                for key in result["var_dict"].keys():
+                    thickness = int(result["var_dict"][key])
+                    if isinstance(self.var_dict[key], Connector):
+                        self.var_dict[key].thickness = thickness
+
                 self._result.setText(output)
+                self.sig_modify_connectors.emit(result)
 
         except Exception as exception:
 

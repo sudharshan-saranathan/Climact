@@ -1,7 +1,5 @@
 from widgets.schema.graph.handle import *
-
 from widgets import schema
-
 
 class Conic(Enum):
     LINE   = 1
@@ -15,26 +13,28 @@ class Wisp(QGraphicsObject):
         super().__init__(parent)
         self._path  = path
         self._color = color
+        self._width = 2.0
         self._progress = 0
+        self._rect  = QRectF(-self._width * 20, -self._width * 20, self._width * 40, self._width * 40)
 
         self.setZValue(-1)
 
     def boundingRect(self):
-        return QRectF(-40, -40, 80, 80)
+        return self._rect
 
     def paint(self, painter, option, widget=None):
 
-        gradient = QLinearGradient(-40, 0, 40, 0)
+        gradient = QLinearGradient(-self._width * 20, 0, self._width * 20, 0)
         gradient.setColorAt(0.0  , QColor(self._color))
         gradient.setColorAt(1.0  , QColor(self._color))
         gradient.setColorAt(0.5, QColor(0xffffff))
 
         connector = self.parentItem()
-        if connector.type() == QGraphicsItem.UserType + 4:
+        if isinstance(connector, Connector):
             # Convert 1D path into an enclosed filled stroke region
             stroker = QPainterPathStroker()
-            stroker.setWidth(2.0)  # Make it as thick as the connector
-            stroke  = stroker.createStroke(connector.path())  # Get enclosed region
+            stroker.setWidth(self._width)                       # Make it as thick as the connector
+            stroke  = stroker.createStroke(connector.path())    # Get enclosed region
 
             # Map to local coordinates:
             clip_path = self.mapFromScene(stroke)
@@ -54,6 +54,14 @@ class Wisp(QGraphicsObject):
         self._progress = progress
         pos = self._path.pointAtPercent(progress)
         self.setPos(pos)
+
+    @property
+    def thickness(self):
+        return self._width
+
+    @thickness.setter
+    def thickness(self, __value):
+        self._width = __value if isinstance(__value, int) else self.thickness
 
     progress = pyqtProperty(float, get_progress, set_progress)
 
@@ -195,6 +203,16 @@ class Connector(QGraphicsObject):
         if isinstance(value, QColor):
             self._styl.pen_default.setColor(value)
             self._wisp.set_color(value)
+
+    @property
+    def thickness(self):
+        return self._styl.pen_default.width()
+
+    @thickness.setter
+    def thickness(self, __value: int):
+        thick = __value if isinstance(__value, int) else self.thickness
+        self._styl.pen_default.setWidth(thick)
+        self._wisp.thickness = __value
 
     # Clear current path:
     def clear(self):

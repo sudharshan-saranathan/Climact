@@ -83,6 +83,10 @@ class AMPLEngine:
             raise
 
     @property
+    def result(self):
+        return self.__ampl.solve_result
+
+    @property
     def output(self):
         return self.__output.get_history()
 

@@ -174,6 +174,8 @@ class Resource(Category):
     @result.setter
     def result(self, __value: float):
         self.__property["Result"] = __value if isinstance(__value, float) else self.result
+        if isinstance(self, Handle) and self.connected:
+            self.connector.thickness = __value
 
     @property
     def properties(self):
