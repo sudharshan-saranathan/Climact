@@ -185,7 +185,7 @@ class Optimizer(QWidget):
                         ecount += 1
 
             for equation in node.substituted:
-                eqn_section += f"{eqn_prfx}{ecount}: {equation};"
+                eqn_section += f"{eqn_prfx}{ecount}: {equation};\n"
                 ecount += 1
 
         dictionary = self._obj.get_objectives()
@@ -212,13 +212,9 @@ class Optimizer(QWidget):
             output = str()
             for key in result["var_dict"].keys():
                 output += f"{key}\t= {result["var_dict"][key]}\n"
-                # if isinstance(self.entity_map[key], Handle):
-                #     self.entity_map[key].connector.thickness = int(result["var_dict"][key])
 
             for key in result["par_dict"].keys():
                 output += f"{key}\t= {result["par_dict"][key]}\n"
-                # if isinstance(self.entity_map[key], Handle):
-                #     self.entity_map[key].connector.thickness = int(result["var_dict"][key])
 
             for key in result["obj_dict"].keys():
                 output += f"{key}\t= {result["obj_dict"][key]}\n"

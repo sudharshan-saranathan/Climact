@@ -7,3 +7,5 @@
 
 # Ignore schematic save directories:
 /library/save/
+/library/systems/
+/library/components/

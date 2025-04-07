@@ -78,7 +78,7 @@ class Connector(QGraphicsObject):
             self.type = QGraphicsItem.UserType + 4
 
     # Metadata:
-    class Meta:
+    class Reusable:
         reusable = list()
 
     # Style:
@@ -124,7 +124,7 @@ class Connector(QGraphicsObject):
         # Attrib:
         self._attr = self.Attr()
         self._styl = self.Style()
-        self._meta = self.Meta()
+        self._meta = self.Reusable()
         self._text = None
 
         # Behaviour:

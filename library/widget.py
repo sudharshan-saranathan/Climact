@@ -7,25 +7,6 @@ from PyQt6.QtGui        import *
 
 import os
 
-class FileSystem(QTreeView):
-
-    # Initializer:
-    def __init__(self, parent: QWidget | None):
-
-        # Initialize base-class:
-        super().__init__(parent)
-
-        # Initialize model:
-        path = os.getcwd() + "/library/systems"
-        self.__model = QFileSystemModel(self)
-        self.__model.setRootPath(path)
-
-        print(os.getcwd())
-
-        # Set model:
-        self.setModel(self.__model)
-        self.setRootIndex(self.__model.index(path))
-
 class Library(QScrollArea):
 
     # Signals:
@@ -146,9 +127,7 @@ class ComponentLibrary(QFrame):
         self.__hline_mid.setStyleSheet("background: lightgray;")
 
         self.__com_library = Library("COMPONENTS", self)
-        self.__sys_library = FileSystem(self)
-        # self.__sys_library = Library("SYSTEMS"   , self)
-
+        self.__sys_library = Library("SYSTEMS"   , self)
         self.index_library()
 
         # Layout:

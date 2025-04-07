@@ -6,7 +6,7 @@
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QIcon, QActionGroup, QKeySequence
-from PyQt6.QtCore    import QSize, QUrl
+from PyQt6.QtCore    import QSize
 from PyQt6.QtWidgets import QMainWindow, QWidget, QToolBar, QStackedWidget
 
 from widgets.optimize   import Optimizer
