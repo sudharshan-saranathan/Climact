@@ -205,7 +205,9 @@ class Node(QGraphicsObject):
         for equation in equations:
             tokens = equation.split(' ')
             update = [replacements.get(token, token) for token in tokens]
-            transformed.append(str(" ").join(update))
+
+            if not None in update:
+                transformed.append(str(" ").join(update))
 
         return transformed
 

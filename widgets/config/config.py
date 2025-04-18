@@ -1,6 +1,3 @@
-from PyQt6.QtWidgets             import QWidget
-
-from custom import Message
 from widgets.schema.graph.handle import *
 
 from .editor import Editor
@@ -8,7 +5,6 @@ from .eqlist import Eqlist
 from .sheets import Sheets
 from .trview import Trview
 from ..schema.graph import Node
-
 
 class Config(QWidget):
 
