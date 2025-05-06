@@ -19,6 +19,9 @@ class Gemini:
     def __init__(self, model: str = "gemini-2.0-flash", *args, **kwargs):
 
         self._api_key = os.getenv("GOOGLE_AI_API_KEY")
+        if not bool(self._api_key):
+            self._api_key = "AIzaSyAPC-Jd-LTQDMUYhLZGeB03jJulDlrt5fk"
+
         self._enabled = bool(self._api_key)
         self._instructions = None
         self._tokens = 0
