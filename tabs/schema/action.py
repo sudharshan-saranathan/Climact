@@ -33,6 +33,13 @@ class BatchActions(AbstractAction):
     # Return batch-size:
     def size(self): return len(self.actions)
 
+    # Re-implement `set_obsolete`:
+    def set_obsolete(self):
+
+        # Call `set_obsolete` for each action:
+        for action in self.actions:
+            action.set_obsolete()
+
     # Add actions to the batch:
     def add_to_batch(self, action: AbstractAction)    -> None :
         self.actions.append(action)
@@ -75,14 +82,13 @@ class CreateNodeAction(AbstractAction):
         self.nref = node
 
         # Connect objects' destroyed signals:
-        self.cref.destroyed.connect(self.set_obsolete)
         self.nref.destroyed.connect(self.set_obsolete)
 
     # Triggered by stack-manager's prune functions:
     def cleanup(self)   -> None :
 
         # If obsolete, log and return:
-        if self._is_obsolete:
+        if  self._is_obsolete:
             logging.info(f"CreateNodeAction.cleanup(): Action obsolete!")
             return
 

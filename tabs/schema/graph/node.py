@@ -290,7 +290,7 @@ class Node(QGraphicsObject):
 
         indices = set()
         for variable in _varlist:
-            if variable.isEnabled():
+            if  _varlist[variable]:
                 indices.add(int(variable.symbol.split(_prefix)[1]))
 
         if not indices:

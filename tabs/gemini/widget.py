@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import (QFrame,
 
 from tabs.gemini.gemini import Gemini
 from tabs.gemini.thread import Thread
-from .agent             import *
 
 class Gui(QFrame):
 

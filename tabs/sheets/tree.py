@@ -43,7 +43,7 @@ class Tree(QTreeWidget):
         # Top-level items:
         logging.info("Reloading graph-data")
         for node in self._canvas.node_items:
-            if node.isEnabled():
+            if  self._canvas.node_items[node]:
                 self.add_root_item(node)
 
     # Add top-level root:

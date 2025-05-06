@@ -35,7 +35,7 @@ class JsonLib:
     @staticmethod
     def serialize(item):
 
-        if isinstance(item, graph.Node) and item.isEnabled():
+        if isinstance(item, graph.Node):
 
             variables   = list()
             equations   = list()
@@ -97,7 +97,7 @@ class JsonLib:
 
             return node_object
 
-        if isinstance(item, graph.Stream) and item.isEnabled():
+        if isinstance(item, graph.Stream):
 
             stream_obj = {
                 "flow-type"       : str(item.stream),
@@ -111,7 +111,7 @@ class JsonLib:
 
             return stream_obj
 
-        if isinstance(item, graph.Connector) and item.isEnabled():
+        if isinstance(item, graph.Connector):
 
             connection_obj = {
                 "connection-origin": {
@@ -145,15 +145,15 @@ class JsonLib:
         for item in items:
 
             # Serialize nodes:
-            if item.isEnabled() and isinstance(item, Node):
+            if isinstance(item, Node) and canvas.node_items[item]:
                 node_array.append(JsonLib.serialize(item))
 
             # Serialize streams:
-            if item.isEnabled() and isinstance(item, Stream):
+            if isinstance(item, Stream) and canvas.flow_items[item]:
                 flow_array.append(JsonLib.serialize(item))
 
             # Serialize links:
-            elif item.isEnabled() and isinstance(item, Connector):
+            elif isinstance(item, Connector) and canvas.edge_items[item]:
                 link_array.append(JsonLib.serialize(item))
 
         schematic["NODES"] = node_array

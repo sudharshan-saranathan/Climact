@@ -2,7 +2,6 @@ from re import compile, DOTALL
 
 from PyQt6.QtCore import QThread, pyqtSignal
 from tabs.gemini  import gemini
-from .agent       import *
 
 class Thread(QThread):
 

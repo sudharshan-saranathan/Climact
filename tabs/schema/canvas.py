@@ -609,7 +609,7 @@ class Canvas(QGraphicsScene):
         indices = set()
 
         for connector in self.edge_items:
-            if connector.isEnabled():
+            if  self.edge_items[connector]:
                 indices.add(int(connector.symbol.split('X')[1]))
 
         if not indices:
