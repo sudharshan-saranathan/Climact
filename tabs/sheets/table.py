@@ -78,16 +78,16 @@ class Table(QTableWidget):
         type_item = QTableWidgetItem(handle.cname)
         type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        value_item = QTableWidgetItem(handle.value)
+        value_item = QTableWidgetItem(str(handle.value))
         value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        sigma_item = QTableWidgetItem(handle.sigma)
+        sigma_item = QTableWidgetItem(str(handle.sigma))
         sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        lower_item = QTableWidgetItem(handle.minimum)
+        lower_item = QTableWidgetItem(str(handle.minimum))
         lower_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        upper_item = QTableWidgetItem(handle.maximum)
+        upper_item = QTableWidgetItem(str(handle.maximum))
         upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Install cells:
@@ -120,16 +120,16 @@ class Table(QTableWidget):
         type_item = QTableWidgetItem(resource.cname)
         type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        value_item = QTableWidgetItem(resource.value)
+        value_item = QTableWidgetItem(str(resource.value))
         value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        sigma_item = QTableWidgetItem(resource.sigma)
+        sigma_item = QTableWidgetItem(str(resource.sigma))
         sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        lower_item = QTableWidgetItem(resource.minimum)
+        lower_item = QTableWidgetItem(str(resource.minimum))
         lower_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        upper_item = QTableWidgetItem(resource.maximum)
+        upper_item = QTableWidgetItem(str(resource.maximum))
         upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.setItem(row, 0, symb_item)

@@ -99,8 +99,8 @@ class Connector(QGraphicsObject):
             return
 
         # Store weak-references to the handles:
-        self.origin = kwargs["origin"]
-        self.target = kwargs["target"]
+        self.origin = kwargs["origin"] if kwargs["origin"].stream == StreamType.OUT else kwargs["target"]
+        self.target = kwargs["target"] if kwargs["target"].stream == StreamType.INP else kwargs["origin"]
 
         # Setup references:
         self.origin.lock(self.target, self)

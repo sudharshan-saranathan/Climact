@@ -57,7 +57,7 @@ class Viewer(QGraphicsView):
         _layout.setSpacing(0)
 
         # Gemini AI assistant:
-        self._gemini = widget.Gui(self)
+        self._gemini = widget.Gui(self.canvas, self)
         self._gemini.setEnabled(False)
         self._gemini.hide()
         self._gemini.sig_json_available.connect(self.process_json)

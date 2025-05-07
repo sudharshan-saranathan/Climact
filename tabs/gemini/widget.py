@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import (QFrame,
 
 from tabs.gemini.gemini import Gemini
 from tabs.gemini.thread import Thread
+from tabs.schema.fileio import JsonLib
+
 
 class Gui(QFrame):
 
@@ -20,12 +22,13 @@ class Gui(QFrame):
     threads = list()
 
     # Constructor:
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, canvas, parent: QWidget | None = None):
 
         # Initialize base-class:
         super().__init__(parent)
 
         # Adjust style:
+        self._canvas = canvas
         self.setStyleSheet("QFrame {"
                            "border          : 2px solid black;"
                            "background      : white;"
@@ -83,10 +86,14 @@ class Gui(QFrame):
 
     def return_pressed(self):
 
-        if self._prompt.toPlainText() == "":
+        # Null-check:
+        if not bool(self._prompt.toPlainText()):
             return
 
-        thread = Thread(self.gemini, self._prompt.toPlainText())
+        # Create a new thread:
+        thread = Thread(self.gemini,
+                        self._prompt.toPlainText(),
+                        JsonLib.encode_json(self._canvas))
 
         # Notify user:
         self._window.setPlainText("The assistant is thinking...")

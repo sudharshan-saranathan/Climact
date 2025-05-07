@@ -8,10 +8,11 @@ class Thread(QThread):
     response_ready = pyqtSignal(str, str)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, _gemini: gemini.Gemini, _msg: str):
+    def __init__(self, _gemini: gemini.Gemini, _msg: str, _json: str | None = None):
         super().__init__()
 
         self.gemini  = _gemini
+        self.schema  = _json
         self.message = _msg
 
     def run(self):
@@ -29,11 +30,8 @@ class Thread(QThread):
         """
 
         try:
-            response =  self.gemini.get_response(self.message)
+            response =  self.gemini.get_response(self.message, self.schema)
             match    =  compile(r"```json\s*(.*?)\s*```", DOTALL).search(response)
-
-            with open('dump.json', 'w+') as f:
-                f.write(match.group(1))
 
             if match:
                 json_code = match.group(1)
