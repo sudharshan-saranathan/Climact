@@ -1,11 +1,20 @@
-from PyQt6.QtCore import pyqtSignal, QRect, Qt, QPointF, QRectF, pyqtSlot
-from PyQt6.QtGui import QPainterPath, QPainter, QPen, QBrush, QPainterPathStroker, QColor, QFont
-from PyQt6.QtWidgets    import QGraphicsObject, QGraphicsItem
+from PyQt6.QtGui import (QPen,
+                         QFont,
+                         QColor,
+                         QBrush,
+                         QPainterPath)
 
-from core.category import Category
+from PyQt6.QtCore import (Qt,
+                          QRect,
+                          QRectF,
+                          QPointF,
+                          pyqtSlot,
+                          pyqtSignal)
+
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject
+
 from core.label import Label
 from core.util import random_id
-from tabs import schema
 from enum import Enum
 
 from tabs.schema.graph.anchor import StreamType

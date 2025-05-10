@@ -450,7 +450,6 @@ class Canvas(QGraphicsScene):
         equation += " = 0.0;"
         return items, equation if generate_eqn else None
 
-
     def import_json(self):
         """
         Opens a file dialog to import a schematic from a JSON file.
@@ -466,18 +465,24 @@ class Canvas(QGraphicsScene):
         # Generate schematic from JSON:
         JsonLib.decode_json(code, self, group_actions=True)
 
-    def export_json(self):
+    def export_json(self, _name: str | None = None):
         """
         Opens a file dialog to export the current schematic to a JSON file.
         """
 
+        # Encode the schematic to JSON format:
         root = JsonLib.encode_json(self)
-        path = QFileDialog.getSaveFileName(None, "Save File", "", "JSON files (*.json)")
-        if not bool(path[0]):
-            return
 
-        file = Path(path[0])
-        file.write_text(root)
+        # If `_name` wasn't provided, get from user:
+        if not isinstance(_name, str):
+            _name, _code = QFileDialog.getSaveFileName(None, "Save File", "", "JSON (*.json)")
+            if not _code:   return
+
+        # Define directory prefix:
+        _dir_prefix = "library/save/"
+
+        # Write to disk:
+        Path(_name).write_text(root)
 
     def select_items(self, item_set: set):
         """
@@ -549,6 +554,15 @@ class Canvas(QGraphicsScene):
         self._transient.connector.clear()
         self.update()
 
+    # Returns node corresponding to `uid`:
+    def find_node_by_uid(self, uid: str):
+        for item in self.items():
+            if isinstance(item, Node) and item.uid == uid:
+                return item
+
+        return None
+
+
     # CANVAS (PyQt6 Slots) ---------------------------------------------------------------------------------------------
 
     @pyqtSlot()
@@ -561,25 +575,6 @@ class Canvas(QGraphicsScene):
         item = self.sender()                    # Get signal-emitter
         if isinstance(item, (Node, Stream)):    # Type-check
             self.delete_items({item})           # Delete node
-
-    # Returns node corresponding to `uid`:
-    def find_node_by_uid(self, uid: str):
-        for item in self.items():
-            if isinstance(item, Node) and item.uid == uid:
-                return item
-
-        return None
-
-    # CANVAS (Properties) ----------------------------------------------------------------------------------------------
-    # Properties:
-
-    # Read-only:
-    @property
-    def menu_position(self):
-        """
-        Returns the last-known context menu position
-        """
-        return self._cpos
 
     # Read-only:
     @property

@@ -2,7 +2,6 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import QDialog, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QApplication, QFrame
 
-
 # Splash Screen
 class SplashScreen(QDialog):
 
@@ -14,7 +13,7 @@ class SplashScreen(QDialog):
 
         # Customize attribute(s):
         self.setFixedSize(400, 300)
-        self.setStyleSheet("QDialog {background: lightgray;}")
+        self.setStyleSheet("QDialog {background: #efefef;}")
 
         logo, pixmap = QLabel(), QPixmap("rss/icons/logo.png").scaledToWidth(96, Qt.TransformationMode.SmoothTransformation)
         logo.setPixmap(pixmap)
@@ -37,10 +36,6 @@ class SplashScreen(QDialog):
         new_project = QPushButton("Blank Project")
         exs_project = QPushButton("Open Existing")
         recent_list = QPushButton("Recent Projects")
-
-        # new_project.setStyleSheet("QPushButton {background: gray; color: white; border-radius: 15px;}")
-        # exs_project.setStyleSheet("QPushButton {background: #efefef; color: black; border-radius: 15px;}")
-        # recent_list.setStyleSheet("QPushButton {background: #efefef; color: black; border-radius: 15px;}")
 
         # Connect buttons to handlers:
         new_project.pressed.connect(lambda: self.done(24))

@@ -1,6 +1,12 @@
-from PyQt6.QtGui import QIcon, QActionGroup, QAction
-from PyQt6.QtCore import Qt, QSize, pyqtSignal
-from PyQt6.QtWidgets    import QWidget, QToolBar
+#-----------------------------------------------------------------------------------------------------------------------
+# Author    : Sudharshan Saranathan
+# GitHub    : https://github.com/sudharshan-saranathan/climact
+# Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
+#-----------------------------------------------------------------------------------------------------------------------
+
+from PyQt6.QtGui     import QIcon, QActionGroup, QAction
+from PyQt6.QtCore    import Qt, QSize, pyqtSignal
+from PyQt6.QtWidgets import QWidget, QToolBar
 
 class NavBar(QToolBar):
 
@@ -10,7 +16,7 @@ class NavBar(QToolBar):
     sig_show_widget = pyqtSignal(str)
 
     # Initializer:
-    def __init__(self, parent: QWidget | None):
+    def __init__(self, parent: QWidget | None, **kwargs):
 
         # Initialize base-class:
         super().__init__(parent)
@@ -47,22 +53,10 @@ class NavBar(QToolBar):
         _action_group.setExclusive(True)
 
         # Connect action-signals:
-        self._init_connections()
-
-    def _init_connections(self):
-
-        self._switch_to_canvas.triggered.connect(self.on_page_selected)
-        self._switch_to_sheets.triggered.connect(self.on_page_selected)
-        self._switch_to_optima.triggered.connect(self.on_page_selected)
-        self._toggle_assistant.triggered.connect(self.on_page_selected)
-
-
-    def on_page_selected(self):
-
-        action = self.sender()
-        if not isinstance(action, QAction):
-            return
-
-        self.sig_show_widget.emit(action.text())
-
+        self._import_schematic.triggered.connect(lambda: self.sig_open_schema.emit())
+        self._export_schematic.triggered.connect(lambda: self.sig_save_schema.emit())
+        self._switch_to_canvas.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_canvas.text()))
+        self._switch_to_sheets.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_sheets.text()))
+        self._switch_to_optima.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))
+        self._toggle_assistant.triggered.connect(lambda: self.sig_show_widget.emit(self._toggle_assistant.text()))
 

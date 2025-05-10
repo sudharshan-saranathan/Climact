@@ -1,26 +1,26 @@
 #-----------------------------------------------------------------------------------------------------------------------
 # Author    : Sudharshan Saranathan
-# Year      : 2025
 # GitHub    : https://github.com/sudharshan-saranathan/climact
-# Module(s) : PyQt6 (version 6.8.1)
+# Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
 #-----------------------------------------------------------------------------------------------------------------------
 
-import os, sys
+import sys
 import logging
+import weakref
 
-from core.util       import *
+from PyQt6.QtGui     import QFont
+from PyQt6.QtCore    import pyqtSlot
 from PyQt6.QtWidgets import QApplication
 
 from gui.splash import SplashScreen
+from util            import *
 from gui.window      import Gui
 
+# Application Subclass:
 class Climact(QApplication):
 
-    # Global list of main-windows:
-    windows = list()
-
     # Initializer
-    def __init__(self, argv: list):
+    def __init__(self, argv: list[weakref]):
 
         # Initialize super-class:
         super().__init__(argv)
@@ -33,37 +33,42 @@ class Climact(QApplication):
             format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d - %(funcName)s()] %(message)s'
         )
 
-        # Initialize stylesheet:
+        # Initialize stylesheet, set font:
         self.qss = "rss/style/macos.qss"
-        self.setStyleSheet(qss(self.qss))
+        self.setStyleSheet(read_qss(self.qss))
         self.setFont(QFont("Nunito", 14))
-        logging.info(f"Application styled with {self.qss}.")
+        logging.info(f"Application styled with {self.qss}")
 
-        # Initialize splash-screen
+        # Open splash-screen and show project options:
+        self._init_gui()
         self._init_splash()
 
-    # Splash-screen initializer:
+    # Open splash-screen:
+    @pyqtSlot(name="Climact._init_splash")
     def _init_splash(self):
 
-        # Instantiate splash-screen:
+        # Initialize splash-screen:
         self.splash = SplashScreen()
         self.result = self.splash.exec()
 
-        if self.result == 24:   self._init_gui(_new = True)
-        if self.result == 25:   self._init_gui(_new = False)
+        # Initialize GUI, open existing project if chosen:
+        if self.result == 24:   self._init_gui(_open = False)
+        if self.result == 25:   self._init_gui(_open = True)
 
-    @pyqtSlot(name="Climact.init_gui")
-    def _init_gui(self, _new = True):
-        _gui = Gui()                                    # Create a new GUI
-        _gui.sig_init_window.connect(self._init_splash) # Connect the GUI's signal to this slot
-        self.windows.append(_gui)                       # Store reference
+    # Open main GUI:
+    @pyqtSlot(name="Climact._init_gui")
+    @pyqtSlot(bool, name="Climact._init_gui")
+    def _init_gui(self, _open: bool = False):
 
-        if not _new:    print(f"Opening schematic")
+        # Instantiate new GUI:
+        self._gui = Gui()
+        self._gui.sig_init_window.connect(self._init_splash)
 
-# Main:
+        # Open project (if flag is set):
+        if _open:   self._gui.open_project()
+
+# Instantiate application and enter event-loop:
 def main():
-
-    # Initialize and execute application:
     _app = Climact(sys.argv)
     _app.exec()
 

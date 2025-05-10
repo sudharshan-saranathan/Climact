@@ -58,9 +58,9 @@ class Viewer(QGraphicsView):
 
         # Gemini AI assistant:
         self._gemini = widget.Gui(self.canvas, self)
+        self._gemini.sig_json_available.connect(self.process_json)
         self._gemini.setEnabled(False)
         self._gemini.hide()
-        self._gemini.sig_json_available.connect(self.process_json)
 
         # Layout overlaid on central graph:
         _layout.addWidget(self._gemini, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)

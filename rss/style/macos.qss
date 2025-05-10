@@ -90,7 +90,7 @@ QMenu::right-arrow {
 QMenu::item {
     padding                 : 4px 4px 4px 4px;
     color                   : black;
-    min-width               : 100px;
+    min-width               : 120px;
     background-color        : white;
 }
 
@@ -170,7 +170,6 @@ QSplitter::handle:horizontal {
 
 QMenuBar {
 	color              		: black;
-	border-bottom           : 1px solid black;
 	background				: #CED3DC;
 }
 
@@ -197,19 +196,42 @@ QGroupBox {
     background              : #64a6bd;
 }
 
-QTabWidget {
-    border      : 1px solid red;
-    background  : lightgray;
+QTabWidget::tab-bar {
+    left            : 1px;
 }
 
+QTabWidget::pane {
+    border-top   : 1px solid black;
+}
+
+QTabBar::tab {
+    border          : 1px solid black;
+    border-radius   : 4px;
+    color           : black;
+    margin          : 2px 1px -4px 1px;
+    padding         : 4px;
+    background      : lightgray;
+}
+
+QTabBar::tab:selected {
+    color           : white;
+    background      : lightslategray;
+}
+
+QTabBar::tab:hover:!selected {
+    color           : white;
+    background      : #acacac;
+}
+
+/*
 QTabBar {
     border-radius   : 4px;
     background      : transparent;
 }
 
 QTabBar::tab:selected {
-    color       : white;
-    background  : lightslategray;
+    color           : white;
+    background      : lightslategray;
 }
 
 QTabBar::tab {
@@ -249,6 +271,7 @@ QTabBar::tab:last {
 QTabBar::tab:!selected:hover {
     background      : lightgray;
 }
+*/
 
 QToolBar {
     border                  : none;
