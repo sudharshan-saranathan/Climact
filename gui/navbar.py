@@ -29,8 +29,8 @@ class NavBar(QToolBar):
         self._import_schematic = self.addAction(QIcon("rss/icons/folder.png"), "Open")
         self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")
         self._switch_to_canvas = self.addAction(QIcon("rss/icons/canvas.png"), "Canvas")
-        self._switch_to_sheets = self.addAction(QIcon("rss/icons/sheets.png"), "Sheets")
-        self._switch_to_script = self.addAction(QIcon("rss/icons/script.png"), "Script")
+        self._switch_to_sheets = self.addAction(QIcon("rss/icons/sheets.png"), "Database")
+        self._switch_to_script = self.addAction(QIcon("rss/icons/script.png"), "GraphPlotter")
         self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optimization")
         self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")
         self._template_library = self.addAction(QIcon("rss/icons/components.png"), "Library")
@@ -53,8 +53,8 @@ class NavBar(QToolBar):
         _action_group.setExclusive(True)
 
         # Connect action-signals:
-        self._import_schematic.triggered.connect(lambda: self.sig_open_schema.emit())
-        self._export_schematic.triggered.connect(lambda: self.sig_save_schema.emit())
+        self._import_schematic.triggered.connect(self.sig_open_schema.emit)
+        self._export_schematic.triggered.connect(self.sig_save_schema.emit)
         self._switch_to_canvas.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_canvas.text()))
         self._switch_to_sheets.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_sheets.text()))
         self._switch_to_optima.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))

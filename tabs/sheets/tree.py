@@ -35,10 +35,11 @@ class Tree(QTreeWidget):
         self.itemSelectionChanged.connect(self.on_item_selected)
 
     # Reload
-    def reload(self):
+    def reload(self, _canvas: Canvas):
 
         # Clear tree and dictionary:
         self.clear()
+        self._canvas = _canvas
 
         # Top-level items:
         logging.info("Reloading graph-data")

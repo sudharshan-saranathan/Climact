@@ -113,6 +113,22 @@ class Tabber(QTabWidget):
         name, code = QInputDialog.getText(self, "Rename Tab", "Enter new name:")
         if code: self.setTabText(_index, f"{name}*")
 
+    # Set/Unset the modified indicator:
+    @pyqtSlot()
+    @pyqtSlot(bool)
+    def set_modified(self, _flag: bool = True):
+
+        # Get current index and label:
+        _index = self.indexOf(self.currentWidget())
+        _label = self.tabText(_index)
+
+        # Display/Remove indicator according to the input flag:
+        if  _flag and not _label.endswith('*'):
+            self.setTabText(_index, f"{_label}*")
+
+        elif not _flag and _label.endswith('*'):
+            self.setTabText(_index, f"{_label.split('*')[0]}")
+
     # Import schematic:
     def import_schema(self):    self.currentWidget().canvas.import_json()
 
@@ -134,7 +150,7 @@ class Tabber(QTabWidget):
 
         else:
             # File-dialog:
-            _file, _code = QFileDialog.getSaveFileName(None, "Select JSON file", "./", "JSON files (*.json)")\
+            _file, _code = QFileDialog.getSaveFileName(None, "Select JSON file", "./", "JSON files (*.json)")
 
             if _code:
                 try:
@@ -145,18 +161,5 @@ class Tabber(QTabWidget):
                 except Exception as exception:
                     logging.exception(f"An exception occurred: {exception}")
 
-    # Set/Unset the modified indicator:
-    @pyqtSlot()
-    @pyqtSlot(bool)
-    def set_modified(self, _flag: bool = True):
-
-        # Get current index and label:
-        _index = self.indexOf(self.currentWidget())
-        _label = self.tabText(_index)
-
-        # Display/Remove indicator according to the input flag:
-        if  _flag and not _label.endswith('*'):
-            self.setTabText(_index, f"{_label}*")
-
-        elif not _flag and _label.endswith('*'):
-            self.setTabText(_index, f"{_label.split('*')[0]}")
+    @property # Get active canvas
+    def active_canvas(self):    return self.currentWidget().canvas

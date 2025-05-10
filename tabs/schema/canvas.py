@@ -465,7 +465,7 @@ class Canvas(QGraphicsScene):
         # Generate schematic from JSON:
         JsonLib.decode_json(code, self, group_actions=True)
 
-    def export_json(self, _name: str | None = None):
+    def export_json(self, _name: str):
         """
         Opens a file dialog to export the current schematic to a JSON file.
         """
@@ -473,16 +473,9 @@ class Canvas(QGraphicsScene):
         # Encode the schematic to JSON format:
         root = JsonLib.encode_json(self)
 
-        # If `_name` wasn't provided, get from user:
-        if not isinstance(_name, str):
-            _name, _code = QFileDialog.getSaveFileName(None, "Save File", "", "JSON (*.json)")
-            if not _code:   return
-
-        # Define directory prefix:
-        _dir_prefix = "library/save/"
-
         # Write to disk:
         Path(_name).write_text(root)
+        logging.info("Schematic saved to disk!")
 
     def select_items(self, item_set: set):
         """

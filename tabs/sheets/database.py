@@ -1,13 +1,13 @@
 import logging
 
-from PyQt6.QtWidgets import QWidget, QTreeWidget, QTableWidget, QListWidget, QGridLayout
+from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from tabs.schema.canvas import Canvas
 from tabs.sheets.eqnview import EqnView
 from tabs.sheets.table import Table
 from tabs.sheets.tree import Tree
 
-class Manager(QWidget):
+class DatabaseManager(QWidget):
 
     # Initializer:
     def __init__(self, canvas: Canvas, parent: QWidget | None):
@@ -17,6 +17,7 @@ class Manager(QWidget):
 
         # Save canvas reference:
         self._canvas = canvas
+        logging.info(f"Storing reference for Canvas {self._canvas.objectName()}")
 
         # Main-widgets:
         self._trview = Tree(self._canvas, self)
@@ -45,6 +46,17 @@ class Manager(QWidget):
         # Connect signals:
         self._sheets.sig_table_modified.connect(self._trview.show_modification_status)
 
+    @property # Get active canvas:
+    def canvas(self):   return self._canvas
+
+    @canvas.setter # Set active canvas:
+    def canvas(self, _canvas):
+        if not isinstance(_canvas, Canvas):
+            raise TypeError("Expected argument of type `Canvas`")
+
+        # Store reference:
+        self._canvas = _canvas
+
     # Clear data:
     def clear(self):
         self._sheets.reset()
@@ -52,11 +64,12 @@ class Manager(QWidget):
 
     # Reload data:
     def reload(self):
-        self._trview.reload()
+        self._trview.canvas = self._canvas
+        self._trview.reload(self._canvas)
         self.clear()
 
     # Tree-item selected:
-    def on_tree_item_selected(self, nuid: str, huid: str):
+    def on_tree_item_selected(self, nuid: str,):
 
         # Find node using UID:
         node = self._canvas.find_node_by_uid(nuid)

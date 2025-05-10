@@ -11,12 +11,14 @@ from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QApplicati
 
 from dataclasses import dataclass
 from core.dialog import Dialog
+from tabs.optima import Optimizer
+from tabs.sheets.database import DatabaseManager
 
 from .tabber import Tabber
 from .navbar import NavBar
 
 
-# from tabs.sheets.manager import Manager
+# from tabs.sheets.manager import DatabaseManager
 
 class Gui(QMainWindow):
 
@@ -38,19 +40,28 @@ class Gui(QMainWindow):
 
         # Widgets:
         self._wstack = QStackedWidget(self)     # Central stacked-widget
-        self._tabber = Tabber(self._wstack) # Tab-widget to hold multiple canvas
+        self._tabber = Tabber(self._wstack)     # Tab-widget to hold multiple canvas
         self._navbar = NavBar(self)             # Detachable, interactive navigation-bar
+
+        self._optimize = Optimizer(self._tabber.active_canvas, self)
+        self._database = DatabaseManager(self._tabber.active_canvas, self)    # Database manager
 
         # Add stack-widgets:
         self._wstack.addWidget(self._tabber)
+        self._wstack.addWidget(self._database)
+        self._wstack.addWidget(self._optimize)
 
         # Add `_navbar` as a toolbar:
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self._navbar)
         self.setCentralWidget(self._wstack)
 
+        # Connect the tab-widget's signals:
+        self._tabber.currentChanged.connect(self.on_tab_changed)
+
         # Connect navbar's signal:
         self._navbar.sig_open_schema.connect(self._tabber.import_schema)
         self._navbar.sig_save_schema.connect(self._tabber.export_schema)
+        self._navbar.sig_show_widget.connect(self._select_widget)
 
         # Initialize menu:
         self._init_menubar()
@@ -83,6 +94,22 @@ class Gui(QMainWindow):
         _import_action.triggered.connect(self._tabber.import_schema)
         _export_action.triggered.connect(self._tabber.export_schema)
         _quit_action.triggered.connect(QApplication.instance().quit)
+
+    def _select_widget(self, _name: str):
+
+        if _name == "Database":
+            self._wstack.setCurrentWidget(self._database)
+            self._database.reload()
+
+        if _name == "Canvas":
+            self._wstack.setCurrentWidget(self._tabber)
+
+        if _name == "Optimization":
+            self._wstack.setCurrentWidget(self._optimize)
+
+    def on_tab_changed(self):
+        self._database.canvas = self._tabber.active_canvas
+        self._optimize.canvas = self._tabber.active_canvas
 
     def open_project(self): self._tabber.import_schema()
 
