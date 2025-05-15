@@ -202,29 +202,29 @@ class StreamTerminal(QGraphicsObject):
             StreamTerminal: A new terminal with the same properties as the original terminal.
         """
 
-        _stream = StreamTerminal(self.socket.stream, None)
-        _stream.setPos(self.scenePos() + QPointF(25, 25))
+        _terminal = StreamTerminal(self.socket.eclass, None)
+        _terminal.setPos(self.scenePos() + QPointF(25, 25))
 
         # Create hash-map entry:
-        Handle.cmap[self.socket] = _stream.socket
+        Handle.cmap[self.socket] = _terminal.socket
 
         # Copy properties:
-        _stream.socket.label   = self.socket.label
-        _stream.socket.units   = self.socket.units
-        _stream.socket.value   = self.socket.value
-        _stream.socket.sigma   = self.socket.sigma
-        _stream.socket.strid   = self.socket.strid
-        _stream.socket.color   = self.socket.color
-        _stream.socket.minimum = self.socket.minimum
-        _stream.socket.maximum = self.socket.maximum
+        _terminal.socket.label   = self.socket.label
+        _terminal.socket.units   = self.socket.units
+        _terminal.socket.value   = self.socket.value
+        _terminal.socket.sigma   = self.socket.sigma
+        _terminal.socket.strid   = self.socket.strid
+        _terminal.socket.color   = self.socket.color
+        _terminal.socket.minimum = self.socket.minimum
+        _terminal.socket.maximum = self.socket.maximum
 
         # Import Canvas:
         from tabs.schema.canvas import Canvas
         if isinstance(_canvas, Canvas):
-            _canvas.paste_item(_stream)
+            _canvas.paste_item(_terminal)
 
         # Return reference:
-        return _stream
+        return _terminal
 
     @pyqtSlot(Handle)
     def on_socket_updated(self, _socket):

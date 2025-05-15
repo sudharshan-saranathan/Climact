@@ -62,7 +62,7 @@ class Tree(QTreeWidget):
         # Fetch the node's variable(s) and parameter(s):
         for variable, state in node[EntityClass.VAR].items():
             if state == EntityState.ACTIVE:
-                _eclass = "Input" if variable.stream == EntityClass.INP else "Output"
+                _eclass = "Input" if variable.eclass == EntityClass.INP else "Output"
                 var_item = QTreeWidgetItem(item, [variable.symbol, variable.label, _eclass])
                 var_item.setIcon(0, QIcon("rss/icons/variable.png"))
                 var_item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)

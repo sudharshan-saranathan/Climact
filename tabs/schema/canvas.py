@@ -256,7 +256,7 @@ class Canvas(QGraphicsScene):
             not isinstance(_target, Handle) or
             _target.connected or
             _origin == _target or
-            _origin.stream == _target.stream or
+            _origin.eclass == _target.eclass or
             _origin.parentItem() == _target.parentItem()
         ):
             self.reset_transient()
@@ -414,8 +414,8 @@ class Canvas(QGraphicsScene):
 
         id_set = {
             int(_node.uid.split('N')[1])
-            for _node in self.node_db
-            if self.node_db[_node]
+            for _node, state in self.node_db.items()
+            if state
         }
 
         # If `id_set` is empty, return "N0":
@@ -463,7 +463,8 @@ class Canvas(QGraphicsScene):
             elif    isinstance(_item, StreamTerminal): batch.add_to_batch(CreateStreamAction(self, _copy))
 
             # Add copy to node-database so that `create_nuid()` returns a unique ID:
-            self.node_db[_copy] = True
+            if   isinstance(_item, Node)          : self.node_db[_copy] = True
+            elif isinstance(_item, StreamTerminal): self.term_db[_copy] = True
 
         # Re-establish connections:
         while Handle.cmap:
@@ -536,14 +537,16 @@ class Canvas(QGraphicsScene):
         # Notify application of state-change:
         self.sig_canvas_state.emit(SaveState.UNSAVED)
 
-    @staticmethod
-    def select_items(self, _items: set):
+    def select_items(self, _items_dict: dict):
         """
         Select the items in the set.
         """
 
-        for _item in _items:
-            _item.setSelected(True)
+        [
+            item.setSelected(True)
+            for item, state in _items_dict.items()
+            if state
+        ]
 
     def delete_items(self, _items: dict):
         """

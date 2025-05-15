@@ -40,7 +40,7 @@ class JsonLib:
 
         # Create JSON-object:
         entity_obj = {
-                    f"{prefix}-stream"   : str(_entity.stream),
+                    f"{prefix}-eclass"   : str(_entity.eclass),
                     f"{prefix}-symbol"   : _entity.symbol,
                     f"{prefix}-label"    : _entity.label,
                     f"{prefix}-units"    : _entity.units, 
@@ -295,6 +295,7 @@ class JsonLib:
                 action   = CreateStreamAction(_canvas, terminal)
 
                 stream = _canvas.find_stream(element.get("terminal-strid", ""))
+                terminal.socket.label = element.get("terminal-label", "")
                 terminal.socket.strid = stream.strid
                 terminal.socket.color = stream.color
                 terminal.socket.sig_item_updated.emit(terminal.socket)

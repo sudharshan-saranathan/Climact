@@ -24,7 +24,7 @@ class Label(QGraphicsTextItem):
 
         # Retrieve keywords:
         editable = kwargs["editable"]   if "editable"   in kwargs.keys() else True
-        font     = kwargs["font"]       if "font"       in kwargs.keys() else QFont("Fira Sans", 12)
+        font     = kwargs["font"]       if "font"       in kwargs.keys() else QFont("Trebuchet MS", 13)
         align    = kwargs["align"]      if "align"      in kwargs.keys() else Qt.AlignmentFlag.AlignCenter
         color    = kwargs["color"]      if "color"      in kwargs.keys() else Qt.GlobalColor.black
         width    = kwargs["width"]      if "width"      in kwargs.keys() else 80

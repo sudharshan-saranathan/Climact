@@ -32,6 +32,7 @@ class Entity(Stream):
             "info"      : str(),
             "label"     : str(),
             "units"     : str(),
+            "eclass"    : str(),
             "symbol"    : str(),
             "value"     : str(),
             "sigma"     : str(),
@@ -39,7 +40,6 @@ class Entity(Stream):
             "maximum"   : str()
         })
 
-    # ENTITY (Properties) ----------------------------------------------------------------------------------------------
     # uid (datatype = str): Unique resource-identifier
     @property
     def uid(self)   -> str : return self._prop["uid"]
@@ -94,6 +94,19 @@ class Entity(Stream):
         # Set units:
         self._prop["units"] = _units
 
+    @property
+    def eclass(self) -> str: return self._prop["eclass"]
+
+    @eclass.setter
+    def eclass(self, _eclass: str):
+
+        # Validate input-type:
+        if not isinstance(_eclass, EntityClass):
+            raise TypeError("Expected argument of type `EntityClass`")
+
+        # Set eclass:
+        self._prop["eclass"] = _eclass
+        
     @property
     def symbol(self) -> str: return self._prop["symbol"]
 

@@ -84,7 +84,6 @@ class Handle(QGraphicsObject, Entity):
 
         # Display handle's symbol and customize:
         self._label = Label(self, _symbol,
-                            font=QFont("Nunito", 12),
                             align=Qt.AlignmentFlag.AlignRight if _eclass == EntityClass.OUT else Qt.AlignmentFlag.AlignLeft,
                             editable=False)
         self._label.setPos(7.5 if _eclass == EntityClass.INP else -self._label.textWidth() - 7.5, -12.5)
@@ -96,7 +95,7 @@ class Handle(QGraphicsObject, Entity):
         self._huid = random_id(prefix='H')
 
         self.offset = _coords.toPoint().x()
-        self.stream = _eclass
+        self.eclass = _eclass
         self.symbol = _symbol
         self.label  = _symbol
 
@@ -109,7 +108,7 @@ class Handle(QGraphicsObject, Entity):
         size = 12
         self._tags = load_svg("rss/icons/star.svg", size)
         self._tags.setTransformOriginPoint(size/2, size/2)
-        self._tags.setPos(4 if self.stream == EntityClass.OUT else - 28, -12.5)
+        self._tags.setPos(4 if self.eclass == EntityClass.OUT else - 28, -12.5)
         self._tags.setParentItem(self)
         self._tags.hide()
 
@@ -230,7 +229,7 @@ class Handle(QGraphicsObject, Entity):
         for action in menu_actions:
             self._subm.addAction(action)
             action.triggered.connect(self.on_stream_selected)
-            action.setEnabled(False if self.connected and self.stream == EntityClass.INP else True)
+            action.setEnabled(False if self.connected and self.eclass == EntityClass.INP else True)
 
         self._menu.popup(QCursor.pos())
         self._menu.exec()
@@ -390,7 +389,7 @@ class Handle(QGraphicsObject, Entity):
         self.color = _stream.color
 
         # If handle is paired, update conjugate and connector:
-        if  self.connected and self.stream == EntityClass.OUT:
+        if  self.connected and self.eclass == EntityClass.OUT:
             self.connector().set_color (_stream.color)
             self.conjugate().set_stream(_stream)
 

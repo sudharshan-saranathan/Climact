@@ -382,12 +382,12 @@ class Node(QGraphicsObject):
             # Create a copied entity (parameter or handle):
             copied = _node.create_handle(
                 _entity.pos(), 
-                _entity.stream
+                _entity.eclass
             ) \
-                if _entity.stream in [EntityClass.INP, EntityClass.OUT] else Entity()
+                if _entity.eclass in [EntityClass.INP, EntityClass.OUT] else Entity()
             
             # Add entity and its copy to the handle-map:
-            if _entity.stream in [EntityClass.INP, EntityClass.OUT]:    Handle.cmap[_entity] = copied
+            if _entity.eclass in [EntityClass.INP, EntityClass.OUT]:    Handle.cmap[_entity] = copied
 
             # Rename copied handle:
             copied.rename(_entity.label)
@@ -403,7 +403,7 @@ class Node(QGraphicsObject):
             copied.maximum = _entity.maximum
 
             # Add copied variable to the node's registry:
-            _node[_entity.stream][copied] = True
+            _node[_entity.eclass][copied] = True
         
         # Copy equations:
         # [_node.equations.add(equation) for equation in self.equations]

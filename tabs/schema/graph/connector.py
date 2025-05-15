@@ -115,17 +115,17 @@ class Connector(QGraphicsObject):
 
         # Abort-conditions:
         if _origin == _target:                           raise ValueError("Origin and target handles must be different")
-        if _origin.stream == EntityClass.PAR:            raise ValueError("Origin handle must be of INP/OUT stream")
-        if _target.stream == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
-        if _origin.stream == _target.stream:             raise ValueError("Origin and target handles must be of different streams")
+        if _origin.eclass == EntityClass.PAR:            raise ValueError("Origin handle must be of INP/OUT stream")
+        if _target.eclass == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
+        if _origin.eclass == _target.eclass:             raise ValueError("Origin and target handles must be of different streams")
         if _origin.parentItem() == _target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
 
         # Initialize bubble-label:
         self._text = BubbleLabel(_symbol, self)
 
         # Store references:
-        self.origin = _origin if _origin.stream == EntityClass.OUT else _target
-        self.target = _target if _target.stream == EntityClass.INP else _origin
+        self.origin = _origin if _origin.eclass == EntityClass.OUT else _target
+        self.target = _target if _target.eclass == EntityClass.INP else _origin
 
         # Setup references in handles:
         self.origin.lock(self.target, self)

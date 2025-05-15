@@ -8,7 +8,6 @@ from custom.dialog import Dialog
 from custom.entity import Entity, EntityClass, EntityState
 from tabs.schema.graph import Node, Handle
 
-
 class Table(QTableWidget):
 
     # Signals:
@@ -230,6 +229,7 @@ class Table(QTableWidget):
             # Update the node's parameters:
             else:
                 entity = Entity()
+                entity.eclass  = EntityClass.PAR
                 entity.symbol  = self.cell_data(row, 0)
                 entity.info    = self.cell_data(row, 1)
                 entity.units   = self.cell_data(row, 2)
