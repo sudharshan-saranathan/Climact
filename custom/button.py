@@ -6,7 +6,7 @@ class Button(QGraphicsSvgItem):
 
     # Default values:
     _svg_width = 256
-    _svg_scale = 0.0625
+    _svg_scale = 0.05
 
     # Signals:
     sig_button_clicked = pyqtSignal()

@@ -1,32 +1,68 @@
-# System-imports
-import sys
+#-----------------------------------------------------------------------------------------------------------------------
+# Author    : Sudharshan Saranathan
+# GitHub    : https://github.com/sudharshan-saranathan/climact
+# Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
+#-----------------------------------------------------------------------------------------------------------------------
 
-from core.core_gui   import Gui
+import sys
+import logging
+
 from PyQt6.QtGui     import QFont
-from PyQt6.QtCore    import QFile
+from PyQt6.QtCore    import pyqtSlot
 from PyQt6.QtWidgets import QApplication
 
-#
-def style():
+from gui.splash import StartupWindow, StartupChoice
+from util            import *
+from gui.window      import Gui
 
-    file = QFile("rss/style/macos.qss")
-    file.open(QFile.OpenModeFlag.ReadOnly)
-    
-    qss  = file.readAll().data().decode("utf-8")
-    return qss
+# Application Subclass:
+class Climact(QApplication):
 
-# Main:
+    # Constants:
+    class Metadata:
+        APP_NAME    = "Climact"
+        APP_LOGO    = "rss/icons/logo.png"
+        APP_VERSION = "0.1.0"
+        APP_AUTHOR  = "Sudharshan Saranathan"
+        APP_GITHUB  = "https://github.com/sudharshan-saranathan/climact"
+        APP_MODULES = "PyQt6, Google-AI (Gemini)"
+
+    class Constants:
+        QSS_SHEET = "rss/style/macos.qss"
+        FONT_SIZE = 14
+
+    # Initializer
+    def __init__(self, argv: list):
+
+        # Initialize super-class:
+        super().__init__(argv)
+
+        # Define logging-behaviour:
+        logging.basicConfig(
+            filename='climact.log',
+            filemode='w',
+            level=logging.DEBUG,
+            format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d - %(funcName)s()] %(message)s'
+        )
+
+        # Initialize stylesheet, set font:
+        self.setFont(QFont("Nunito", self.Constants.FONT_SIZE))
+        self.setStyleSheet(read_qss (self.Constants.QSS_SHEET))
+        logging.info(f"Stylesheet: {self.Constants.QSS_SHEET}")
+
+        # Open splash-screen and show project options:
+        self._window  = Gui()
+        self._startup = StartupWindow()
+        self._result  = self._startup.exec()
+
+        if  self._result == StartupChoice.LOAD_SAVED_PROJECT.value:
+            self._window.load_project()
+            
+
+# Instantiate application and enter event-loop:
 def main():
-
-    qss = style()
-    app = QApplication(sys.argv)
-
-    app.setFont(QFont("Menlo", 12))
-    app.setStyleSheet(qss)
-
-    gui  = Gui()
-    gui.showMaximized()
-    sys.exit(app.exec())
+    _app = Climact(sys.argv)
+    _app.exec()
 
 if __name__ == "__main__":
     main()

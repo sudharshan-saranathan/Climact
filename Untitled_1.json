@@ -1,0 +1,398 @@
+{
+    "NODES": [
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 11667.510528197294,
+                "y": 12343.135972451542
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-stream": "EntityClass.OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -22.70577404831056
+                    },
+                    "variable-scenepos": {
+                        "x": 11762.510528197294,
+                        "y": 12320.430198403232
+                    }
+                }
+            ]
+        },
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 12089.405569847067,
+                "y": 12405.157740206378
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-color": "#f6ae2d",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 21.286663170289103
+                    },
+                    "variable-scenepos": {
+                        "x": 11994.405569847067,
+                        "y": 12426.444403376667
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -9.224220707126733
+                    },
+                    "variable-scenepos": {
+                        "x": 11994.405569847067,
+                        "y": 12395.93351949925
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 9.933776146135642
+                    },
+                    "variable-scenepos": {
+                        "x": 12184.405569847067,
+                        "y": 12415.091516352513
+                    }
+                }
+            ]
+        },
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 11666.348920839964,
+                "y": 12536.226407315207
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-stream": "EntityClass.OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-color": "#f6ae2d",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -26.419110878019637
+                    },
+                    "variable-scenepos": {
+                        "x": 11761.348920839964,
+                        "y": 12509.807296437188
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "P01",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 5.510883877415836
+                    },
+                    "variable-scenepos": {
+                        "x": 11761.348920839964,
+                        "y": 12541.737291192623
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.OUT",
+                    "variable-symbol": "P02",
+                    "variable-label": "P02",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-color": "#474973",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 41.69821126691022
+                    },
+                    "variable-scenepos": {
+                        "x": 11761.348920839964,
+                        "y": 12577.924618582118
+                    }
+                }
+            ]
+        },
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 12087.738875230356,
+                "y": 12613.158811477586
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "P01",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -20.742667365946545
+                    },
+                    "variable-scenepos": {
+                        "x": 11992.738875230356,
+                        "y": 12592.41614411164
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "P02",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-color": "#474973",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 53.05109829106004
+                    },
+                    "variable-scenepos": {
+                        "x": 11992.738875230356,
+                        "y": 12666.209909768646
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 17.63755833387222
+                    },
+                    "variable-scenepos": {
+                        "x": 12182.738875230356,
+                        "y": 12630.796369811458
+                    }
+                }
+            ]
+        },
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 12460.807023144826,
+                "y": 12512.529627744076
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -7.304644211559207
+                    },
+                    "variable-scenepos": {
+                        "x": 12365.807023144826,
+                        "y": 12505.224983532516
+                    }
+                },
+                {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "P00",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": 0.0,
+                    "variable-sigma": 0.0,
+                    "variable-minimum": 0.0,
+                    "variable-maximum": 0.0,
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 36.687793007040455
+                    },
+                    "variable-scenepos": {
+                        "x": 12365.807023144826,
+                        "y": 12549.217420751116
+                    }
+                }
+            ]
+        }
+    ],
+    "TERMINALS": [],
+    "CONNECTORS": [
+        {
+            "origin-parent-uid": "N0002",
+            "origin-label": "P00",
+            "origin-scenepos": {
+                "x": 11761.348920839964,
+                "y": 12509.807296437188
+            },
+            "target-parent-uid": "N0001",
+            "target-label": "P00",
+            "target-scenepos": {
+                "x": 11994.405569847067,
+                "y": 12426.444403376667
+            }
+        },
+        {
+            "origin-parent-uid": "N0000",
+            "origin-label": "P00",
+            "origin-scenepos": {
+                "x": 11762.510528197294,
+                "y": 12320.430198403232
+            },
+            "target-parent-uid": "N0001",
+            "target-label": "P00",
+            "target-scenepos": {
+                "x": 11994.405569847067,
+                "y": 12395.93351949925
+            }
+        },
+        {
+            "origin-parent-uid": "N0002",
+            "origin-label": "P01",
+            "origin-scenepos": {
+                "x": 11761.348920839964,
+                "y": 12541.737291192623
+            },
+            "target-parent-uid": "N0003",
+            "target-label": "P01",
+            "target-scenepos": {
+                "x": 11992.738875230356,
+                "y": 12592.41614411164
+            }
+        },
+        {
+            "origin-parent-uid": "N0002",
+            "origin-label": "P02",
+            "origin-scenepos": {
+                "x": 11761.348920839964,
+                "y": 12577.924618582118
+            },
+            "target-parent-uid": "N0003",
+            "target-label": "P02",
+            "target-scenepos": {
+                "x": 11992.738875230356,
+                "y": 12666.209909768646
+            }
+        },
+        {
+            "origin-parent-uid": "N0001",
+            "origin-label": "P00",
+            "origin-scenepos": {
+                "x": 12184.405569847067,
+                "y": 12415.091516352513
+            },
+            "target-parent-uid": "N0004",
+            "target-label": "P00",
+            "target-scenepos": {
+                "x": 12365.807023144826,
+                "y": 12505.224983532516
+            }
+        },
+        {
+            "origin-parent-uid": "N0003",
+            "origin-label": "P00",
+            "origin-scenepos": {
+                "x": 12182.738875230356,
+                "y": 12630.796369811458
+            },
+            "target-parent-uid": "N0004",
+            "target-label": "P00",
+            "target-scenepos": {
+                "x": 12365.807023144826,
+                "y": 12549.217420751116
+            }
+        }
+    ]
+}

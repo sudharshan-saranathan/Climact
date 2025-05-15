@@ -8,29 +8,20 @@ QFrame {
     background              : white;
 }
 
-QInputDialog {
-    border                  : 2px solid black;
-    border-radius           : 8px;
-    padding                 : 2px;
-    background              : lightslategray;
-}
-
 QInputDialog QLabel {
-    font    : 13pt "Osaka";
     border  : none;
-    color   : white;
+    color   : darkslategray;
 }
 
 QInputDialog QLineEdit {
-    color           : black;
+    color           : white;
     padding         : 2px;
     border-radius   : 4px;
-    background      : white;
+    background-color: white;
 }
 
 QComboBox
 {
-    font                : 13pt "Osaka";
     color               : black;
     width               : 80px;
     height              : 12px;
@@ -40,7 +31,6 @@ QComboBox
 
 QComboBox:drop-down
 {
-    font                : 13pt "Osaka";
     color               : black;
     width               : 20px;
     background-color    : lightgray;
@@ -55,7 +45,6 @@ QComboBox::down-arrow
 
 QComboBox QListView {
     color                   : black;
-    font                    : 13pt "Osaka";
     selection-color         : black;
     background-color        : white;
     padding-left            : 4px;
@@ -75,21 +64,16 @@ QComboBox::item:selected {
 }
 
 QTextEdit {
-    font                    : 13pt "Osaka";
     color                   : white;
     background-color        : lightslategray;
-    border-radius           : 6px;
 }
 
 QTextEdit:focus {
-    font                    : 13pt "Osaka";
     color                   : white;
-    border-radius           : 6px;
     background-color        : #81909C;
 }
 
 QMenu {
-    font                    : 13pt "Osaka";
     border                  : 1px solid black;
     padding                 : 4px 4px 4px 4px;
     color                   : black;
@@ -124,7 +108,6 @@ QMenu::item:selected {
 }
 
 QLabel {
-    font                    : 13pt "Osaka";
     color                   : black;
     margin                  : 0px;
     background              : transparent;
@@ -132,19 +115,20 @@ QLabel {
 }
 
 QPushButton {
-    font                    : 13pt "Osaka";
-    color                   : black;
+    color                   : white;
     padding                 : 4px;
+    border                  : 1px solid darkslategray;
     border-radius           : 6px;
-    background-color        : #ffa51f;
+    background-color        : lightslategray;
 }
 
 QPushButton:hover {
-    background-color        : #F6BF51;
+    background-color : #1E7B99;
 }
 
 QPushButton:pressed {
-    margin      : 1px;
+    color               : black;
+    background-color    : #D8E9DF;
 }
 
 QPushButton:disabled {
@@ -154,13 +138,11 @@ QPushButton:disabled {
 
 QToolTip {
     border                  : 1px solid black;
-    font                    : 13pt "Osaka";
     color                   : black;
     background              : white;
 }
 
 QRadioButton {
-    font                    : 13pt 'Trebuchet MS';
     color                   : black;
     background              : transparent;
 }
@@ -187,9 +169,7 @@ QSplitter::handle:horizontal {
 }
 
 QMenuBar {
-    font                    : 13pt "Osaka";
 	color              		: black;
-	border-bottom           : 1px solid black;
 	background				: #CED3DC;
 }
 
@@ -204,11 +184,9 @@ QMenuBar::item:selected {
 }
 
 QStatusBar {
-	font                    : 13pt "Osaka";
 	border-top              : 1px solid black;
 	color                   : black;
     background              : white;
-	/*background				: #81909C;*/
 }
 
 QGroupBox {
@@ -218,23 +196,42 @@ QGroupBox {
     background              : #64a6bd;
 }
 
-QStackedWidget {
-    border-left             : 1px solid white;
+QTabWidget::tab-bar {
+    left            : 1px;
 }
 
-QTabWidget {
-    border      : 1px solid red;
-    background  : lightgray;
+QTabWidget::pane {
+    border-top   : 1px solid black;
 }
 
+QTabBar::tab {
+    border          : 1px solid black;
+    border-radius   : 4px;
+    color           : black;
+    margin          : 2px 1px -4px 1px;
+    padding         : 4px;
+    background      : lightgray;
+}
+
+QTabBar::tab:selected {
+    color           : white;
+    background      : lightslategray;
+}
+
+QTabBar::tab:hover:!selected {
+    color           : white;
+    background      : #acacac;
+}
+
+/*
 QTabBar {
     border-radius   : 4px;
     background      : transparent;
 }
 
 QTabBar::tab:selected {
-    color       : white;
-    background  : lightslategray;
+    color           : white;
+    background      : lightslategray;
 }
 
 QTabBar::tab {
@@ -274,6 +271,7 @@ QTabBar::tab:last {
 QTabBar::tab:!selected:hover {
     background      : lightgray;
 }
+*/
 
 QToolBar {
     border                  : none;
@@ -304,7 +302,6 @@ QToolBar QToolButton:!checked:hover, QToolButton:!checked:hover {
 }
 
 QCheckBox {
-    font                    : 13pt "Osaka";
     margin                  : 8px;
     border                  : none;
     color                   : black;
@@ -312,7 +309,6 @@ QCheckBox {
 }
 
 QCheckBox:disabled {
-    font                    : 13pt "Osaka";
     color                   : gray;
 	background-color		: white;
 }
@@ -337,8 +333,7 @@ QCheckBox::indicator:checked {
 
 QLineEdit {
 	border					: none;
-	font                    : 13pt "Osaka";
-	border-radius           : 1px;
+	border-radius           : 3px;
 	padding                 : 3px;
 	color                   : black;
 	background-color      	: white;
@@ -401,16 +396,6 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical{
 	background 				: transparent;
 }
 
-QHeaderView {
-    margin                  : 2px;
-    padding                 : 2px 2px 2px -3px;
-    color                   : white;
-    border                  : 1px solid black;
-    border-radius           : 6px;
-    font                    : 13pt "Osaka";
-    background              : #D8E9DF;
-}
-
 QHeaderView::down-arrow {
     image       : url(rss/icons/expand.svg);
     width       : 12px;
@@ -426,22 +411,25 @@ QHeaderView::up-arrow {
 }
 
 QHeaderView::section:horizontal, QTreeWidget::header {
+    font                    : 13pt "Nunito";
     padding                 : 2px;
-    border-right            : 1px solid black;
     color                   : black;
+    border-right            : 1px solid darkgray;
+    border-bottom           : 1px solid darkgray;
     border-radius           : 0px;
-    background              : transparent;
+    background              : #D8E9DF;
+}
+
+QHeaderView::section:horizontal:first {
+    border-left: 1px solid darkgray;
 }
 
 QHeaderView::section:horizontal:last {
-    border  : none;
+    border-right    : none;
 }
 
 QHeaderView::section:vertical {
-    color                   : black;
-    padding-left            : 4px;
-    padding-bottom          : 12px;
-    background              : transparent;
+    color       :  black;
 }
 
 QHeaderView::section:vertical:hover {
@@ -449,17 +437,14 @@ QHeaderView::section:vertical:hover {
 }
 
 QTreeWidget, QTreeView {
-    font                        : 13pt "Osaka";
-    padding                     : 1px;
     border-right                : 1px solid darkgray;
     border-radius               : 0px;
-    background                  : lightslategray;
+    background                  : #efefef;
     selection-background-color  : transparent;
 }
 
 /*
 QTreeWidget:focus, QTreeView:focus {
-    font                        : 13pt "Osaka";
     padding                     : 1px;
     border                      : 2px solid #ffab38;
     background                  : lightslategray;
@@ -467,13 +452,12 @@ QTreeWidget:focus, QTreeView:focus {
 */
 
 QListWidget {
-    font                        : 13pt "Osaka";
     background                  : lightslategray;
+    margin                      : 2px;
     border-radius               : 6px;
 }
 
 QListWidget:focus {
-    font                        : 13pt "Osaka";
     border-radius               : 6px;
     background                  : #81909C;
 }
@@ -486,7 +470,7 @@ QListWidget::item {
 }
 
 QTreeWidget::item, QTreeView::item {
-    color                   : white;
+    color                   : black;
     margin-top              : 2px;
     margin-bottom           : 2px;
     padding-top             : 2px;
@@ -532,25 +516,14 @@ QDialog {
 }
 
 QTableWidget, QTableView {
-    font                    : 13pt "Osaka";
-    padding                 : 2px;
     border                  : 0px solid black;
     border-radius           : 0px;
-    background              : #efefef;
-    gridline-color          : black;
+    background              : white;
+    gridline-color          : lightgray;
 }
 
 QTableCornerButton::section {
     background-color        : transparent;
-}
-
-QTableWidget:focus, QTableView:focus {
-    font                    : 13pt "Osaka";
-    padding                 : 2px;
-    border                  : 0px solid black;
-    border-radius           : 0px;
-    background              : white;
-    gridline-color          : black;
 }
 
 QTableWidget::item {
@@ -558,9 +531,8 @@ QTableWidget::item {
 }
 
 QTableWidget::item:selected, QTableView::item:selected {
-    font-weight             : bold;
     border                  : none;
-    background-color        : #81909C;
+    background-color        : lightslategray;
     selection-color         : white;
 }
 
@@ -568,13 +540,13 @@ QTreeWidget::branch:has-children:closed {
     margin          : 2px;
     border-radius   : 8px;
     background      : transparent;
-    image           : url(rss/icons/caret-right-green.svg);
+    image           : url(rss/icons/caret-right.png);
 }
 
 QTreeWidget::branch:has-children:open {
     margin          : 2px;
     background      : transparent;
-    image           : url(rss/icons/caret-down-green.svg);
+    image           : url(rss/icons/caret-down.png);
 }
 
 QTreeWidget::branch:!has-children {
