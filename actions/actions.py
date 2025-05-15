@@ -499,10 +499,10 @@ class CreateHandleAction(AbstractAction):
 
         # If handle exists in node's database, remove it:
         if (
-            href in nref[href.stream].keys() and
-            nref[href.stream][href] == EntityState.HIDDEN
+            href in nref[href.eclass].keys() and
+            nref[href.eclass][href] == EntityState.HIDDEN
         ):
-            nref[href.stream].pop(href, None)   # Remove handle from node's database
+            nref[href.eclass].pop(href, None)   # Remove handle from node's database
             href.deleteLater()
 
             # Log:
@@ -525,7 +525,7 @@ class CreateHandleAction(AbstractAction):
         # Deactivate handle:
         href.setVisible(False)
         href.blockSignals(True)
-        nref[href.stream][href] = EntityState.HIDDEN
+        nref[href.eclass][href] = EntityState.HIDDEN
 
     # Redo operation:
     def redo(self)  -> None:
@@ -541,7 +541,7 @@ class CreateHandleAction(AbstractAction):
         # Reactivate handle:
         href.blockSignals(False)
         href.setVisible(True)
-        nref[href.stream][href] = EntityState.ACTIVE
+        nref[href.eclass][href] = EntityState.ACTIVE
 
 # Class RemoveHandleAction: For handle operations (delete, undo/redo)
 class RemoveHandleAction(AbstractAction):
@@ -573,10 +573,10 @@ class RemoveHandleAction(AbstractAction):
 
         # If handle exists in node's database, remove it:
         if (
-            href in nref[href.stream].keys() and
-            nref[href.stream][href] != EntityState.ACTIVE
+            href in nref[href.eclass].keys() and
+            nref[href.eclass][href] != EntityState.ACTIVE
         ):
-            nref[href.stream].pop(href, None)   # Remove handle from node's database
+            nref[href.eclass].pop(href, None)   # Remove handle from node's database
             href.free(delete_connector = True)  # Delete handle's connector
             href.deleteLater()                  # Delete handle
 
@@ -608,7 +608,7 @@ class RemoveHandleAction(AbstractAction):
         href.blockSignals(True)
 
         # Deactivate handle:
-        nref[href.stream][href] = EntityState.HIDDEN
+        nref[href.eclass][href] = EntityState.HIDDEN
 
     # Undo operation:
     def undo(self)  -> None:
@@ -633,7 +633,7 @@ class RemoveHandleAction(AbstractAction):
 
         href.blockSignals(False)
         href.setVisible(True)
-        nref[href.stream][href] = EntityState.ACTIVE
+        nref[href.eclass][href] = EntityState.ACTIVE
 
     # Redo operation:
     def redo(self)  -> None:
@@ -659,7 +659,7 @@ class RemoveHandleAction(AbstractAction):
         # Deactivate handle:
         href.setVisible(False)
         href.blockSignals(True)
-        nref[href.stream][href] = EntityState.HIDDEN
+        nref[href.eclass][href] = EntityState.HIDDEN
 
 # Class ConnectHandleAction: For connector operations (create, undo/redo)
 class ConnectHandleAction(AbstractAction):

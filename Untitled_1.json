@@ -2,7 +2,7 @@
     "NODES": [
         {
             "node-title": "Node",
-            "node-height": 150.0,
+            "node-height": 15,
             "node-scenepos": {
                 "x": 11667.510528197294,
                 "y": 12343.135972451542
@@ -38,10 +38,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": 95.0,
                         "y": -22.70577404831056
@@ -55,7 +55,7 @@
         },
         {
             "node-title": "Node",
-            "node-height": 150.0,
+            "node-height": 15,
             "node-scenepos": {
                 "x": 12089.405569847067,
                 "y": 12405.157740206378
@@ -70,10 +70,10 @@
                     "variable-strid": "Energy",
                     "variable-color": "#f6ae2d",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": -95.0,
                         "y": 21.286663170289103
@@ -91,10 +91,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": -95.0,
                         "y": -9.224220707126733
@@ -112,10 +112,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": 95.0,
                         "y": 9.933776146135642
@@ -129,7 +129,7 @@
         },
         {
             "node-title": "Node",
-            "node-height": 150.0,
+            "node-height": 15,
             "node-scenepos": {
                 "x": 11666.348920839964,
                 "y": 12536.226407315207
@@ -165,10 +165,10 @@
                     "variable-strid": "Energy",
                     "variable-color": "#f6ae2d",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": 95.0,
                         "y": -26.419110878019637
@@ -186,10 +186,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": 95.0,
                         "y": 5.510883877415836
@@ -207,10 +207,10 @@
                     "variable-strid": "Power",
                     "variable-color": "#474973",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": 95.0,
                         "y": 41.69821126691022
@@ -224,7 +224,7 @@
         },
         {
             "node-title": "Node",
-            "node-height": 150.0,
+            "node-height": 15,
             "node-scenepos": {
                 "x": 12087.738875230356,
                 "y": 12613.158811477586
@@ -239,10 +239,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": -95.0,
                         "y": -20.742667365946545
@@ -260,10 +260,10 @@
                     "variable-strid": "Power",
                     "variable-color": "#474973",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": -95.0,
                         "y": 53.05109829106004
@@ -281,10 +281,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": 95.0,
                         "y": 17.63755833387222
@@ -298,7 +298,7 @@
         },
         {
             "node-title": "Node",
-            "node-height": 150.0,
+            "node-height": 15,
             "node-scenepos": {
                 "x": 12460.807023144826,
                 "y": 12512.529627744076
@@ -313,10 +313,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": -95.0,
                         "y": -7.304644211559207
@@ -334,10 +334,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": "0.0",
-                    "variable-sigma": "0.0",
-                    "variable-minimum": "0.0",
-                    "variable-maximum": "0.0",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
                     "variable-position": {
                         "x": -95.0,
                         "y": 36.687793007040455

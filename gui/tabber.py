@@ -9,6 +9,7 @@ from PyQt6.QtCore import (
 
 from PyQt6.QtWidgets import (
     QMenu,
+    QDialog,
     QTabBar,
     QWidget, 
     QCheckBox, 
@@ -115,7 +116,6 @@ class Tabber(QTabWidget):
                                                         file
                                                     )
                                                 )
-
         # Call super-class implementation:
         super().addTab(_viewer, _label)
 
@@ -123,12 +123,12 @@ class Tabber(QTabWidget):
     @pyqtSlot(int)
     def removeTab(self, _index):
 
-        # Delete widget:
-        widget = self.widget(_index)
-        widget.close()
+        # Get currently active `Viewer`:
+        _viewer = self.widget(_index)
+        _viewer.close()
 
-        # Call super-class implementation:
-        super().removeTab(_index)
+        if _viewer.closed:
+            super().removeTab(_index)   # Call super-class implementation:
 
     @pyqtSlot(int)
     def rename_tab(self, _index):

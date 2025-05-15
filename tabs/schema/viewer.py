@@ -7,8 +7,8 @@
 import logging
 
 from PyQt6.QtGui import (
-    QShortcut, 
-    QPainter, 
+    QPainter,
+    QShortcut,
     QKeySequence
 )
 
@@ -22,7 +22,8 @@ from PyQt6.QtCore import (
 )
 
 from PyQt6.QtWidgets import (
-    QWidget, 
+    QDialog,
+    QWidget,
     QGraphicsView, 
     QVBoxLayout,
     QMessageBox
@@ -84,6 +85,7 @@ class Viewer(QGraphicsView):
         self._zoom.max = max_zoom if isinstance(max_zoom, float) else self._zoom.max
 
         # Initialize Canvas (QGraphicsScene derivative)
+        self.closed = False
         self.state  = SaveState.UNSAVED
         self.canvas = Canvas(QRectF(0, 0, x_bounds, y_bounds), self)
         self.setScene(self.canvas)
@@ -197,10 +199,18 @@ class Viewer(QGraphicsView):
 
             # Handle close-event accordingly:
             if _dialog_code == QMessageBox.StandardButton.Yes:
+                self.closed = True
                 event.accept()
 
-            if _dialog_code == QMessageBox.StandardButton.No:       event.accept()
-            if _dialog_code == QMessageBox.StandardButton.Cancel:   event.ignore()
+            if _dialog_code == QMessageBox.StandardButton.No:
+                self.closed = True
+                event.accept()
+
+            if _dialog_code == QMessageBox.StandardButton.Cancel:
+                self.closed = False
+                event.ignore()
 
         # Close directly
-        else:   event.accept()
+        else:
+            self.closed = True
+            event.accept()

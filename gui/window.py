@@ -96,7 +96,7 @@ class Gui(QMainWindow):
     def show_widget(self, _label: str):
 
         if _label == "Data":
-            self._data.reload()
+            self._data.reload(self._tabber.currentWidget().canvas)
             self._wstack.setCurrentWidget(self._data)
 
         if _label == "Canvas":      self._wstack.setCurrentWidget(self._tabber)

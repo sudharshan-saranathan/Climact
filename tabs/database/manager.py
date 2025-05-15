@@ -50,9 +50,20 @@ class DataManager(QWidget):
         self._eqview.clear()
 
     # Reload data:
-    def reload(self):
-        self._trview.reload()
-        self.clear()
+    def reload(self, _canvas: Canvas):
+
+        if not isinstance(_canvas, Canvas):
+            raise ValueError("Expected argument of type `Canvas`")
+
+        # Store canvas reference:
+        self._canvas = _canvas
+
+        # Reload tree:
+        self._trview.reload(self._canvas)
+
+        # Reset spreadsheets and equation-viewer:
+        self._sheets.reset()
+        self._eqview.clear()
 
     # Tree-item selected:
     def on_tree_item_selected(self, nuid: str, huid: str):

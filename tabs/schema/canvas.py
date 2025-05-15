@@ -236,7 +236,7 @@ class Canvas(QGraphicsScene):
             # Verify that the target anchor's parent node is different from the origin handle's parent node:
             if (
                 _node == _item.parentItem() or
-                _item.stream() == self._conn.origin().stream
+                _item.stream() == self._conn.origin().eclass
             ):
                 self.reset_transient()
                 super().mouseReleaseEvent(event)

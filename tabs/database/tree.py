@@ -37,7 +37,14 @@ class Tree(QTreeWidget):
         self.itemSelectionChanged.connect(self.on_item_selected)
 
     # Reload
-    def reload(self):
+    def reload(self, _canvas: Canvas):
+
+        # Validate argument(s):
+        if not isinstance(_canvas, Canvas):
+            raise ValueError("Expected argument of type `Canvas`")
+
+        # Store canvas reference:
+        self._canvas = _canvas
 
         # Debugging:
         logging.info("Reloading graph-data")
@@ -46,8 +53,8 @@ class Tree(QTreeWidget):
         self.clear()
 
         # Add top-level root:
-        for node in self._canvas.node_db:
-            if  self._canvas.node_db[node]:
+        for node, state in self._canvas.node_db.items():
+            if  state:
                 self.add_node_item(node)
 
     # Add top-level root:
