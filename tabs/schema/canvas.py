@@ -152,7 +152,6 @@ class Canvas(QGraphicsScene):
         # Additional actions:
         _clear.triggered.connect(self.clear)
 
-
     # Event-Handlers ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
@@ -530,6 +529,7 @@ class Canvas(QGraphicsScene):
         # Notify application of state-change:
         self.sig_canvas_state.emit(SaveState.UNSAVED)
 
+    @staticmethod
     def select_items(self, _items: set):
         """
         Select the items in the set.
@@ -561,6 +561,17 @@ class Canvas(QGraphicsScene):
     
         # Execute batch:
         if batch.size():    self.manager.do(batch)
+
+    def symbols(self):
+
+        _symbols = list()
+        for _node, _state in self.node_db.items():
+            if _state:
+                _symbols += _node.symbols()
+
+        for _conn, _state in self.conn_db.items():
+            if _state:
+                _symbols.append(_conn.symbol)
 
     @pyqtSlot(str)  # Method to import a JSON-schematic
     def import_schema(self, _file: str | None = None):

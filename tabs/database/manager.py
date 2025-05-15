@@ -19,8 +19,8 @@ class DataManager(QWidget):
         self._canvas = canvas
 
         # Main-widgets:
+        self._eqview = EqnView(self._canvas, self)
         self._trview = Tree(self._canvas, self)
-        self._eqview = EqnView(self)
         self._sheets = Table(self, headers=['Symbol', 'Description', 'Units', 'Category',
                                                     'Value', 'Lower', 'Upper' , 'Sigma',
                                                     'Interpolation', 'Auto'])

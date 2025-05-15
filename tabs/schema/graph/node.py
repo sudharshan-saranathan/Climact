@@ -337,7 +337,7 @@ class Node(QGraphicsObject):
             parameter for parameter, state in self[EntityClass.PAR].items()
             if state == EntityState.ACTIVE
         ]
-        
+
         eqns = self._data[EntityClass.EQN].copy()
 
         # Create a dictionary of symbol-replacements:
@@ -445,6 +445,19 @@ class Node(QGraphicsObject):
 
         # Notify application of state-change:
         self.sig_item_updated.emit()
+
+    def symbols(self) -> list:
+
+        _symbols = list()
+        for _entity, _state in self[EntityClass.VAR].items():
+            if  _state == EntityState.ACTIVE:
+                _symbols.append(_entity.symbol)
+
+        for _entity, _state in self[EntityClass.PAR].items():
+            if  _state == EntityState.ACTIVE:
+                _symbols.append(_entity.symbol) 
+
+        return _symbols
 
     def create_handle(self, 
                       _coords: QPointF, 

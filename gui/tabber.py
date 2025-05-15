@@ -113,8 +113,8 @@ class Tabber(QTabWidget):
                                                     self.setTabText(
                                                         self.currentIndex(), 
                                                         file
-                                                        )
                                                     )
+                                                )
 
         # Call super-class implementation:
         super().addTab(_viewer, _label)

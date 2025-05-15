@@ -3,19 +3,24 @@ import weakref
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
-from PyQt6.QtWidgets import QListWidget, QWidget, QMenu, QTextEdit, QDialog, QVBoxLayout, QListWidgetItem, QAbstractItemView
+from PyQt6.QtWidgets import QListWidget, QWidget, QMenu, QTextEdit, QDialog, QVBoxLayout, QListWidgetItem, QAbstractItemView, QMessageBox
 
 from custom import EntityClass
+from tabs.schema import Canvas
 
 class EqnView(QListWidget):
 
-    def __init__(self, parent: QWidget):
+    def __init__(self,
+                 _canvas: Canvas,
+                 _parent: QWidget
+                 ):
 
         # Initialize super-class:
-        super().__init__(parent)
+        super().__init__(_parent)
 
         # Reference to the node being updated, initialize with `None`:
         self._node = None
+        self._symb = []
 
         # Customize behavior:
         self.setSelectionMode(QAbstractItemView.SelectionMode.ContiguousSelection)
@@ -25,7 +30,7 @@ class EqnView(QListWidget):
         self._init_menu()
 
     @property
-    def node(self):     return self._node()
+    def node(self): return self._node()
 
     @node.setter
     def node(self, _node):
@@ -34,7 +39,14 @@ class EqnView(QListWidget):
         self._node = weakref.ref(_node)
 
         # Fetch equations:
-        # self.fetch()
+        self.fetch()
+
+    @property
+    def canvas(self): return self._canvas()
+
+    @canvas.setter
+    def canvas(self, _canvas):
+        self._canvas = weakref.ref(_canvas)
 
     def _init_menu(self):
 
@@ -48,7 +60,6 @@ class EqnView(QListWidget):
         _modify = self._menu.addAction("Modify Equations")
 
     def contextMenuEvent(self, event):
-
         # Open menu at cursor position:
         self._menu.exec(event.globalPos())
         event.accept()
@@ -79,7 +90,7 @@ class EqnView(QListWidget):
         ctrl_return.activated.connect(dialog.accept)
 
         # Execute dialog and insert equations:
-        if dialog.exec():
+        if  dialog.exec() == QDialog.DialogCode.Accepted:
             equations = editor.toPlainText().split('\n')
             self.parse(equations)
 
@@ -96,18 +107,23 @@ class EqnView(QListWidget):
             equation = re.sub(r'\s+', ' ', equation).strip()        # Remove multiple spaces
 
             # Equation must have exactly 1 '=', it must not start or end with a '=':
-            if  equation.count('=') == 1    and \
-                    not equation.endswith('=')  and \
-                    not equation.startswith('='):
+            if (
+                equation.count('=') == 1    and
+                not equation.endswith('=')  and
+                not equation.startswith('=')
+            ):
+                sym_eqn = set(re.findall(r'\b[a-zA-Z][a-zA-Z0-9_]*\b', equation))  # Equation symbols
+                sym_tot = self._canvas.symbols() if self._canvas else None
 
-                # sym_eqns = set(re.findall(r'\b[a-zA-Z][a-zA-Z0-9_]*\b', equation))  # Equation symbols
-                # sym_node = self._node().symbols()                                   # Node symbols
+                print(sym_eqn)
+                print(sym_tot)
 
-                # Validate symbols:
+                # Insert equation:
+                self.insert_item(equation)
+
                 """
-                if  sym_eqns.issubset(sym_node):
-                    # Create list-item for equation:
-                    self.insert_item(equation)
+                # Validate symbols:
+                if  sym_eqns.issubset(sym_node):    self.insert_item(equation)
 
                 else:
                     # Display error message:
@@ -116,7 +132,15 @@ class EqnView(QListWidget):
                                      QMessageBox.StandardButton.Ok)
 
                     warning.exec()
-                """
+
+            else:
+                # Display error message:
+                error = Dialog(QtMsgType.QtCriticalMsg,
+                               f"Equation must have exactly one '='",
+                               QMessageBox.StandardButton.Ok)
+
+                error.exec()
+            """
 
     def insert_item(self, equation):
 
@@ -125,7 +149,7 @@ class EqnView(QListWidget):
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
 
         self.addItem(item)
-        self._node().get_dict(EntityClass.EQN).add(equation)
+        self._node()[EntityClass.EQN].append(equation)
 
     # Fetch and display node's equations
     def fetch(self):
@@ -138,9 +162,8 @@ class EqnView(QListWidget):
             return
 
         # Fetch equations and display them:
-        equations = self._node().equations
+        equations = self._node()[EntityClass.EQN]
         for equation in equations:
-
             # Create a list-item for each equation:
             item = QListWidgetItem(equation)
             item.setIcon(QIcon("rss/icons/trash.png"))
