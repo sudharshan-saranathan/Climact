@@ -1,11 +1,12 @@
 * {
-	border					: none;
-	background				: white;
+    font        : 14pt "Trebuchet MS";
+	border      : none;
+	background  : white;
 }
 
 QFrame {
-    border                  : none;
-    background              : white;
+    border      : none;
+    background  : white;
 }
 
 QInputDialog QLabel {
@@ -74,6 +75,7 @@ QTextEdit:focus {
 }
 
 QMenu {
+    font                    : 13pt "Trebuchet MS";
     border                  : 1px solid black;
     padding                 : 4px 4px 4px 4px;
     color                   : black;
@@ -302,7 +304,7 @@ QToolBar QToolButton:!checked:hover, QToolButton:!checked:hover {
 }
 
 QCheckBox {
-    margin                  : 8px;
+    margin                  : 2px;
     border                  : none;
     color                   : black;
 	background-color		: transparent;
@@ -411,7 +413,6 @@ QHeaderView::up-arrow {
 }
 
 QHeaderView::section:horizontal, QTreeWidget::header {
-    font                    : 13pt "Nunito";
     padding                 : 2px;
     color                   : black;
     border-right            : 1px solid darkgray;

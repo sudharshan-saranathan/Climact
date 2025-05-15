@@ -10,6 +10,27 @@
             "parameters": [],
             "variables": [
                 {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "Resource",
+                    "variable-units": "",
+                    "variable-strid": "Default",
+                    "variable-color": "#808080",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -24.056922957908682
+                    },
+                    "variable-scenepos": {
+                        "x": 11572.510528197294,
+                        "y": 12319.079049493634
+                    }
+                },
+                {
                     "variable-stream": "EntityClass.OUT",
                     "variable-symbol": "P00",
                     "variable-label": "P00",
@@ -17,10 +38,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": 95.0,
                         "y": -22.70577404831056
@@ -49,10 +70,10 @@
                     "variable-strid": "Energy",
                     "variable-color": "#f6ae2d",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": -95.0,
                         "y": 21.286663170289103
@@ -70,10 +91,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": -95.0,
                         "y": -9.224220707126733
@@ -91,10 +112,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": 95.0,
                         "y": 9.933776146135642
@@ -116,6 +137,27 @@
             "parameters": [],
             "variables": [
                 {
+                    "variable-stream": "EntityClass.INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "Resource",
+                    "variable-units": "",
+                    "variable-strid": "Default",
+                    "variable-color": "#808080",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -18.45253444264381
+                    },
+                    "variable-scenepos": {
+                        "x": 11571.348920839964,
+                        "y": 12517.773872872564
+                    }
+                },
+                {
                     "variable-stream": "EntityClass.OUT",
                     "variable-symbol": "P00",
                     "variable-label": "P00",
@@ -123,10 +165,10 @@
                     "variable-strid": "Energy",
                     "variable-color": "#f6ae2d",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": 95.0,
                         "y": -26.419110878019637
@@ -144,10 +186,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": 95.0,
                         "y": 5.510883877415836
@@ -165,10 +207,10 @@
                     "variable-strid": "Power",
                     "variable-color": "#474973",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": 95.0,
                         "y": 41.69821126691022
@@ -197,10 +239,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": -95.0,
                         "y": -20.742667365946545
@@ -218,10 +260,10 @@
                     "variable-strid": "Power",
                     "variable-color": "#474973",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": -95.0,
                         "y": 53.05109829106004
@@ -239,10 +281,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": 95.0,
                         "y": 17.63755833387222
@@ -271,10 +313,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": -95.0,
                         "y": -7.304644211559207
@@ -292,10 +334,10 @@
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
                     "variable-info": "",
-                    "variable-value": 0.0,
-                    "variable-sigma": 0.0,
-                    "variable-minimum": 0.0,
-                    "variable-maximum": 0.0,
+                    "variable-value": "0.0",
+                    "variable-sigma": "0.0",
+                    "variable-minimum": "0.0",
+                    "variable-maximum": "0.0",
                     "variable-position": {
                         "x": -95.0,
                         "y": 36.687793007040455
@@ -308,7 +350,38 @@
             ]
         }
     ],
-    "TERMINALS": [],
+    "TERMINALS": [
+        {
+            "terminal-class": "EntityClass.OUT",
+            "terminal-label": "Resource",
+            "terminal-strid": "Default",
+            "terminal-color": "#808080",
+            "terminal-scenepos": {
+                "x": 11156.468779710747,
+                "y": 12432.145694683188
+            }
+        },
+        {
+            "terminal-class": "EntityClass.OUT",
+            "terminal-label": "Resource",
+            "terminal-strid": "Default",
+            "terminal-color": "#808080",
+            "terminal-scenepos": {
+                "x": 11136.0,
+                "y": 12386.0
+            }
+        },
+        {
+            "terminal-class": "EntityClass.OUT",
+            "terminal-label": "Resource",
+            "terminal-strid": "Default",
+            "terminal-color": "#808080",
+            "terminal-scenepos": {
+                "x": 11156.468779710747,
+                "y": 12432.145694683188
+            }
+        }
+    ],
     "CONNECTORS": [
         {
             "origin-parent-uid": "N0002",
@@ -392,6 +465,34 @@
             "target-scenepos": {
                 "x": 12365.807023144826,
                 "y": 12549.217420751116
+            }
+        },
+        {
+            "origin-parent-uid": "T6475",
+            "origin-label": "Resource",
+            "origin-scenepos": {
+                "x": 11191.0,
+                "y": 12386.0
+            },
+            "target-parent-uid": "N0000",
+            "target-label": "Resource",
+            "target-scenepos": {
+                "x": 11572.510528197294,
+                "y": 12319.079049493634
+            }
+        },
+        {
+            "origin-parent-uid": "T0277",
+            "origin-label": "Resource",
+            "origin-scenepos": {
+                "x": 11211.468779710747,
+                "y": 12432.145694683188
+            },
+            "target-parent-uid": "N0002",
+            "target-label": "Resource",
+            "target-scenepos": {
+                "x": 11571.348920839964,
+                "y": 12517.773872872564
             }
         }
     ]

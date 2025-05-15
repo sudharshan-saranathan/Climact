@@ -106,11 +106,11 @@ class JsonLib:
         if isinstance(_item, graph.StreamTerminal):
 
             stream_obj = {
-                "terminal-direction"  : str(_item.socket.stream),
-                "terminal-label"      : _item.socket.label,
-                "terminal-strid"      : _item.socket.strid,
-                "terminal-color"      : _item.socket.color.name(),
-                "terminal-scenepos"   : {
+                "terminal-class"    : str(_item.socket.stream),
+                "terminal-label"    : _item.socket.label,
+                "terminal-strid"    : _item.socket.strid,
+                "terminal-color"    : _item.socket.color.name(),
+                "terminal-scenepos" : {
                     "x": _item.scenePos().x(),
                     "y": _item.scenePos().y()
                 }
@@ -272,11 +272,11 @@ class JsonLib:
             # Get name and position:
             xp   = element.get("terminal-scenepos", {}).get("x", 0.0)
             yp   = element.get("terminal-scenepos", {}).get("y", 0.0)
-            spos = QPointF(xp, yp).toPoint()
+            spos = QPointF(xp, yp)
             name = element.get("terminal-label", "")
 
             # Create source or sink:
-            if  element.get("terminal-direction", "") == "EntityClass.OUT":
+            if  element.get("terminal-class", "") == "EntityClass.OUT":
 
                 terminal = _canvas.create_terminal(EntityClass.OUT, spos)
                 action   = CreateStreamAction(_canvas, terminal)
@@ -289,7 +289,7 @@ class JsonLib:
                 if _group_actions:   batch.add_to_batch(action)      # Queue action
                 else:               _canvas.manager.do(action)       # Execute it immediately
 
-            elif element.get("terminal-direction", "") == "EntityClass.INP":
+            elif element.get("terminal-class", "") == "EntityClass.INP":
 
                 terminal = _canvas.create_terminal(EntityClass.INP, spos)
                 action   = CreateStreamAction(_canvas, terminal)

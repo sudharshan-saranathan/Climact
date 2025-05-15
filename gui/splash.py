@@ -60,7 +60,7 @@ class StartupWindow(QDialog):
         # Connect buttons to handlers:
         blank_project.pressed.connect(lambda: self.done(StartupChoice.OPEN_BLANK_PROJECT.value))
         saved_project.pressed.connect(lambda: self.done(StartupChoice.LOAD_SAVED_PROJECT.value))
-        show_recents.pressed.connect (lambda: self.done(StartupChoice.SHOW_RECENT.value))
+        show_recents.pressed .connect(lambda: self.done(StartupChoice.SHOW_RECENT.value))
 
         # Arrange buttons in startup-window:
         layout = QVBoxLayout(self)

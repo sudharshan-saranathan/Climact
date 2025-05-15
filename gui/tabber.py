@@ -81,7 +81,8 @@ class Tabber(QTabWidget):
         self.setTabBar(_tab_bar)
 
         # Corner widget:
-        self._cbox = QCheckBox("Set tab-label as save-name")
+        self._cbox = QCheckBox("Save As")
+        self._cbox.setFixedHeight(32)
         self._cbox.setChecked(True)
 
         # Create first tab:

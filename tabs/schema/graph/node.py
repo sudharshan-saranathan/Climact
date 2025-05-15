@@ -164,26 +164,22 @@ class Node(QGraphicsObject):
         else:                           return self._data[_eclass]
 
     def __setitem__(self,
-                    _eclass : EntityClass, 
-                    _list   : list
+                    _tuple: tuple,
+                    _value: EntityState | str | list
                     ):
 
         # Validate argument(s):
-        if (
-            not isinstance(_eclass, EntityClass) or
-            not isinstance(_list, list)
-        ):
-            raise TypeError("Expected arguments of types `EntityClass` and `list`")
+        if not isinstance(_tuple, tuple): raise TypeError("Expected argument of type `tuple`")
+
+        # Resolve tuple:
+        _eclass, _entity = _tuple
 
         # Assign data:
-        if _eclass == EntityClass.PAR:
-            self._data[EntityClass.PAR] = {
-                _item: EntityState.ACTIVE 
-                for _item in _list
-            }
+        if  _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.PAR]:
+            self._data[_eclass][_entity] = _value
 
-        elif _eclass == EntityClass.EQN:
-            self._data[EntityClass.EQN] = _list
+        if  _eclass == EntityClass.EQN:
+            self._data[_eclass] = _value
 
     def _init_menu(self):
         """

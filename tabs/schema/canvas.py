@@ -321,10 +321,11 @@ class Canvas(QGraphicsScene):
         # Create new terminal and position it:
         _terminal = StreamTerminal(_eclass, None)
         _terminal.setPos(_coords)
-        _terminal.socket.sig_item_clicked.connect(self.begin_transient)
-        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+        _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
+        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
 
         # Add item to canvas:
+        self.term_db[_terminal] = True
         self.addItem(_terminal)
 
         # If flag is set, create and forward action to stack-manager:
@@ -332,6 +333,9 @@ class Canvas(QGraphicsScene):
 
         # Set state-variable:
         self.sig_canvas_state.emit(SaveState.UNSAVED)
+
+        # Return terminal:
+        return _terminal
 
     def create_node(self, 
                    _name: str = "Node", 
@@ -455,8 +459,8 @@ class Canvas(QGraphicsScene):
             _copy = _item.duplicate(self)
 
             # Add to batch-action:
-            if      isinstance(_item, Node)             : batch.add_to_batch(CreateNodeAction(self, _copy))
-            elif    isinstance(_item, StreamTerminal)   : batch.add_to_batch(CreateStreamAction(self, _copy))
+            if      isinstance(_item, Node)          : batch.add_to_batch(CreateNodeAction(self, _copy))
+            elif    isinstance(_item, StreamTerminal): batch.add_to_batch(CreateStreamAction(self, _copy))
 
             # Add copy to node-database so that `create_nuid()` returns a unique ID:
             self.node_db[_copy] = True
@@ -504,6 +508,7 @@ class Canvas(QGraphicsScene):
 
         Parameters:
             _item (QGraphicsObject): The item to be pasted.
+            _stack (bool):
         """
 
         # Find type of item:
@@ -516,7 +521,9 @@ class Canvas(QGraphicsScene):
             _item.uid = self.create_nuid()
 
         elif isinstance(_item, StreamTerminal):
+            self.term_db[_item] = True
             _item.socket.sig_item_clicked.connect(self.begin_transient)
+            _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
 
         # Add item to canvas:
         self.addItem(_item)

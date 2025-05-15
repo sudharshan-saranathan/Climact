@@ -6,9 +6,9 @@
 
 import sys
 import logging
+import platform
 
-from PyQt6.QtGui     import QFont
-from PyQt6.QtCore    import pyqtSlot
+from PyQt6.QtGui     import QFont, QFontDatabase
 from PyQt6.QtWidgets import QApplication
 
 from gui.splash import StartupWindow, StartupChoice
@@ -45,8 +45,12 @@ class Climact(QApplication):
             format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d - %(funcName)s()] %(message)s'
         )
 
+        # Print font families:
+        for family in QFontDatabase.families():
+            print(family)
+
         # Initialize stylesheet, set font:
-        self.setFont(QFont("Nunito", self.Constants.FONT_SIZE))
+        self.setFont(QFont("Trebuchet MS", self.Constants.FONT_SIZE))
         self.setStyleSheet(read_qss (self.Constants.QSS_SHEET))
         logging.info(f"Stylesheet: {self.Constants.QSS_SHEET}")
 

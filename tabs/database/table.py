@@ -194,10 +194,9 @@ class Table(QTableWidget):
     def commit(self):
 
         # Abort if no node has been set:
-        if self._node() is None:
-            return
+        if self._node() is None: return
 
-        # Clear the node's dictionary:
+        # Clear the node's parameters and equations:
         self._node()[EntityClass.PAR].clear()
 
         # Save defined parameters:
@@ -241,7 +240,7 @@ class Table(QTableWidget):
                 entity.sigma   = self.cell_data(row, 7)
 
                 # Add parameter to dictionary:
-                self._node()[EntityClass.PAR][entity] = EntityState.ACTIVE
+                self._node()[EntityClass.PAR, entity] = EntityState.ACTIVE
 
         # Notify manager:
         self._unsaved = False
