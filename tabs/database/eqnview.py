@@ -10,6 +10,7 @@ from tabs.schema import Canvas
 
 class EqnView(QListWidget):
 
+    # Initializer:
     def __init__(self,
                  _canvas: Canvas,
                  _parent: QWidget
@@ -42,11 +43,16 @@ class EqnView(QListWidget):
         self.fetch()
 
     @property
-    def canvas(self): return self._canvas()
+    def symbols(self):  return self._symb
 
-    @canvas.setter
-    def canvas(self, _canvas):
-        self._canvas = weakref.ref(_canvas)
+    @symbols.setter
+    def symbols(self, value):
+
+        # Validate arguments:
+        if not isinstance(value, list): raise TypeError("Expected argument of type `list[str]`")
+
+        # Assign data:
+        self._symb = value
 
     def _init_menu(self):
 
@@ -113,7 +119,7 @@ class EqnView(QListWidget):
                 not equation.startswith('=')
             ):
                 sym_eqn = set(re.findall(r'\b[a-zA-Z][a-zA-Z0-9_]*\b', equation))  # Equation symbols
-                sym_tot = self._canvas.symbols() if self._canvas else None
+                sym_tot = self._symb
 
                 print(sym_eqn)
                 print(sym_tot)
