@@ -40,10 +40,13 @@ class Thread(QThread):
             response =  self.gemini.get_response(self.message, self.schema)
             match    =  compile(r"```json\s*(.*?)\s*```", DOTALL).search(response)
 
-            if match:
+            if  match:
                 json_code = match.group(1)
                 cresponse = response.replace(match.group(0), "").strip()
                 self.response_ready.emit(cresponse, json_code)
+
+                with open("dump.json", "w") as _file:
+                    _file.write(json_code)
 
             else:
                 self.response_ready.emit(response, None)

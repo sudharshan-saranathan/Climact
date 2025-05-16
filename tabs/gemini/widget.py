@@ -132,7 +132,7 @@ class Gui(QFrame):
                                    "}")
 
         # Send the JSON code-block through the `sig_json_available` signal:
-        if json_block is not None:
+        if  json_block is not None:
             self.sig_json_available.emit(json_block)
 
     def handle_error(self, error_msg: str):

@@ -102,13 +102,14 @@ class JsonLib:
 
             variables = [
                 JsonLib.entity_to_json(_entity, EntityClass.VAR)
-                for _entity in _item[EntityClass.INP] | _item[EntityClass.OUT]
-                if  _entity.isVisible()
+                for _entity, _state in (_item[EntityClass.INP] | _item[EntityClass.OUT]).items()
+                if  _state == EntityState.ACTIVE
             ]
 
             parameters = [
                 JsonLib.entity_to_json(_entity, EntityClass.PAR)
-                for _entity in _item[EntityClass.PAR]
+                for _entity, _state in _item[EntityClass.PAR].items()
+                if  _state == EntityState.ACTIVE
             ]
 
             # JSON-composite:
@@ -170,17 +171,16 @@ class JsonLib:
         print(f"- Encoding JSON for canvas: {_canvas.uid}")
 
         # Serialize selected items. If no items are selected, serialize all active (visible) items:
-        items =      _canvas.selectedItems()    \
-                if   _canvas.selectedItems()    \
-                else \
-                [_item for _item in _canvas.node_db if _canvas.node_db[_item]] + \
-                [_item for _item in _canvas.term_db if _canvas.term_db[_item]] + \
-                [_item for _item in _canvas.conn_db if _canvas.conn_db[_item]]
+        item_list = _canvas.selectedItems()         \
+                if  _canvas.selectedItems() else    \
+                [_item for _item, _state in _canvas.node_db.items() if _state == EntityState.ACTIVE] + \
+                [_item for _item, _state in _canvas.term_db.items() if _state] + \
+                [_item for _item, _state in _canvas.conn_db.items() if _state]
 
         # Serialize items and generate JSON-objects:
-        node_array = [JsonLib.serialize(item) for item in items if isinstance(item, graph.Node)]
-        conn_array = [JsonLib.serialize(item) for item in items if isinstance(item, graph.Connector)]
-        term_array = [JsonLib.serialize(item) for item in items if isinstance(item, graph.StreamTerminal)]
+        node_array = [JsonLib.serialize(item) for item, state in item_list.items() if state and isinstance(item, graph.Node)]
+        conn_array = [JsonLib.serialize(item) for item, state in item_list.items() if state and isinstance(item, graph.Connector)]
+        term_array = [JsonLib.serialize(item) for item, state in item_list.items() if state and isinstance(item, graph.StreamTerminal)]
 
         # Initialize JSON-objects:
         schematic = {

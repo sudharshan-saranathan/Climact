@@ -631,9 +631,17 @@ class Canvas(QGraphicsScene):
         Returns: None
         """
 
+        # Get a save filename if `_export_name` is empty:
+        if  not bool(_export_name):
+            _export_name, _result = QFileDialog.getSaveFileName(None,
+                                                                "Select save-file",
+                                                                ".",
+                                                                "JSON (*.json)"
+                                                                )
+            if not _result: return  # Return if the operation was cancelled
+
         # Try-block:
         try:
-            
             # Encode canvas' contents to JSON-string, then write to file:
             _json_str = JsonLib.encode_json(self)
             with open(_export_name, "w+") as _file:
@@ -644,9 +652,9 @@ class Canvas(QGraphicsScene):
 
         # Exception chain:
         except Exception as exception:
-            
+
             # Instantiate error-dialog:
-            _error_dialog = Dialog(QtMsgType.QtCriticalMsg, exception, QMessageBox.StandardButton.Ok)
+            _error_dialog = Dialog(QtMsgType.QtCriticalMsg, str(exception), QMessageBox.StandardButton.Ok)
             _error_dialog.exec()
             
             logging.error(f"Error encoding JSON: {exception}")

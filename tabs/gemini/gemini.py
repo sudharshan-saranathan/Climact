@@ -53,7 +53,8 @@ class Gemini:
         try:
             # Initialize generative AI:
             self._genai_client = genai.Client(api_key=self._api_key)
-            self._genai_stream = self._genai_client.chats.create(model="gemini-2.5-pro-preview-05-06")
+            # self._genai_stream = self._genai_client.chats.create(model="gemini-2.5-pro-preview-05-06")
+            self._genai_stream = self._genai_client.chats.create(model="gemini-2.0-flash")
             self._genai_config = types.GenerateContentConfig(
                 temperature=0.7,
                 system_instruction=self._prompts

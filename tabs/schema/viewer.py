@@ -35,6 +35,8 @@ from custom.dialog import Dialog
 from .canvas       import Canvas, SaveState
 from util          import *
 from tabs.gemini   import widget
+from .jsonlib import JsonLib
+
 
 class Viewer(QGraphicsView):
 
@@ -98,7 +100,7 @@ class Viewer(QGraphicsView):
         self._gemini = widget.Gui(self.canvas)
         self._gemini.setEnabled(False)
         self._gemini.hide()
-        self._gemini.sig_json_available.connect(lambda: print("JSON available"))
+        self._gemini.sig_json_available.connect(lambda _code: JsonLib.decode_json(_code, self.canvas, True))
         logging.info(f"Gemini AI-assistant initialized.")
 
         # Layout to manage widgets:
