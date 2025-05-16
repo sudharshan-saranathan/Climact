@@ -10,6 +10,9 @@ from actions import *
 
 from PyQt6.QtWidgets import QGraphicsObject
 
+from tabs.schema.graph import Connector
+
+
 class JsonLib:
     """
     Utility class for serializing and deserializing schematics (nodes and connectors)
@@ -31,7 +34,7 @@ class JsonLib:
     """
 
     @staticmethod
-    def create_json(_entity: Entity, _eclass: EntityClass):
+    def entity_to_json(_entity: Entity, _eclass: EntityClass):
 
         # Determine prefix:
         prefix = "variable" \
@@ -70,6 +73,25 @@ class JsonLib:
         return entity_obj
 
     @staticmethod
+    def json_to_entity(_entity: Entity,
+                       _eclass: EntityClass,
+                       _object: json):
+
+        _prefix = "variable" if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR] else "parameter"
+        _entity.symbol  = _object.get(f"{_prefix}-symbol")
+        _entity.label   = _object.get(f"{_prefix}-label")
+        _entity.units   = _object.get(f"{_prefix}-units")
+        _entity.info    = _object.get(f"{_prefix}-info")
+        _entity.strid   = _object.get(f"{_prefix}-strid")
+        _entity.value   = _object.get(f"{_prefix}-value")
+        _entity.sigma   = _object.get(f"{_prefix}-sigma")
+        _entity.value   = _object.get(f"{_prefix}-value")
+        _entity.minimum = _object.get(f"{_prefix}-minimum")
+        _entity.maximum = _object.get(f"{_prefix}-maximum")
+
+        print(_entity.symbol, _entity.eclass)
+
+    @staticmethod
     def serialize(_item: QGraphicsObject):
 
         if isinstance(_item, graph.Node):
@@ -79,13 +101,13 @@ class JsonLib:
             parameters  = list()
 
             variables = [
-                JsonLib.create_json(_entity, EntityClass.VAR) 
+                JsonLib.entity_to_json(_entity, EntityClass.VAR)
                 for _entity in _item[EntityClass.INP] | _item[EntityClass.OUT]
                 if  _entity.isVisible()
             ]
 
             parameters = [
-                JsonLib.create_json(_entity, EntityClass.PAR) 
+                JsonLib.entity_to_json(_entity, EntityClass.PAR)
                 for _entity in _item[EntityClass.PAR]
             ]
 
@@ -122,12 +144,14 @@ class JsonLib:
 
             connection_obj = {
                 "origin-parent-uid" : _item.origin.parentItem().uid,
+                "origin-eclass"     : str(_item.origin.eclass),
                 "origin-label"      : _item.origin.label,
                 "origin-scenepos"   : {
                     "x": _item.origin.scenePos().x(),
                     "y": _item.origin.scenePos().y()
                 },
                 "target-parent-uid" : _item.target.parentItem().uid,
+                "target-eclass"     : str(_item.target.eclass),
                 "target-label"      : _item.target.label,
                 "target-scenepos": {
                     "x": _item.target.scenePos().x(),
@@ -169,175 +193,125 @@ class JsonLib:
         return json.dumps(schematic, indent=4)
 
     @staticmethod
-    def decode_json(_code: str, 
-                    _canvas, 
-                    _group_actions: bool = False
+    def decode_json(_code: str,
+                    _canvas,
+                    _combine: bool = False
                     ):
 
         # Import canvas module:
         from tabs.schema.canvas import Canvas
 
-        # Convert file contents to JSON-parsable:
-        root = json.loads(_code)
+        # Initialize convenience-variables:
+        root  = json.loads(_code)
+        batch = BatchActions([])
 
         # Validate argument(s):
         if not isinstance(_code, str):      raise ValueError("Invalid JSON-code")
         if not isinstance(_canvas, Canvas): raise ValueError("Invalid `Canvas` object")
 
-        # Initialize batch-actions:
-        batch = BatchActions([])
+        # Read JSON and execute operations:
+        # Nodes:
+        for node_json in root.get("NODES"):
 
-        # Read node-data, create nodes:
-        for element in root.get("NODES", []):
+            title = node_json.get("node-title")
+            npos  = QPointF(node_json.get("node-scenepos").get("x"),
+                            node_json.get("node-scenepos").get("y")
+                            )
 
-            xp   = element.get("node-scenepos", {}).get("x", 0.0)
-            yp   = element.get("node-scenepos", {}).get("y", 0.0)
-            spos = QPointF(xp, yp)
-            name = element.get("node-title", "")
+            _node = _canvas.create_node(title,
+                                        npos,
+                                        False
+                                        )
+            _node.resize(int(node_json.get("node-height")) - 150)
+            _canvas.node_db[_node] = True   # Add node to canvas' database:
+            _canvas.addItem(_node)          # Add node to canvas
 
-            print(f"JsonLib: Creating node: {name}")
+            # Add action to batch:
+            batch.add_to_batch(CreateNodeAction(_canvas, _node))
 
-            # Create node with given size:
-            height = int(element.get("node-height", {}))
-            node   = _canvas.create_node(name, spos, False)
+            # Add variable(s):
+            for var_json in node_json.get("variables"):
 
-            node.title = name
-            node.resize(height - 150)
+                eclass = EntityClass.INP if var_json.get("variable-eclass") == "EntityClass.INP" else EntityClass.OUT
+                hpos   = QPointF(var_json.get("variable-position").get("x"),
+                                 var_json.get("variable-position").get("y")
+                                 )
 
-            # Create corresponding action:
-            action = CreateNodeAction(_canvas, node)
+                # Variable:
+                _var = _node.create_handle(hpos, eclass)
+                _node[eclass, _var] = EntityState.ACTIVE
 
-            if _group_actions:  batch.add_to_batch(action)  # Queue action
-            else:               _canvas.manager.do(action)  # Execute it immediately
-
-            # Load variable(s):
-            for variable_obj in element.get("variables", []):
-
-                eclass = variable_obj.get("variable-stream", 0)
-                eclass = EntityClass.INP if eclass == "EntityClass.INP" else EntityClass.OUT
-
-                xpos   = variable_obj.get("variable-position", {}).get("x", 0.0)
-                ypos   = variable_obj.get("variable-position", {}).get("y", 0.0)
-
-                # Create variable, don't push the action to the undo-stack yet:
-                variable = node.create_handle(
-                    QPointF(xpos, ypos),
-                    eclass
-                )
-
-                variable.symbol  = variable_obj.get("variable-symbol", "")
-                variable.info    = variable_obj.get("variable-info")
-                variable.label   = variable_obj.get("variable-label")
-                variable.units   = variable_obj.get("variable-units")
-                variable.value   = str(variable_obj.get("variable-value", ""))
-                variable.sigma   = str(variable_obj.get("variable-sigma", ""))
-                variable.minimum = str(variable_obj.get("variable-minimum", ""))
-                variable.maximum = str(variable_obj.get("variable-maximum", ""))
-
-                stream = _canvas.find_stream(variable_obj.get("variable-strid", ""))
-                variable.strid = stream.strid
-                variable.color = stream.color
-                variable.sig_item_updated.emit(variable)
-
-                variable.rename(variable.label)
-                variable_action = CreateHandleAction(node, variable)
+                # Read other attribute(s):
+                JsonLib.json_to_entity(_var, eclass, var_json)
+                _var.color = _canvas.find_stream(_var.strid).color
+                _var.rename(_var.label)
 
                 # Add action to batch:
-                if _group_actions:  batch.add_to_batch(variable_action)
-                else:               _canvas.manager.do(variable_action)
+                batch.add_to_batch(CreateHandleAction(_node, _var))
 
-            # Load parameter(s):
-            for parameter_obj in element.get("parameters", []):
+            # Add parameter(s):
+            for par_json in node_json.get("parameters"):
 
-                parameter = Entity()
-                parameter.symbol  = parameter_obj.get("parameter-symbol", "")
-                parameter.info    = parameter_obj.get("parameter-info")
-                parameter.label   = parameter_obj.get("parameter-label")
-                parameter.units   = parameter_obj.get("parameter-units")
-                parameter.value   = str(parameter_obj.get("parameter-value", ""))
-                parameter.sigma   = str(parameter_obj.get("parameter-sigma", ""))
-                parameter.minimum = str(parameter_obj.get("parameter-minimum", ""))
-                parameter.maximum = str(parameter_obj.get("parameter-maximum", ""))
+                # Parameter:
+                _par = Entity()
+                _par.eclass = EntityClass.PAR
 
-                stream = _canvas.find_stream(parameter_obj.get("parameter-strid", ""))
-                parameter.strid = stream.strid
-                parameter.color = stream.color
+                # Read other attribute(s):
+                JsonLib.json_to_entity(_par, EntityClass.PAR, par_json)
 
-                # Add parameter to dictionary:
-                node[EntityClass.PAR][parameter] = EntityState.ACTIVE
+                # Add to node:
+                _node[EntityClass.PAR, _par] = EntityState.ACTIVE
 
-        # Load in / outflows:
-        for element in root.get("TERMINALS", []):
+            # Add equations(s):
+            if node_json.get("equations"):  _node[EntityClass.EQN, None] = [equation for equation in node_json.get("equations")]
 
-            # Get name and position:
-            xp   = element.get("terminal-scenepos", {}).get("x", 0.0)
-            yp   = element.get("terminal-scenepos", {}).get("y", 0.0)
-            spos = QPointF(xp, yp)
-            name = element.get("terminal-label", "")
+        # Terminals:
+        for term_json in root.get("TERMINALS"):
 
-            # Create source or sink:
-            if  element.get("terminal-class", "") == "EntityClass.OUT":
+            eclass = EntityClass.INP if term_json.get("terminal-eclass") == "EntityClass.INP" else EntityClass.OUT
+            tpos   = QPointF(term_json.get("terminal-scenepos").get("x"),
+                             term_json.get("terminal-scenepos").get("y"),
+                             )
 
-                terminal = _canvas.create_terminal(EntityClass.OUT, spos)
-                action   = CreateStreamAction(_canvas, terminal)
+            # Create terminal:
+            _terminal = _canvas.create_terminal(eclass, tpos)
+            _terminal.socket.rename(term_json.get("terminal-label"))
+            _terminal.socket.strid = term_json.get("terminal-strid")
+            _terminal.socket.color = _canvas.find_stream(_terminal.socket.strid).color
+            _terminal.socket.sig_item_updated.emit(_terminal.socket)
 
-                stream = _canvas.find_stream(element.get("terminal-strid", ""))
-                terminal.socket.strid = stream.strid
-                terminal.socket.color = stream.color
-                terminal.socket.sig_item_updated.emit(terminal.socket)
+            # Add terminal to database and canvas:
+            _canvas.term_db[_terminal] = True
+            _canvas.addItem(_terminal)
 
-                if _group_actions:   batch.add_to_batch(action)      # Queue action
-                else:               _canvas.manager.do(action)       # Execute it immediately
+        # Connections:
+        for conn_json in root.get("CONNECTORS"):
 
-            elif element.get("terminal-class", "") == "EntityClass.INP":
+            opos = QPointF(conn_json.get("origin-scenepos").get("x"),   # Scene-position of the origin handle
+                           conn_json.get("origin-scenepos").get("y")
+                           )
 
-                terminal = _canvas.create_terminal(EntityClass.INP, spos)
-                action   = CreateStreamAction(_canvas, terminal)
+            tpos = QPointF(conn_json.get("target-scenepos").get("x"),   # Scene-position of the target handle
+                           conn_json.get("target-scenepos").get("y")
+                           )
 
-                stream = _canvas.find_stream(element.get("terminal-strid", ""))
-                terminal.socket.label = element.get("terminal-label", "")
-                terminal.socket.strid = stream.strid
-                terminal.socket.color = stream.color
-                terminal.socket.sig_item_updated.emit(terminal.socket)
+            origin = _canvas.itemAt(opos, QTransform()) # Reference to the origin handle
+            target = _canvas.itemAt(tpos, QTransform()) # Reference to the target handle
 
-                if _group_actions:   batch.add_to_batch(action)      # Queue action
-                else:               _canvas.manager.do(action)       # Execute it immediately
+            # Create connector:
+            try:
+                connector = Connector(_canvas.create_cuid(),
+                                      origin,
+                                      target,
+                                      False
+                                      )
 
-        # Execute batch-actions. This will insert nodes and flows into the scene:
-        batch.execute()
-
-        # Now setup connections:
-        for json_obj in root.get("CONNECTORS", []):
-
-            sxpos = json_obj.get("origin-scenepos", {}).get("x", 0.0)
-            sypos = json_obj.get("origin-scenepos", {}).get("y", 0.0)
-            txpos = json_obj.get("target-scenepos", {}).get("x", 0.0)
-            typos = json_obj.get("target-scenepos", {}).get("y", 0.0)
-
-            origin = _canvas.itemAt(QPointF(sxpos, sypos), QTransform())
-            target = _canvas.itemAt(QPointF(txpos, typos), QTransform())
-
-            if (
-                    isinstance(origin, graph.Handle) and
-                    isinstance(target, graph.Handle)
-            ):
-
-                connector = graph.Connector(_canvas.create_cuid(), 
-                                            origin, 
-                                            target, 
-                                            True
-                                            )
-                connector.sig_item_removed.connect(_canvas.on_item_removed)
-
-                # Add connector to database:
+                # Add connector to canvas:
                 _canvas.conn_db[connector] = True
                 _canvas.addItem(connector)
 
-                # Add action to batch:
-                batch.add_to_batch(ConnectHandleAction(_canvas, connector))
+            except Exception as exception:
+                print(f"An exception occurred: {exception}")
 
-        # Log and execute:
-        logging.info(f"{len(batch.actions)} actions grouped")
-        _canvas.manager.do(batch)
 
 

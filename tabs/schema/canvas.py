@@ -541,13 +541,12 @@ class Canvas(QGraphicsScene):
 
     def select_items(self, _items_dict: dict):
         """
-        Select the items in the set.
+        Select items in the canvas:
         """
-
         [
             item.setSelected(True)
             for item, state in _items_dict.items()
-            if state
+            if  state
         ]
 
     def delete_items(self, _items: dict):
@@ -615,7 +614,7 @@ class Canvas(QGraphicsScene):
             _code = _json_str.read()
             
         # Decode JSON-string:
-        _json = JsonLib.decode_json(_code, self, _group_actions=True)
+        _json = JsonLib.decode_json(_code, self, _combine=True)
 
         # Notify application of state-change:
         # self.sig_json_loaded.emit (Path(_file).name )

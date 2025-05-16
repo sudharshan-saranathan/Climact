@@ -79,7 +79,7 @@ class StreamActionLabel(QLabel):
 
         # Customize:
         self.setIndent(4)
-        self.setStyleSheet("{border-radius: 6px; color: black;}")
+        self.setStyleSheet("QLabel {border-radius: 6px; color: black;}")
 
     def enterEvent(self, _event):   self.setStyleSheet("QLabel {background: #e0e0e0; color: #187795;}")
 

@@ -322,6 +322,13 @@ class Handle(QGraphicsObject, Entity):
         self._prop["label"] = _label
         self._label.setPlainText(self.label)
 
+        if (
+            self.conjugate and
+            self.conjugate() and
+            self.eclass == EntityClass.OUT
+        ):
+            self.conjugate().rename(self.label)
+
     def lock(self, conjugate, connector):
 
         # Store references:

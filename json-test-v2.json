@@ -1,0 +1,145 @@
+{
+    "NODES": [
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 12300.0,
+                "y": 12418.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "EntityClass.OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "Output 1",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -24.925655529570577
+                    },
+                    "variable-scenepos": {
+                        "x": 12395.0,
+                        "y": 12393.07434447043
+                    }
+                },
+                {
+                    "variable-eclass": "EntityClass.OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "Output 2",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-color": "#f6ae2d",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 2.017762858291462
+                    },
+                    "variable-scenepos": {
+                        "x": 12395.0,
+                        "y": 12420.017762858291
+                    }
+                }
+            ]
+        },
+        {
+            "node-title": "Node",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 12746.482182324557,
+                "y": 12442.470611514842
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "EntityClass.INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "Output 1",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-color": "#028cb6",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -22.901905629682005
+                    },
+                    "variable-scenepos": {
+                        "x": 12651.482182324557,
+                        "y": 12419.56870588516
+                    }
+                },
+                {
+                    "variable-eclass": "EntityClass.INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "Output 2",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-color": "#f6ae2d",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 53.4377798025962
+                    },
+                    "variable-scenepos": {
+                        "x": 12651.482182324557,
+                        "y": 12495.908391317438
+                    }
+                }
+            ]
+        }
+    ],
+    "TERMINALS": [],
+    "CONNECTORS": [
+        {
+            "origin-parent-uid": "N0000",
+            "origin-eclass": "EntityClass.OUT",
+            "origin-label": "Output 1",
+            "origin-scenepos": {
+                "x": 12395.0,
+                "y": 12393.07434447043
+            },
+            "target-parent-uid": "N0001",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "Output 1",
+            "target-scenepos": {
+                "x": 12651.482182324557,
+                "y": 12419.56870588516
+            }
+        },
+        {
+            "origin-parent-uid": "N0000",
+            "origin-eclass": "EntityClass.OUT",
+            "origin-label": "Output 2",
+            "origin-scenepos": {
+                "x": 12395.0,
+                "y": 12420.017762858291
+            },
+            "target-parent-uid": "N0001",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "Output 2",
+            "target-scenepos": {
+                "x": 12651.482182324557,
+                "y": 12495.908391317438
+            }
+        }
+    ]
+}
