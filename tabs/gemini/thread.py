@@ -12,7 +12,7 @@ class Thread(QThread):
     # Initializer:
     def __init__(self, 
                 _gemini: gemini.Gemini, 
-                _msg: str,
+                _query: str,
                 _json: str | None = None):
         """
         Initializes the Thread class.
@@ -26,7 +26,7 @@ class Thread(QThread):
 
         self.gemini  = _gemini  # Gemini API instance (see gemini.py)
         self.schema  = _json    # JSON to send to the Gemini API
-        self.message = _msg     # Message to send to the Gemini API
+        self.message = _query   # Message to send to the Gemini API
 
     def run(self):
         """
@@ -35,6 +35,7 @@ class Thread(QThread):
         Parameters: None
         Returns: None
         """
+
         # Get response from Gemini:
         try:
             response =  self.gemini.get_response(self.message, self.schema)

@@ -5,8 +5,8 @@
 #-----------------------------------------------------------------------------------------------------------------------
 import logging
 import weakref
-from pathlib import Path
 
+from dataclasses  import dataclass
 from PyQt6.QtGui  import QColor, QTransform
 from PyQt6.QtCore import (
     Qt,
@@ -27,7 +27,6 @@ from PyQt6.QtWidgets import (
     QGraphicsObject
     )
 
-from dataclasses import dataclass
 from .graph   import *
 from .jsonlib import JsonLib
 
@@ -35,6 +34,7 @@ from util    import random_id
 from enum    import Enum
 from custom  import *
 from actions import *
+from pathlib import Path
 
 class SaveState(Enum):
     SAVED = 0
@@ -42,13 +42,40 @@ class SaveState(Enum):
 
 # Class Canvas - Subclass of QGraphicsScene, manages graphical items:
 class Canvas(QGraphicsScene):
+    """
+    Manages graphical items, connections, and user interactions within a 2D scene.
+
+    The Canvas class is a central component for creating and manipulating visual
+    representations of data flows, schematics, or diagrams. It handles the
+    creation, deletion, and interaction of nodes, terminals (input/output points),
+    and connectors. It also manages the overall state of the canvas, including
+    saving and loading schemas from JSON files, and supports undo/redo functionality
+    through an actions manager.
+
+    Key functionalities include:
+    - Creating and managing nodes, terminals, and connectors.
+    - Handling user input events such as mouse clicks, moves, and context menu requests.
+    - Implementing a transient connector for interactively drawing connections.
+    - Supporting copy, paste, and deletion of items.
+    - Importing and exporting canvas schematics in JSON format.
+    - Managing the save state of the canvas (saved/unsaved).
+    - Emitting signals for various canvas events (item creation/removal, state changes).
+
+    Attributes:
+        actions (BatchActions): Manages batch operations for undo/redo.
+        manager (ActionsManager): Manages the undo/redo stack.
+        term_db (dict): Registry of terminals on the canvas.
+        node_db (dict): Registry of nodes on the canvas.
+        conn_db (dict): Registry of connectors on the canvas.
+        type_db (set): Set of defined stream types (e.g., Mass, Energy).
+    """
 
     # Signals:
     sig_item_created = pyqtSignal()             # Emitted when a new item is created.
     sig_item_removed = pyqtSignal()             # Emitted when an item is removed.
     sig_canvas_reset = pyqtSignal()             # Emitted when the canvas is reset.
     sig_canvas_state = pyqtSignal(SaveState)    # Emitted when the canvas's state changes.
-    sig_schema_setup  = pyqtSignal(str)          # Emitted when a JSON-schematic is loaded.
+    sig_schema_setup = pyqtSignal(str)          # Emitted when a JSON-schematic is loaded.
 
     # Placeholder-connector:
     class Transient:
@@ -56,7 +83,7 @@ class Canvas(QGraphicsScene):
             self.active = False                 # Set to True when a connection is being drawn by the user, False otherwise.
             self.origin = None                  # Reference pointer to the connector's origin (tabs/schema/graph/handle.py).
             self.target = None                  # Reference pointer to the connector's target (tabs/schema/graph/handle.py).
-            self.connector = Connector("")      # Connector object (tabs/schema/graph/connector.py).
+            self.connector = Connector(str())   # Connector object (tabs/schema/graph/connector.py).
 
     # Global registry:
     @dataclass
@@ -113,10 +140,14 @@ class Canvas(QGraphicsScene):
     # Context-menu initializer:
     def _init_menu(self):
         """
-        Initializes the context menu with node creation, import/export, and group/clear actions.
+        Initializes the canvas's context menu. Actions in the menu include node- and terminal-creation, import and
+        export from/to JSON files, and group/clear operations. This method is called once by the class's initializer.
 
-        Parameters: None
-        Returns: None
+        Args: 
+            None
+
+        Returns: 
+            None
         """
 
         # Create menu:
@@ -165,12 +196,13 @@ class Canvas(QGraphicsScene):
     # Context-menu event handler:
     def contextMenuEvent(self, event):
         """
-        Handle context-menu events, triggered by right-clicks.
+        Opens the canvas's context-menu when the user right-clicks on the canvas.
 
-        Parameters:
-            event (QGraphicsSceneContextMenuEvent): Event instance, internally propagated by Qt.
+        Args: 
+            event (QGraphicsSceneContextMenuEvent): Event instance, internally propagated and managed by Qt.
 
-        Returns: None
+        Returns: 
+        None
         """
 
         # Call super-class implementation first:
@@ -185,13 +217,15 @@ class Canvas(QGraphicsScene):
 
     def mouseMoveEvent(self, event):
         """
-        Handle mouse-move events. When a connection is active, this handler will continuously update the connector's path
-        as the cursor is dragged across the scene.
+        Re-implementation of QGraphicsScene.mouseMoveEvent(). When an active connection is being drawn, this handler
+        will re-compute and draw the connector's path as the cursor is dragged across the canvas. In the absence of 
+        an active connection, the handler will forward the event to the super-class.
 
-        Parameters:
-            event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
+        Args: 
+            event (QGraphicsSceneMouseEvent): Event instance, internally propagated and managed by Qt.
 
-        Returns: None
+        Returns: 
+            None
         """
 
         # Forward event to other handlers:
@@ -206,12 +240,16 @@ class Canvas(QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
         """
-        Handle mouse-release events.
-
+        Re-implementation of QGraphicsScene.mouseReleaseEvent(). If a connection was being drawn when this event is 
+        triggered, and if certain conditions are met, this method will create a new target-handle and establish a 
+        connection between the origin and target handles. The method includes various checks to prevent logically
+        invalid connections (such as from one node or handle to itself).
+        
         Parameters:
             event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
 
-        Returns: None
+        Returns: 
+            None
         """
     
         # If transient-connector is inactive, or the release event is not a left-click, forward event to super-class:

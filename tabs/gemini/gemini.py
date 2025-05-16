@@ -75,15 +75,21 @@ class Gemini:
             _json (str | None): The JSON to send to Gemini.
         """
 
+        print(_json)
+
         # Disabled-check:
         if not self._enabled:   return "AI-assistant is disabled!"
 
         # Check if _json is a valid JSON string:
-        if isinstance(_json, str):  _query =    f"{_query}\n\nThe following JSON-code describes " \
-                                                 "the schematic currently displayed on the canvas:\n\n" \
-                                                 "{_json}"
+        if isinstance(_json, str):  _query =    f"The following JSON-code represents the schematic"\
+                                                f"currently displayed on the canvas:\n\n{_json}\n\n"\
+                                                f"The user's query is:\n{_query}\n"
             
         else:   print(f"INFO: _json is None")
+
+        # Write to history file:
+        with open("history.txt", "a") as file:
+            file.write(f"{_query}\n\n")
 
         # Fetch response from API, compute response-time:
         start = time.perf_counter()

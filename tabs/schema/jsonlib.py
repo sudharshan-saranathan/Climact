@@ -3,15 +3,11 @@ import logging
 
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QTransform
+from PyQt6.QtWidgets import QGraphicsObject, QMessageBox
 
 from tabs.schema import graph
-from custom import *
-from actions import *
-
-from PyQt6.QtWidgets import QGraphicsObject
-
-from tabs.schema.graph import Connector
-
+from custom      import *
+from actions     import *
 
 class JsonLib:
     """
@@ -37,18 +33,21 @@ class JsonLib:
     def entity_to_json(_entity: Entity, _eclass: EntityClass):
 
         # Determine prefix:
-        prefix = "variable" \
-                    if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR] \
-                    else "parameter"
+        prefix = str()
+        if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
+            prefix = "variable"
+        elif _eclass == EntityClass.PAR:
+            prefix = "parameter"
+        else:
+            raise ValueError(f"Invalid entity class: {_eclass}")
 
         # Create JSON-object:
         entity_obj = {
-                    f"{prefix}-eclass"   : str(_entity.eclass),
+                    f"{prefix}-eclass"   : _entity.eclass.name,
                     f"{prefix}-symbol"   : _entity.symbol,
                     f"{prefix}-label"    : _entity.label,
                     f"{prefix}-units"    : _entity.units, 
                     f"{prefix}-strid"    : _entity.strid,
-                    f"{prefix}-color"    : _entity.color.name(),
                     f"{prefix}-info"     : _entity.info,
                     f"{prefix}-value"    : _entity.value,
                     f"{prefix}-sigma"    : _entity.sigma,
@@ -56,29 +55,41 @@ class JsonLib:
                     f"{prefix}-maximum"  : _entity.maximum,
                 }
         
-        # If entity is a variable, add node- and scene-position:
+        # For variables, add coordinates relative to node and canvas:
         if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
             
             entity_obj.update({
-                f"{prefix}-position" : {
-                    "x": _entity.pos().x(),
+                f"{prefix}-position" : {            # Position relative to node
+                    "x": _entity.pos().x(),         
                     "y": _entity.pos().y()
                 },
-                f"{prefix}-scenepos" : {
+                f"{prefix}-scenepos" : {            # Position relative to canvas
                     "x": _entity.scenePos().x(),
                     "y": _entity.scenePos().y()
                 }
             })
 
+        # Return dictionary:
         return entity_obj
 
     @staticmethod
-    def json_to_entity(_entity: Entity,
-                       _eclass: EntityClass,
-                       _object: json):
+    def json_to_entity(
+        _entity: Entity,        # Entity object to be updated.
+        _eclass: EntityClass,   # Entity's class
+        _object: json           # JSON-dictionary containing entity's attributes.
+    ):
 
-        _prefix = "variable" if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR] else "parameter"
-        _entity.symbol  = _object.get(f"{_prefix}-symbol")
+        # Determine prefix:
+        prefix = str()
+        if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
+            prefix = "variable"
+        elif _eclass == EntityClass.PAR:
+            prefix = "parameter"
+        else:
+            raise ValueError(f"Invalid entity class: {_eclass}")
+
+        # Read other attribute(s):
+        _entity.symbol  = _object.get(f"{prefix}-symbol")
         _entity.label   = _object.get(f"{_prefix}-label")
         _entity.units   = _object.get(f"{_prefix}-units")
         _entity.info    = _object.get(f"{_prefix}-info")
@@ -89,63 +100,78 @@ class JsonLib:
         _entity.minimum = _object.get(f"{_prefix}-minimum")
         _entity.maximum = _object.get(f"{_prefix}-maximum")
 
-        print(_entity.symbol, _entity.eclass)
-
     @staticmethod
     def serialize(_item: QGraphicsObject):
+        """
+        Serializes a single `QGraphicsObject` to a JSON-object.
 
+        Args:
+            _item (QGraphicsObject): The `QGraphicsObject` to serialize.
+
+        Returns:
+            dict: A JSON-object containing the item's serialized attributes and children.
+        """
+
+        # If instance is a node, serialize the node's variables, parameters, and equations:
         if isinstance(_item, graph.Node):
 
-            variables   = list()
-            equations   = list()
-            parameters  = list()
-
+            # Construct a list of the node's active variables:
             variables = [
-                JsonLib.entity_to_json(_entity, EntityClass.VAR)
-                for _entity, _state in (_item[EntityClass.INP] | _item[EntityClass.OUT]).items()
-                if  _state == EntityState.ACTIVE
+                JsonLib.entity_to_json(entity, EntityClass.VAR)
+                for entity, state in _item[EntityClass.VAR].items()
+                if  state == EntityState.ACTIVE
             ]
 
+            # Construct a list of the node's active parameters:
             parameters = [
-                JsonLib.entity_to_json(_entity, EntityClass.PAR)
-                for _entity, _state in _item[EntityClass.PAR].items()
-                if  _state == EntityState.ACTIVE
+                JsonLib.entity_to_json(entity, EntityClass.PAR)
+                for entity, state in _item[EntityClass.PAR].items()
+                if  state == EntityState.ACTIVE
             ]
+
+            # Create list of equations:
+            equations = _item[EntityClass.EQN]
 
             # JSON-composite:
             node_object = {
-                "node-title"    : _item.title,
-                "node-height"   : _item.boundingRect().height(),
-                "node-scenepos" : {
+                "node-title"    : _item.title,                      # Node's title
+                "node-height"   : _item.boundingRect().height(),    # Node's height
+                "node-scenepos" : {                                 # Node's scene-position
                     "x": _item.scenePos().x(),
                     "y": _item.scenePos().y()
                 },
-                "parameters" : parameters,
-                "variables"  : variables
+                "parameters"  : parameters,                         # Node's active parameters
+                "variables"   : variables,                          # Node's active variables
+                "equations"   : equations                           # Node's equations
             }
 
+            # Return the node's JSON-object:
             return node_object
 
+        # If instance is a terminal, serialize the terminal's attributes:
         if isinstance(_item, graph.StreamTerminal):
 
+            # Create JSON-object:
             stream_obj = {
-                "terminal-class"    : str(_item.socket.eclass),
+                "terminal-class"    : _item.socket.eclass.name,
                 "terminal-label"    : _item.socket.label,
                 "terminal-strid"    : _item.socket.strid,
-                "terminal-color"    : _item.socket.color.name(),
                 "terminal-scenepos" : {
                     "x": _item.scenePos().x(),
                     "y": _item.scenePos().y()
                 }
             }
 
+            # Return the terminal's JSON-object:
             return stream_obj
 
+        # If instance is a connector, serialize the connector's attributes:
         if isinstance(_item, graph.Connector):
 
+            # Create JSON-object:
             connection_obj = {
                 "origin-parent-uid" : _item.origin.parentItem().uid,
-                "origin-eclass"     : str(_item.origin.eclass),
+                "origin-eclass"     : _item.origin.eclass.name,
                 "origin-label"      : _item.origin.label,
                 "origin-scenepos"   : {
                     "x": _item.origin.scenePos().x(),
@@ -160,33 +186,42 @@ class JsonLib:
                 }
             }
 
+            # Return the connector's JSON-object:
             return connection_obj
 
+        # If instance is not a node, terminal, or connector, return None:
         return None
 
     @staticmethod
     def encode_json(_canvas):
+        """
+        Serializes all selected items from the canvas (or all active items if no items are selected)
+        and returns a JSON-string.
 
-        # Debugging:
-        print(f"- Encoding JSON for canvas: {_canvas.uid}")
+        Args:
+            _canvas (Canvas): The canvas whose items to serialize.
 
-        # Serialize selected items. If no items are selected, serialize all active (visible) items:
-        item_list = _canvas.selectedItems()         \
-                if  _canvas.selectedItems() else    \
-                [_item for _item, _state in _canvas.node_db.items() if _state == EntityState.ACTIVE] + \
-                [_item for _item, _state in _canvas.term_db.items() if _state] + \
-                [_item for _item, _state in _canvas.conn_db.items() if _state]
+        Returns:
+            str: A JSON-string containing the serialized items.
+        """
 
-        # Serialize items and generate JSON-objects:
-        node_array = [JsonLib.serialize(item) for item, state in item_list.items() if state and isinstance(item, graph.Node)]
-        conn_array = [JsonLib.serialize(item) for item, state in item_list.items() if state and isinstance(item, graph.Connector)]
-        term_array = [JsonLib.serialize(item) for item, state in item_list.items() if state and isinstance(item, graph.StreamTerminal)]
+        item_list = (
+            _canvas.selectedItems()  if _canvas.selectedItems() else
+            [_item for _item, _state in _canvas.node_db.items() if _state] +     # Active nodes
+            [_item for _item, _state in _canvas.term_db.items() if _state] +     # Active terminals 
+            [_item for _item, _state in _canvas.conn_db.items() if _state]       # Active connectors
+        )
+
+        # Fetch serialized JSON-objects for each item-type:
+        node_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.Node)]
+        conn_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.Connector)]
+        term_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.StreamTerminal)]
 
         # Initialize JSON-objects:
         schematic = {
-            "NODES"      : node_array,
-            "TERMINALS"  : term_array,
-            "CONNECTORS" : conn_array
+            "NODES"      : node_array,  # Add all active nodes
+            "TERMINALS"  : term_array,  # Add all active terminals
+            "CONNECTORS" : conn_array   # Add all active connectors
         }
 
         # Return JSON-string:
@@ -197,8 +232,20 @@ class JsonLib:
                     _canvas,
                     _combine: bool = False
                     ):
+        """
+        Parses a schematic JSON-string and reconstructs the corresponding nodes, variables, and connectors
+        on the given `Canvas`. All actions are grouped into a single undoable `BatchAction`.
 
-        # Import canvas module:
+        Args:
+            _code (str): The JSON-string to parse.
+            _canvas (Canvas): The canvas to reconstruct the schematic on.
+            _combine (bool): Whether to combine the actions into a single undoable `BatchAction`.
+
+        Returns:
+            None
+        """
+
+        # Import canvas module (required for executing canvas operations):
         from tabs.schema.canvas import Canvas
 
         # Initialize convenience-variables:
@@ -287,31 +334,45 @@ class JsonLib:
         # Connections:
         for conn_json in root.get("CONNECTORS"):
 
-            opos = QPointF(conn_json.get("origin-scenepos").get("x"),   # Scene-position of the origin handle
-                           conn_json.get("origin-scenepos").get("y")
-                           )
+            # Origin handle's scene-position:
+            opos = QPointF(
+                conn_json.get("origin-scenepos").get("x"),
+                conn_json.get("origin-scenepos").get("y")
+            )
 
-            tpos = QPointF(conn_json.get("target-scenepos").get("x"),   # Scene-position of the target handle
-                           conn_json.get("target-scenepos").get("y")
-                           )
+            # Target handle's scene-position:
+            tpos = QPointF(
+                conn_json.get("target-scenepos").get("x"),
+                conn_json.get("target-scenepos").get("y")
+            )
 
-            origin = _canvas.itemAt(opos, QTransform()) # Reference to the origin handle
-            target = _canvas.itemAt(tpos, QTransform()) # Reference to the target handle
+            origin = _canvas.itemAt(opos, QTransform()) # Origin-reference
+            target = _canvas.itemAt(tpos, QTransform()) # Target-reference
 
-            # Create connector:
+            # Establish a new connection:
             try:
-                connector = Connector(_canvas.create_cuid(),
-                                      origin,
-                                      target,
-                                      False
-                                      )
 
-                # Add connector to canvas:
+                # Create connector:
+                connector = graph.Connector(_canvas.create_cuid(),
+                                            origin,
+                                            target,
+                                            False
+                                            )
+
+                # Add connector to database and canvas:
                 _canvas.conn_db[connector] = True
                 _canvas.addItem(connector)
 
+                # Add connector-creation action to batch:
+                batch.add_to_batch(CreateConnectorAction(_canvas, connector))
+
+            # If an exception occurs, print error:
             except Exception as exception:
-                print(f"An exception occurred: {exception}")
+                logging.exception(f"An exception occurred: {exception}")
+
+        # Execute batch:
+        if  _combine:
+            _canvas.manager.do(batch)
 
 
 

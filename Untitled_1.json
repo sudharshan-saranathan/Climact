@@ -12,7 +12,7 @@
                 {
                     "variable-eclass": "EntityClass.INP",
                     "variable-symbol": "R01",
-                    "variable-label": "Power",
+                    "variable-label": "p_oven",
                     "variable-units": "",
                     "variable-strid": "Power",
                     "variable-color": "#474973",
@@ -54,7 +54,7 @@
                 {
                     "variable-eclass": "EntityClass.INP",
                     "variable-symbol": "R02",
-                    "variable-label": "WHeat",
+                    "variable-label": "cog_rec",
                     "variable-units": "",
                     "variable-strid": "Energy",
                     "variable-color": "#f6ae2d",
@@ -75,7 +75,7 @@
                 {
                     "variable-eclass": "EntityClass.OUT",
                     "variable-symbol": "P03",
-                    "variable-label": "WHeat",
+                    "variable-label": "cog",
                     "variable-units": "",
                     "variable-strid": "Energy",
                     "variable-color": "#f6ae2d",
@@ -517,7 +517,7 @@
                 {
                     "variable-eclass": "EntityClass.OUT",
                     "variable-symbol": "R02",
-                    "variable-label": "bf output",
+                    "variable-label": "bf gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
@@ -1195,7 +1195,7 @@
                 {
                     "variable-eclass": "EntityClass.INP",
                     "variable-symbol": "R02",
-                    "variable-label": "bf output",
+                    "variable-label": "bf gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
@@ -1237,7 +1237,7 @@
                 {
                     "variable-eclass": "EntityClass.OUT",
                     "variable-symbol": "P01",
-                    "variable-label": "CO2",
+                    "variable-label": "emission1",
                     "variable-units": "tonne",
                     "variable-strid": "Mass",
                     "variable-color": "#028cb6",
@@ -1705,7 +1705,7 @@
         },
         {
             "terminal-class": "EntityClass.OUT",
-            "terminal-label": "w_heat",
+            "terminal-label": "WHeat",
             "terminal-strid": "Energy",
             "terminal-color": "#f6ae2d",
             "terminal-scenepos": {
@@ -1735,7 +1735,7 @@
         },
         {
             "terminal-class": "EntityClass.OUT",
-            "terminal-label": "emission2",
+            "terminal-label": "Scope 2 emi",
             "terminal-strid": "Mass",
             "terminal-color": "#028cb6",
             "terminal-scenepos": {
@@ -1998,14 +1998,14 @@
         {
             "origin-parent-uid": "N0002",
             "origin-eclass": "EntityClass.OUT",
-            "origin-label": "bf output",
+            "origin-label": "bf gas",
             "origin-scenepos": {
                 "x": 13463.0,
                 "y": 12418.1524760428
             },
             "target-parent-uid": "N0007",
             "target-eclass": "EntityClass.INP",
-            "target-label": "bf output",
+            "target-label": "bf gas",
             "target-scenepos": {
                 "x": 14353.0,
                 "y": 12416.98104001518
@@ -2041,54 +2041,6 @@
             "target-scenepos": {
                 "x": 14848.561982168485,
                 "y": 12439.216401278833
-            }
-        },
-        {
-            "origin-parent-uid": "T9776",
-            "origin-eclass": "EntityClass.OUT",
-            "origin-label": "WHeat",
-            "origin-scenepos": {
-                "x": 12094.0,
-                "y": 12357.0
-            },
-            "target-parent-uid": "N0000",
-            "target-eclass": "EntityClass.INP",
-            "target-label": "WHeat",
-            "target-scenepos": {
-                "x": 12179.0,
-                "y": 12362.0
-            }
-        },
-        {
-            "origin-parent-uid": "T0936",
-            "origin-eclass": "EntityClass.OUT",
-            "origin-label": "Coal",
-            "origin-scenepos": {
-                "x": 12097.0,
-                "y": 12420.0
-            },
-            "target-parent-uid": "N0000",
-            "target-eclass": "EntityClass.INP",
-            "target-label": "Coal",
-            "target-scenepos": {
-                "x": 12179.0,
-                "y": 12431.099335780797
-            }
-        },
-        {
-            "origin-parent-uid": "T7453",
-            "origin-eclass": "EntityClass.OUT",
-            "origin-label": "Power",
-            "origin-scenepos": {
-                "x": 12096.0,
-                "y": 12479.0
-            },
-            "target-parent-uid": "N0000",
-            "target-eclass": "EntityClass.INP",
-            "target-label": "Power",
-            "target-scenepos": {
-                "x": 12179.0,
-                "y": 12482.087991608698
             }
         }
     ]

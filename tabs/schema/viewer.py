@@ -29,16 +29,18 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
-from dataclasses    import dataclass
-
 from custom.dialog import Dialog
-from .canvas       import Canvas, SaveState
-from util          import *
+from dataclasses   import dataclass
 from tabs.gemini   import widget
+from util          import *
+
 from .jsonlib import JsonLib
+from .canvas  import Canvas, SaveState
 
-
+# Class: Viewer
 class Viewer(QGraphicsView):
+    """
+    """
 
     # Signals:
     sig_has_changed = pyqtSignal(bool)
@@ -100,7 +102,7 @@ class Viewer(QGraphicsView):
         self._gemini = widget.Gui(self.canvas)
         self._gemini.setEnabled(False)
         self._gemini.hide()
-        self._gemini.sig_json_available.connect(lambda _code: JsonLib.decode_json(_code, self.canvas, True))
+        self._gemini.sig_json_available.connect(self.execute_json)
         logging.info(f"Gemini AI-assistant initialized.")
 
         # Layout to manage widgets:
@@ -146,6 +148,26 @@ class Viewer(QGraphicsView):
     def toggle_assistant(self):
         self._gemini.setEnabled(not self._gemini.isEnabled())
         self._gemini.setVisible(not self._gemini.isVisible())
+
+    def execute_json(self, json_data: str):
+
+        if  json_data: 
+            
+            try: JsonLib.decode_json(json_data, self.canvas, True)
+            except Exception as exception:
+
+                # Display error message:
+                dialog = Dialog(QtMsgType.QtWarningMsg,
+                                f"Error decoding JSON: {exception}",
+                                QMessageBox.StandardButton.Ok
+                                )
+                dialog.exec()
+
+                logging.error(f"Error decoding JSON: {exception}")
+                return
+            
+            self.canvas.sig_canvas_state.emit(SaveState.UNSAVED)
+            
 
     # Register the canvas' saved/unsaved state:
     def update_state(self, state: SaveState):   self.state = state
