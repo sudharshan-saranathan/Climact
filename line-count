@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIR="${1:-.}"  # Use current directory if none provided
+
+echo "Counting non-comment lines of Python code in: $DIR"
+total=0
+
+while IFS= read -r -d '' file; do
+    count=$(grep -vE '^\s*($|#)' "$file" | wc -l)
+    printf "%5d lines — %s\n" "$count" "$file"
+    total=$((total + count))
+done < <(find "$DIR" -type f -name "*.py" -print0)
+
+echo "-------------------------"
+echo "Total non-comment lines: $total"

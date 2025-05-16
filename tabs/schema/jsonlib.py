@@ -195,14 +195,14 @@ class JsonLib:
             spos = QPointF(xp, yp)
             name = element.get("node-title", "")
 
-            print(f"- Creating node: {name}")
+            print(f"JsonLib: Creating node: {name}")
 
             # Create node with given size:
             height = int(element.get("node-height", {}))
             node   = _canvas.create_node(name, spos, False)
 
             node.title = name
-            node.resize(height - 200)
+            node.resize(height - 150)
 
             # Create corresponding action:
             action = CreateNodeAction(_canvas, node)

@@ -170,7 +170,7 @@ class Handle(QGraphicsObject, Entity):
     # Re-implemented methods -------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. boundingRect           Returns an artifically enlarged bounding rectangle.
+    # 1. boundingRect           Returns an artificially enlarged bounding rectangle.
     # 2. paint                  Handles the painting of the handle.
     # 3. itemChange             Emits the `sig_item_shifted` signal when the handle's scene-position changes, which is
     #                           captured by the connector.
@@ -218,7 +218,7 @@ class Handle(QGraphicsObject, Entity):
 
         # Initialize menu-actions:
         menu_actions = [
-            StreamMenuAction(stream, self._strid == stream.strid)
+            StreamMenuAction(stream, self.strid == stream.strid)
             for stream in self.scene().type_db
         ]
 

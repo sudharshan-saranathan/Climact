@@ -1,7 +1,7 @@
 import weakref
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QtMsgType
-from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QAction
+from PyQt6.QtGui import QShortcut, QKeySequence, QIcon
 from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox
 
 from custom.dialog import Dialog

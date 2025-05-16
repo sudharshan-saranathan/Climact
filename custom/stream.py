@@ -59,7 +59,8 @@ class StreamActionLabel(QLabel):
 
     # Initializer:
     def __init__(self, 
-                _label: str, 
+                _label: str,
+                _select: bool,
                 _parent: QWidget | None
                 ):
         """
@@ -70,13 +71,15 @@ class StreamActionLabel(QLabel):
             _parent (QWidget | None): The parent widget.
         """
 
+        # If selected, make the label bold:
+        _label = f"<b>{_label}</b>" if _select else _label
+
         # Initialize base-class:
         super().__init__(_label, _parent)
 
         # Customize:
         self.setIndent(4)
-        self.setMouseTracking(True)
-        self.setStyleSheet("QLabel {border-radius: 6px; color: black;}")
+        self.setStyleSheet("{border-radius: 6px; color: black;}")
 
     def enterEvent(self, _event):   self.setStyleSheet("QLabel {background: #e0e0e0; color: #187795;}")
 
@@ -106,8 +109,8 @@ class StreamMenuAction(QWidgetAction):
 
         # Colored indicator:
         size = 16
-        pixmap = QPixmap(size, size)    # Empty pixmap
-        pixmap.fill(QColor(0, 0, 0, 0)) # Transparent background
+        pixmap = QPixmap(size, size)      # Empty pixmap
+        pixmap.fill(QColor(0, 0, 0, 0))   # Fill with transparent background
 
         # Draw colored circle:
         painter = QPainter(pixmap)
@@ -118,13 +121,6 @@ class StreamMenuAction(QWidgetAction):
         painter.end()
 
         # Containers:
-        self._text_label = StreamActionLabel(_stream.strid, None)
-
-        if _select:
-            text_font = self._text_label.font()
-            text_font.setBold(True)
-            self._text_label.setFont(text_font)
-
         self._icon_label = QLabel()
         self._icon_label.setPixmap(pixmap)
         self._icon_label.setFixedWidth(16)
@@ -136,11 +132,17 @@ class StreamMenuAction(QWidgetAction):
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        # Set text-label:
+        self._text_label = StreamActionLabel(_stream.strid, _select, None)
+
+
         # Layout items:
         layout.addWidget(self._icon_label)
         layout.addWidget(self._text_label)
 
         # Add widget to action:
+        self.setCheckable(True)
+        self.setChecked(_select)
         self.setDefaultWidget(widget)
 
     def label(self):    return self._text_label.text()

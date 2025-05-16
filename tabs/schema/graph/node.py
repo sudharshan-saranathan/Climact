@@ -497,8 +497,9 @@ class Node(QGraphicsObject):
         # Create a unique handle-identifier:
         prefix = "P" if _eclass == EntityClass.OUT else "R"
         id_set = {
-            int(handle.symbol.split(prefix)[1])     # Fetch existing handle-IDs
-            for handle in self[_eclass]             
+            int(handle.symbol[1:])         # Get the node's currently used symbols
+            for handle, state in self[_eclass].items()
+            if  state
         }
 
         # If `id_set` is empty, return prefix + "00":
