@@ -323,7 +323,7 @@ class Canvas(QGraphicsScene):
         _terminal.setPos(_coords)
         _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
         _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
-        _terminal.socket.sig_item_removed.connect(self.on_item_removed, Qt.ConnectionType.UniqueConnection)
+        _terminal.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
         self.term_db[_terminal] = True
@@ -559,6 +559,8 @@ class Canvas(QGraphicsScene):
 
         Returns: None
         """
+
+        print(f"Deleting: {_items}")
 
         # Create batch-commands:
         batch = BatchActions([])
