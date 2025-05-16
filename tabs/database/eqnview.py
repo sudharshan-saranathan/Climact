@@ -8,12 +8,13 @@ from PyQt6.QtWidgets import QListWidget, QWidget, QMenu, QTextEdit, QDialog, QVB
 from custom import EntityClass
 from tabs.schema import Canvas
 
+# Class Equation-View:
 class EqnView(QListWidget):
 
     # Initializer:
     def __init__(self,
-                 _canvas: Canvas,
-                 _parent: QWidget
+                 _canvas: Canvas,   # Required for validating symbols
+                 _parent: QWidget   # Parent widget
                  ):
 
         # Initialize super-class:
@@ -170,6 +171,7 @@ class EqnView(QListWidget):
         # Fetch equations and display them:
         equations = self._node()[EntityClass.EQN]
         for equation in equations:
+
             # Create a list-item for each equation:
             item = QListWidgetItem(equation)
             item.setIcon(QIcon("rss/icons/trash.png"))

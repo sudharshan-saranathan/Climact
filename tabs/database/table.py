@@ -1,8 +1,8 @@
 import weakref
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QtMsgType
 from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QAction
-from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem
+from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox
 
 from custom.dialog import Dialog
 from custom.entity import Entity, EntityClass, EntityState
@@ -56,8 +56,17 @@ class Table(QTableWidget):
         self.cellChanged.connect(self.on_data_changed)
 
         # Initialize menu:
+        self._init_menu()
+
+    # Initialize menu:
+    def _init_menu(self):
+
         self._menu = QMenu()
-        self._menu.addAction(QAction("Erase", self, triggered=self.erase))
+        self._menu.addAction("Assign", QKeySequence("Ctrl+Return"   ), self.assign)
+        self._menu.addAction("Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
+
+        self._menu.addSeparator()
+        self._menu.addAction("Delete", QKeySequence("Delete"), self.delete_row)
 
     # Context-menu event:
     def contextMenuEvent(self, event):
@@ -137,6 +146,13 @@ class Table(QTableWidget):
         upper_item = QTableWidgetItem(str(entity.maximum))
         upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        inter_item = QTableWidgetItem()
+        inter_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        auto_item = QTableWidgetItem()
+        auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        auto_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.setItem(row, 0, symb_item)
         self.setItem(row, 1, name_item)
         self.setItem(row, 2, unit_item)
@@ -145,6 +161,28 @@ class Table(QTableWidget):
         self.setItem(row, 7, sigma_item)
         self.setItem(row, 5, lower_item)
         self.setItem(row, 6, upper_item)
+        self.setItem(row, 8, inter_item)
+        self.setItem(row, 9, auto_item)
+
+        # Notify manager:
+        self._unsaved = True
+        self.sig_table_modified.emit(self._node(), self._unsaved)
+
+    # Delete selected rows:
+    def delete_row(self):
+
+        # Get unique rows:
+        rows = set([item.row() for item in self.selectedItems()])
+
+        # Sort in reverse order for `removeRow()` to work properly:
+        for row in sorted(rows, reverse=True):
+            is_selected = True
+            for column in range(self.columnCount()):
+                print(row, column)
+                is_selected &= self.item(row, column).isSelected()
+
+            # Remove row if it is selected:
+            if is_selected: self.removeRow(row)
 
         # Notify manager:
         self._unsaved = True
@@ -185,7 +223,27 @@ class Table(QTableWidget):
         self._hmap.clear()
         self.setRowCount(0)
 
+    # Assign selected cells:
+    @pyqtSlot(name="Table.assign")
+    def assign(self):
+        
+        value, code = QInputDialog.getText(self, "Assign", "Enter a value:")
+            
+        # Abort if the user cancels the dialog:
+        if not code: return
+
+        # Abort if the entered value is not a string, float, or int:
+        if not isinstance(value, str | float | int):
+            _error = Dialog(QtMsgType.QtCriticalMsg, "The entered value must be of type `str`, `float`, or `int`", QMessageBox.StandardButton.Ok)
+            _error.exec()
+            return
+
+        # Assign the value to each selected item:
+        for item in self.selectedItems():
+            if item: item.setText(str(value))
+
     # Erase selected cells:
+    @pyqtSlot(name="Table.erase")
     def erase(self):
 
         # Get selected items:
