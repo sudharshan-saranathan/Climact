@@ -323,6 +323,7 @@ class Canvas(QGraphicsScene):
         _terminal.setPos(_coords)
         _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
         _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
+        _terminal.socket.sig_item_removed.connect(self.on_item_removed, Qt.ConnectionType.UniqueConnection)
 
         # Add item to canvas:
         self.term_db[_terminal] = True
@@ -453,18 +454,18 @@ class Canvas(QGraphicsScene):
         batch = BatchActions([])
 
         # Duplicate items:
-        for _item in Canvas.Registry.clipboard:
+        for item in Canvas.Registry.clipboard:
             
             # Duplicate item (node or terminal):
-            _copy = _item.duplicate(self)
+            _copy = item.duplicate(self)
 
             # Add to batch-action:
-            if      isinstance(_item, Node)          : batch.add_to_batch(CreateNodeAction(self, _copy))
-            elif    isinstance(_item, StreamTerminal): batch.add_to_batch(CreateStreamAction(self, _copy))
+            if      isinstance(item, Node)          : batch.add_to_batch(CreateNodeAction(self, _copy))
+            elif    isinstance(item, StreamTerminal): batch.add_to_batch(CreateStreamAction(self, _copy))
 
             # Add copy to node-database so that `create_nuid()` returns a unique ID:
-            if   isinstance(_item, Node)          : self.node_db[_copy] = True
-            elif isinstance(_item, StreamTerminal): self.term_db[_copy] = True
+            if   isinstance(item, Node)          : self.node_db[_copy] = True
+            elif isinstance(item, StreamTerminal): self.term_db[_copy] = True
 
         # Re-establish connections:
         while Handle.cmap:
@@ -525,6 +526,7 @@ class Canvas(QGraphicsScene):
             self.term_db[_item] = True
             _item.socket.sig_item_clicked.connect(self.begin_transient)
             _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+            _item.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
         self.addItem(_item)
@@ -561,13 +563,14 @@ class Canvas(QGraphicsScene):
         # Create batch-commands:
         batch = BatchActions([])
 
-        for _item in _items:
+        # Delete items in the dictionary:
+        for item in _items:
 
-            if isinstance(_item, Node) and self.node_db[_item]:
-                batch.add_to_batch(RemoveNodeAction(self, _item))
+            if isinstance(item, Node) and self.node_db[item]:
+                batch.add_to_batch(RemoveNodeAction(self, item))
 
-            elif isinstance(_item, StreamTerminal) and self.term_db[_item]:
-                batch.add_to_batch(RemoveStreamAction(self, _item))
+            elif isinstance(item, StreamTerminal) and self.term_db[item]:
+                batch.add_to_batch(RemoveStreamAction(self, item))
     
         # Execute batch:
         if batch.size():    self.manager.do(batch)
@@ -692,14 +695,14 @@ class Canvas(QGraphicsScene):
         """
 
         # Get signal-emitter:
-        _item = self.sender()
+        item = self.sender()
        
         # Validate signal-emitter:
         if (
-            isinstance(_item, QGraphicsObject) and
-            _item.scene() == self
+            isinstance(item, QGraphicsObject) and
+            item.scene() == self
         ):
-            self.delete_items({_item})  # Delete item
+            self.delete_items({item: True})  # Delete item
     
     def find_stream(self, _stream: str):
         """

@@ -1,8 +1,8 @@
 import weakref
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QShortcut, QKeySequence, QIcon
-from PyQt6.QtWidgets import QTableWidget, QWidget, QHeaderView, QTableWidgetItem
+from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QAction
+from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem
 
 from custom.dialog import Dialog
 from custom.entity import Entity, EntityClass, EntityState
@@ -54,6 +54,14 @@ class Table(QTableWidget):
 
         # Connect table's signals:
         self.cellChanged.connect(self.on_data_changed)
+
+        # Initialize menu:
+        self._menu = QMenu()
+        self._menu.addAction(QAction("Erase", self, triggered=self.erase))
+
+    # Context-menu event:
+    def contextMenuEvent(self, event):
+        self._menu.exec(event.globalPos())
 
     # Create row to display variable data:
     def add_stream(self, handle: Handle):
@@ -176,6 +184,16 @@ class Table(QTableWidget):
 
         self._hmap.clear()
         self.setRowCount(0)
+
+    # Erase selected cells:
+    def erase(self):
+
+        # Get selected items:
+        selected_items = self.selectedItems()
+
+        # Erase each selected item:
+        for item in selected_items:
+            item.setText("")
 
     # Method to return unique column-values:
     def unique(self, column: int):

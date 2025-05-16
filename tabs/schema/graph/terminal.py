@@ -26,9 +26,9 @@ from .handle import Handle
 class StreamTerminal(QGraphicsObject):
 
     # Signals:
-    sig_terminal_clicked = pyqtSignal() # Emitted when the terminal's handle is clicked
-    sig_terminal_deleted = pyqtSignal() # Emitted when the terminal is deleted
-    sig_terminal_updated = pyqtSignal() # Emitted when the terminal is updated
+    sig_item_clicked = pyqtSignal() # Emitted when the terminal's handle is clicked
+    sig_item_updated = pyqtSignal() # Emitted when the terminal is updated
+    sig_item_removed = pyqtSignal() # Emitted when the terminal is removed
 
     # Constants:
     class Constants:
@@ -107,7 +107,7 @@ class StreamTerminal(QGraphicsObject):
         # Initialize context-menu:
         self._menu = QMenu()
         _delete = self._menu.addAction("Delete")
-        _delete.triggered.connect(self.sig_terminal_deleted.emit)
+        _delete.triggered.connect(self.sig_item_removed.emit)
 
 
     # Re-implemented methods -------------------------------------------------------------------------------------------

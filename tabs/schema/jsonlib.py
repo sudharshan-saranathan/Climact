@@ -106,7 +106,7 @@ class JsonLib:
         if isinstance(_item, graph.StreamTerminal):
 
             stream_obj = {
-                "terminal-class"    : str(_item.socket.stream),
+                "terminal-class"    : str(_item.socket.eclass),
                 "terminal-label"    : _item.socket.label,
                 "terminal-strid"    : _item.socket.strid,
                 "terminal-color"    : _item.socket.color.name(),
