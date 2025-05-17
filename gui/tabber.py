@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from PyQt6.QtCore import (
     Qt, 
@@ -109,12 +110,11 @@ class Tabber(QTabWidget):
 
         # Connect viewer's signals:
         _viewer.canvas.sig_canvas_state.connect(self.set_indicator)
-        _viewer.canvas.sig_schema_setup.connect(lambda file: 
-                                                    self.setTabText(
-                                                        self.currentIndex(), 
-                                                        file
-                                                    )
-                                                )
+        _viewer.canvas.sig_schema_setup.connect(lambda file: self.setTabText(
+            self.currentIndex(),
+            Path(file).name.split('.')[0]
+        ))
+
         # Call super-class implementation:
         super().addTab(_viewer, _label)
 
@@ -138,7 +138,13 @@ class Tabber(QTabWidget):
     def toggle_assistant(self): self.currentWidget().toggle_assistant()
 
     # Import schematic:
-    def import_schema(self):    self.currentWidget().canvas.import_schema()
+    def import_schema(self):
+
+        _file = self.currentWidget().canvas.import_schema()
+        _file = Path(_file).name.split('*')[0]
+
+        print(f"Renaming tab to {_file}")
+        self.setTabText(self.currentIndex(), _file)
 
     # Export schematic:
     def export_schema(self):
@@ -166,13 +172,10 @@ class Tabber(QTabWidget):
                     _canvas.export_schema(f"{_file}")       # Save schematic
                     self.set_modified(False)                # Remove asterisk from tab label
 
-                except Exception as exception:
-                    
-                    # Instantiate error-dialog:
-                    _error_dialog = Dialog(QtMsgType.QtCriticalMsg,
-                                f"An exception occurred: {exception}",
-                                   QMessageBox.StandardButton.Ok)
-                    logging.exception(f"An exception occurred: {exception}")
+                # Display error-dialog:
+                except Exception as excp: 
+                    Dialog.standard_error(f"An exception occurred: {excp}")
+    
 
     # Set/Unset the modified indicator:
     @pyqtSlot(SaveState)

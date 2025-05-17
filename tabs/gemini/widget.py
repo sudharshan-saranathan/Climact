@@ -88,9 +88,8 @@ class Gui(QFrame):
 
     def return_pressed(self):
 
-        # Null-check:
-        if not bool(self._prompt.toPlainText()):
-            return
+        # Return if the prompt is empty:
+        if not bool(self._prompt.toPlainText()): return
 
         # First, try to encode the canvas as JSON:
         _json = JsonLib.encode_json(self._canvas)
@@ -145,5 +144,11 @@ class Gui(QFrame):
                                    "background: green;"
                                    "}")
 
-    def display_message(self, string: str):
-        self._window.setPlainText(string)
+    def display_message(self, _response: str):
+
+        # Validate argument(s):
+        if isinstance(_response, str):
+            self._window.setPlainText(_response)
+
+        # Display a warning dialog:
+        else: Dialog.standard_warning(f"Expected a string-response, but got: {type(_response)}")

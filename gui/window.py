@@ -117,8 +117,6 @@ class Gui(QMainWindow):
         _dialog_code = _dialog.exec()
 
         # Handle close-event accordingly:
-        if _dialog_code == QMessageBox.StandardButton.Yes:
-            event.accept()
-
+        if _dialog_code == QMessageBox.StandardButton.Yes:      event.accept()
         if _dialog_code == QMessageBox.StandardButton.No:       event.accept()
         if _dialog_code == QMessageBox.StandardButton.Cancel:   event.ignore()

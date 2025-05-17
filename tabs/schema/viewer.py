@@ -155,14 +155,8 @@ class Viewer(QGraphicsView):
             
             try: JsonLib.decode_json(json_data, self.canvas, True)
             except Exception as exception:
-
-                # Display error message:
-                dialog = Dialog(QtMsgType.QtWarningMsg,
-                                f"Error decoding JSON: {exception}",
-                                QMessageBox.StandardButton.Ok
-                                )
-                dialog.exec()
-
+                # Display error-dialog:
+                Dialog.standard_error(f"Error decoding JSON: {exception}")
                 logging.error(f"Error decoding JSON: {exception}")
                 return
             

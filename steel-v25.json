@@ -10,12 +10,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "p_oven",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -31,12 +30,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "Coal",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -52,12 +50,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "cog_rec",
                     "variable-units": "",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -73,12 +70,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P03",
                     "variable-label": "cog",
                     "variable-units": "",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -94,12 +90,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "breeze_sint",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -115,12 +110,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P02",
                     "variable-label": "tar",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -136,12 +130,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P01",
                     "variable-label": "coke_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -156,7 +149,8 @@
                         "y": 12404.946472530171
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "Sinter plant",
@@ -168,12 +162,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R04",
                     "variable-label": "char_sint",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -189,12 +182,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R03",
                     "variable-label": "flux_sint",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -210,12 +202,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "fine_ore",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -231,12 +222,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "breeze_sint",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -252,12 +242,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "p_sint",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -273,12 +262,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "sint_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -294,12 +282,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R03",
                     "variable-label": "sinter gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Sinter waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -314,7 +301,8 @@
                         "y": 12568.541554541514
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "Blast furnace",
@@ -326,12 +314,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "coke_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -347,12 +334,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R07",
                     "variable-label": "bfg_rec",
                     "variable-units": "",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -368,12 +354,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R03",
                     "variable-label": "p_bf",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -389,12 +374,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R05",
                     "variable-label": "lump_ore",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -410,12 +394,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "flux_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -431,12 +414,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R04",
                     "variable-label": "pcoal_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -452,12 +434,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "sint_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -473,12 +454,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R06",
                     "variable-label": "char_bf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -494,12 +474,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P01",
                     "variable-label": "hot metal",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -515,12 +494,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R02",
                     "variable-label": "bf gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Blast furnace waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -536,12 +514,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P02",
                     "variable-label": "bf slag",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -556,7 +533,8 @@
                         "y": 12356.089932183431
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "BOF",
@@ -568,12 +546,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R03",
                     "variable-label": "flux_bof",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -589,12 +566,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R04",
                     "variable-label": "bof_rec",
                     "variable-units": "",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -610,12 +586,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "p_bof",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -631,12 +606,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "scrap_bof",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -652,12 +626,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "hot metal",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -673,12 +646,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R00",
                     "variable-label": "bof gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Basic Oxygen Furnace waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -694,12 +666,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P01",
                     "variable-label": "bof slag",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -715,12 +686,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R00",
                     "variable-label": "cs_bof",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Crude steel output from BOF route",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -735,7 +705,8 @@
                         "y": 12327.76548465095
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "EAF",
@@ -747,12 +718,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R05",
                     "variable-label": "R05",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -768,12 +738,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "R02",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -789,12 +758,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "flux_eaf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -810,12 +778,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "scrap_eaf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -831,12 +798,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R03",
                     "variable-label": "sponge iron",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -852,12 +818,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R04",
                     "variable-label": "p_eaf",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -873,12 +838,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R01",
                     "variable-label": "cs_eaf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Crude steel output from EAF route",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -894,12 +858,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P01",
                     "variable-label": "eaf slag",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -915,12 +878,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R01",
                     "variable-label": "eaf gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "EAF waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -935,7 +897,8 @@
                         "y": 12648.069050160471
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "DRI",
@@ -947,12 +910,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "coal_dri",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -968,12 +930,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R03",
                     "variable-label": "p_dri",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -989,12 +950,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "h2_dri",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1010,12 +970,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "ng_dri",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1031,12 +990,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R04",
                     "variable-label": "ore_dri",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1052,12 +1010,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "sponge iron",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1072,7 +1029,8 @@
                         "y": 12780.382493958878
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "Pellets plant",
@@ -1084,12 +1042,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "ore_pell",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1105,12 +1062,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "ore_dri",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1125,7 +1081,8 @@
                         "y": 12946.346010764946
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "WGas",
@@ -1136,12 +1093,11 @@
             },
             "parameters": [
                 {
-                    "parameter-eclass": "EntityClass.PAR",
+                    "parameter-eclass": "PAR",
                     "parameter-symbol": "emi",
                     "parameter-label": "",
                     "parameter-units": "tCO2/MWh",
                     "parameter-strid": "Default",
-                    "parameter-color": "#808080",
                     "parameter-info": "Grid emission factor",
                     "parameter-value": "0.72",
                     "parameter-sigma": "",
@@ -1151,12 +1107,11 @@
             ],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R03",
                     "variable-label": "sinter gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Sinter waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1172,12 +1127,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "eaf gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "EAF waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1193,12 +1147,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R02",
                     "variable-label": "bf gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Blast furnace waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1214,12 +1167,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "bof gas",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Basic Oxygen Furnace waste gas",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1235,12 +1187,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P01",
                     "variable-label": "emission1",
                     "variable-units": "tonne",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Scope 1 emission",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1256,12 +1207,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P02",
                     "variable-label": "emission2",
                     "variable-units": "tonne",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Scope 2 emission",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1277,12 +1227,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "R00",
                     "variable-label": "waspow",
                     "variable-units": "GJ",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "Available waste heat for power ",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1298,12 +1247,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "w_heat",
                     "variable-units": "",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "Available waste heat for recycling",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1318,7 +1266,8 @@
                         "y": 12406.422171468079
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "Steel",
@@ -1330,12 +1279,11 @@
             "parameters": [],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R01",
                     "variable-label": "cs_eaf",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Crude steel output from EAF route",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1351,12 +1299,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "cs_bof",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Crude steel output from BOF route",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1372,12 +1319,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "Crude steel",
                     "variable-units": "",
                     "variable-strid": "Mass",
-                    "variable-color": "#028cb6",
                     "variable-info": "Crude steel output of Industries (tonnes)",
                     "variable-value": "1",
                     "variable-sigma": "",
@@ -1392,7 +1338,8 @@
                         "y": 12646.066233287858
                     }
                 }
-            ]
+            ],
+            "equations": []
         },
         {
             "node-title": "Power Plant",
@@ -1403,12 +1350,11 @@
             },
             "parameters": [
                 {
-                    "parameter-eclass": "EntityClass.PAR",
+                    "parameter-eclass": "PAR",
                     "parameter-symbol": "eta",
                     "parameter-label": "",
                     "parameter-units": "",
                     "parameter-strid": "Default",
-                    "parameter-color": "#808080",
                     "parameter-info": "Conversion efficiency (waste heat to power)",
                     "parameter-value": "0.25",
                     "parameter-sigma": "",
@@ -1418,12 +1364,11 @@
             ],
             "variables": [
                 {
-                    "variable-eclass": "EntityClass.INP",
+                    "variable-eclass": "INP",
                     "variable-symbol": "R00",
                     "variable-label": "waspow",
                     "variable-units": "GJ",
                     "variable-strid": "Energy",
-                    "variable-color": "#f6ae2d",
                     "variable-info": "Available waste heat for power ",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1439,12 +1384,11 @@
                     }
                 },
                 {
-                    "variable-eclass": "EntityClass.OUT",
+                    "variable-eclass": "OUT",
                     "variable-symbol": "P00",
                     "variable-label": "pow",
                     "variable-units": "",
                     "variable-strid": "Power",
-                    "variable-color": "#474973",
                     "variable-info": "Output power converted from waste heat (kWh)",
                     "variable-value": "",
                     "variable-sigma": "",
@@ -1459,375 +1403,2078 @@
                         "y": 12426.444403376658
                     }
                 }
-            ]
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "Coke oven",
+            "node-height": 200.0,
+            "node-scenepos": {
+                "x": 12274.0,
+                "y": 12397.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "p_oven",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 85.08799160869785
+                    },
+                    "variable-scenepos": {
+                        "x": 12179.0,
+                        "y": 12482.087991608698
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "Coal",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 34.09933578079654
+                    },
+                    "variable-scenepos": {
+                        "x": 12179.0,
+                        "y": 12431.099335780797
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "cog_rec",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -35.0
+                    },
+                    "variable-scenepos": {
+                        "x": 12179.0,
+                        "y": 12362.0
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P03",
+                    "variable-label": "cog",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 96.24889177337354
+                    },
+                    "variable-scenepos": {
+                        "x": 12369.0,
+                        "y": 12493.248891773374
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "breeze_sint",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 46.00240330176712
+                    },
+                    "variable-scenepos": {
+                        "x": 12369.0,
+                        "y": 12443.002403301767
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P02",
+                    "variable-label": "tar",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -31.636139365782583
+                    },
+                    "variable-scenepos": {
+                        "x": 12369.0,
+                        "y": 12365.363860634217
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "coke_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 7.946472530171377
+                    },
+                    "variable-scenepos": {
+                        "x": 12369.0,
+                        "y": 12404.946472530171
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "Sinter plant",
+            "node-height": 250.0,
+            "node-scenepos": {
+                "x": 13011.373450324672,
+                "y": 12490.969868181555
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R04",
+                    "variable-label": "char_sint",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 154.83355810113426
+                    },
+                    "variable-scenepos": {
+                        "x": 12916.373450324672,
+                        "y": 12645.80342628269
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R03",
+                    "variable-label": "flux_sint",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 97.51726942256573
+                    },
+                    "variable-scenepos": {
+                        "x": 12916.373450324672,
+                        "y": 12588.487137604121
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "fine_ore",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 8.849631460847377
+                    },
+                    "variable-scenepos": {
+                        "x": 12916.373450324672,
+                        "y": 12499.819499642403
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "breeze_sint",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -28.0
+                    },
+                    "variable-scenepos": {
+                        "x": 12916.373450324672,
+                        "y": 12462.969868181555
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "p_sint",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 53.43562320628189
+                    },
+                    "variable-scenepos": {
+                        "x": 12916.373450324672,
+                        "y": 12544.405491387837
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "sint_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 0.698194000426156
+                    },
+                    "variable-scenepos": {
+                        "x": 13106.373450324672,
+                        "y": 12491.668062181981
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R03",
+                    "variable-label": "sinter gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Sinter waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 77.57168635995913
+                    },
+                    "variable-scenepos": {
+                        "x": 13106.373450324672,
+                        "y": 12568.541554541514
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "Blast furnace",
+            "node-height": 300.0,
+            "node-scenepos": {
+                "x": 13368.0,
+                "y": 12313.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "coke_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 143.44151114397573
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12456.441511143976
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R07",
+                    "variable-label": "bfg_rec",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -35.81017619389968
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12277.1898238061
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R03",
+                    "variable-label": "p_bf",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 78.89362143003746
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12391.893621430037
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R05",
+                    "variable-label": "lump_ore",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -0.15162570243955997
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12312.84837429756
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "flux_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 114.45984935003798
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12427.459849350038
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R04",
+                    "variable-label": "pcoal_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 42.91466132945243
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12355.914661329452
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "sint_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 175.91447936065197
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12488.914479360652
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R06",
+                    "variable-label": "char_bf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 205.1800795619256
+                    },
+                    "variable-scenepos": {
+                        "x": 13273.0,
+                        "y": 12518.180079561926
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "hot metal",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -11.256571942036317
+                    },
+                    "variable-scenepos": {
+                        "x": 13463.0,
+                        "y": 12301.743428057964
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R02",
+                    "variable-label": "bf gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Blast furnace waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 105.15247604280012
+                    },
+                    "variable-scenepos": {
+                        "x": 13463.0,
+                        "y": 12418.1524760428
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P02",
+                    "variable-label": "bf slag",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 43.0899321834313
+                    },
+                    "variable-scenepos": {
+                        "x": 13463.0,
+                        "y": 12356.089932183431
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "BOF",
+            "node-height": 250.0,
+            "node-scenepos": {
+                "x": 13944.204468179623,
+                "y": 12230.494899855115
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R03",
+                    "variable-label": "flux_bof",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 160.13037260392957
+                    },
+                    "variable-scenepos": {
+                        "x": 13849.204468179623,
+                        "y": 12390.625272459045
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R04",
+                    "variable-label": "bof_rec",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -11.921670684803757
+                    },
+                    "variable-scenepos": {
+                        "x": 13849.204468179623,
+                        "y": 12218.573229170312
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "p_bof",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 124.98785369356301
+                    },
+                    "variable-scenepos": {
+                        "x": 13849.204468179623,
+                        "y": 12355.482753548678
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "scrap_bof",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 86.24207285708144
+                    },
+                    "variable-scenepos": {
+                        "x": 13849.204468179623,
+                        "y": 12316.736972712197
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "hot metal",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 34.590267573419624
+                    },
+                    "variable-scenepos": {
+                        "x": 13849.204468179623,
+                        "y": 12265.085167428535
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R00",
+                    "variable-label": "bof gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Basic Oxygen Furnace waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 46.25858622693522
+                    },
+                    "variable-scenepos": {
+                        "x": 14039.204468179623,
+                        "y": 12276.75348608205
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "bof slag",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -17.723582000373426
+                    },
+                    "variable-scenepos": {
+                        "x": 14039.204468179623,
+                        "y": 12212.771317854742
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R00",
+                    "variable-label": "cs_bof",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Crude steel output from BOF route",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 97.27058479583502
+                    },
+                    "variable-scenepos": {
+                        "x": 14039.204468179623,
+                        "y": 12327.76548465095
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "EAF",
+            "node-height": 300.0,
+            "node-scenepos": {
+                "x": 13921.0,
+                "y": 12674.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R05",
+                    "variable-label": "R05",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 205.4100711702322
+                    },
+                    "variable-scenepos": {
+                        "x": 13826.0,
+                        "y": 12879.410071170232
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "R02",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 54.667788438515345
+                    },
+                    "variable-scenepos": {
+                        "x": 13826.0,
+                        "y": 12728.667788438515
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "flux_eaf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 11.667788438515345
+                    },
+                    "variable-scenepos": {
+                        "x": 13826.0,
+                        "y": 12685.667788438515
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "scrap_eaf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -33.332211561484655
+                    },
+                    "variable-scenepos": {
+                        "x": 13826.0,
+                        "y": 12640.667788438515
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R03",
+                    "variable-label": "sponge iron",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 102.51386218482003
+                    },
+                    "variable-scenepos": {
+                        "x": 13826.0,
+                        "y": 12776.51386218482
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R04",
+                    "variable-label": "p_eaf",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 147.66778843851534
+                    },
+                    "variable-scenepos": {
+                        "x": 13826.0,
+                        "y": 12821.667788438515
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R01",
+                    "variable-label": "cs_eaf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Crude steel output from EAF route",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 14.567609997380714
+                    },
+                    "variable-scenepos": {
+                        "x": 14016.0,
+                        "y": 12688.56760999738
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "eaf slag",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 56.126233439395946
+                    },
+                    "variable-scenepos": {
+                        "x": 14016.0,
+                        "y": 12730.126233439396
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R01",
+                    "variable-label": "eaf gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "EAF waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -25.930949839528694
+                    },
+                    "variable-scenepos": {
+                        "x": 14016.0,
+                        "y": 12648.069050160471
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "DRI",
+            "node-height": 250.0,
+            "node-scenepos": {
+                "x": 13362.0,
+                "y": 12798.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "coal_dri",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -23.972648086391928
+                    },
+                    "variable-scenepos": {
+                        "x": 13267.0,
+                        "y": 12774.027351913608
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R03",
+                    "variable-label": "p_dri",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 99.33478407204348
+                    },
+                    "variable-scenepos": {
+                        "x": 13267.0,
+                        "y": 12897.334784072043
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "h2_dri",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 51.60287484942455
+                    },
+                    "variable-scenepos": {
+                        "x": 13267.0,
+                        "y": 12849.602874849425
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "ng_dri",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 9.439688369442592
+                    },
+                    "variable-scenepos": {
+                        "x": 13267.0,
+                        "y": 12807.439688369443
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R04",
+                    "variable-label": "ore_dri",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 141.94444146228489
+                    },
+                    "variable-scenepos": {
+                        "x": 13267.0,
+                        "y": 12939.944441462285
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "sponge iron",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -17.617506041122397
+                    },
+                    "variable-scenepos": {
+                        "x": 13457.0,
+                        "y": 12780.382493958878
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "Pellets plant",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 12781.0,
+                "y": 12921.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "ore_pell",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 7.747720361723623
+                    },
+                    "variable-scenepos": {
+                        "x": 12686.0,
+                        "y": 12928.747720361724
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "ore_dri",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 25.346010764946186
+                    },
+                    "variable-scenepos": {
+                        "x": 12876.0,
+                        "y": 12946.346010764946
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "WGas",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 14448.0,
+                "y": 12414.0
+            },
+            "parameters": [
+                {
+                    "parameter-eclass": "PAR",
+                    "parameter-symbol": "emi",
+                    "parameter-label": "",
+                    "parameter-units": "tCO2/MWh",
+                    "parameter-strid": "Default",
+                    "parameter-info": "Grid emission factor",
+                    "parameter-value": "0.72",
+                    "parameter-sigma": "",
+                    "parameter-minimum": "",
+                    "parameter-maximum": ""
+                }
+            ],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R03",
+                    "variable-label": "sinter gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Sinter waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 33.986369254434976
+                    },
+                    "variable-scenepos": {
+                        "x": 14353.0,
+                        "y": 12447.986369254435
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "eaf gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "EAF waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 59.0
+                    },
+                    "variable-scenepos": {
+                        "x": 14353.0,
+                        "y": 12473.0
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R02",
+                    "variable-label": "bf gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Blast furnace waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 2.9810400151800422
+                    },
+                    "variable-scenepos": {
+                        "x": 14353.0,
+                        "y": 12416.98104001518
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "bof gas",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Basic Oxygen Furnace waste gas",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -26.0
+                    },
+                    "variable-scenepos": {
+                        "x": 14353.0,
+                        "y": 12388.0
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P01",
+                    "variable-label": "emission1",
+                    "variable-units": "tonne",
+                    "variable-strid": "Mass",
+                    "variable-info": "Scope 1 emission",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -37.247908741212086
+                    },
+                    "variable-scenepos": {
+                        "x": 14543.0,
+                        "y": 12376.752091258788
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P02",
+                    "variable-label": "emission2",
+                    "variable-units": "tonne",
+                    "variable-strid": "Mass",
+                    "variable-info": "Scope 2 emission",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 61.861993988108225
+                    },
+                    "variable-scenepos": {
+                        "x": 14543.0,
+                        "y": 12475.861993988108
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "R00",
+                    "variable-label": "waspow",
+                    "variable-units": "GJ",
+                    "variable-strid": "Energy",
+                    "variable-info": "Available waste heat for power ",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 30.183289351900385
+                    },
+                    "variable-scenepos": {
+                        "x": 14543.0,
+                        "y": 12444.1832893519
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "w_heat",
+                    "variable-units": "",
+                    "variable-strid": "Energy",
+                    "variable-info": "Available waste heat for recycling",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": -7.577828531921114
+                    },
+                    "variable-scenepos": {
+                        "x": 14543.0,
+                        "y": 12406.422171468079
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "Steel",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 14453.0,
+                "y": 12633.0
+            },
+            "parameters": [],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R01",
+                    "variable-label": "cs_eaf",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Crude steel output from EAF route",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 55.0
+                    },
+                    "variable-scenepos": {
+                        "x": 14358.0,
+                        "y": 12688.0
+                    }
+                },
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "cs_bof",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Crude steel output from BOF route",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": -27.0
+                    },
+                    "variable-scenepos": {
+                        "x": 14358.0,
+                        "y": 12606.0
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "Crude steel",
+                    "variable-units": "",
+                    "variable-strid": "Mass",
+                    "variable-info": "Crude steel output of Industries (tonnes)",
+                    "variable-value": "1",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 13.066233287858267
+                    },
+                    "variable-scenepos": {
+                        "x": 14548.0,
+                        "y": 12646.066233287858
+                    }
+                }
+            ],
+            "equations": []
+        },
+        {
+            "node-title": "Power Plant",
+            "node-height": 150.0,
+            "node-scenepos": {
+                "x": 14943.561982168485,
+                "y": 12422.0
+            },
+            "parameters": [
+                {
+                    "parameter-eclass": "PAR",
+                    "parameter-symbol": "eta",
+                    "parameter-label": "",
+                    "parameter-units": "",
+                    "parameter-strid": "Default",
+                    "parameter-info": "Conversion efficiency (waste heat to power)",
+                    "parameter-value": "0.25",
+                    "parameter-sigma": "",
+                    "parameter-minimum": "",
+                    "parameter-maximum": ""
+                }
+            ],
+            "variables": [
+                {
+                    "variable-eclass": "INP",
+                    "variable-symbol": "R00",
+                    "variable-label": "waspow",
+                    "variable-units": "GJ",
+                    "variable-strid": "Energy",
+                    "variable-info": "Available waste heat for power ",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": -95.0,
+                        "y": 17.216401278832564
+                    },
+                    "variable-scenepos": {
+                        "x": 14848.561982168485,
+                        "y": 12439.216401278833
+                    }
+                },
+                {
+                    "variable-eclass": "OUT",
+                    "variable-symbol": "P00",
+                    "variable-label": "pow",
+                    "variable-units": "",
+                    "variable-strid": "Power",
+                    "variable-info": "Output power converted from waste heat (kWh)",
+                    "variable-value": "",
+                    "variable-sigma": "",
+                    "variable-minimum": "",
+                    "variable-maximum": "",
+                    "variable-position": {
+                        "x": 95.0,
+                        "y": 4.444403376657647
+                    },
+                    "variable-scenepos": {
+                        "x": 15038.561982168485,
+                        "y": 12426.444403376658
+                    }
+                }
+            ],
+            "equations": []
         }
     ],
     "TERMINALS": [
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Coal",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 12042.0,
                 "y": 12420.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 12041.0,
                 "y": 12479.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 12775.0,
                 "y": 12533.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "fine ore",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 12768.0,
                 "y": 12485.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Lime",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 12775.0,
                 "y": 12579.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Lime",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13163.0,
                 "y": 12424.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Tar",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 12558.0,
                 "y": 12364.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Slag",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13565.941717817419,
                 "y": 12358.408936359247
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 13164.0,
                 "y": 12390.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Slag",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 14165.0,
                 "y": 12210.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 13701.204468179623,
                 "y": 12354.479359150177
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Scrap",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13700.204468179621,
                 "y": 12313.891695606013
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "PCI",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13163.0,
                 "y": 12358.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Scrap",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13657.0,
                 "y": 12632.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Lime",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13660.0,
                 "y": 12684.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Coal",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13660.0,
                 "y": 12731.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Slag",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 14217.0,
                 "y": 12740.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Lime",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13702.0,
                 "y": 12392.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 13667.0,
                 "y": 12832.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Coal",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13109.0,
                 "y": 12762.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "NG",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13107.0,
                 "y": 12802.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "H2",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13107.0,
                 "y": 12860.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 13106.0,
                 "y": 12911.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Fe_Ore",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 12517.0,
                 "y": 12926.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "WHeat",
             "terminal-strid": "Energy",
-            "terminal-color": "#f6ae2d",
             "terminal-scenepos": {
                 "x": 14738.274523270842,
                 "y": 12407.264645281211
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Steel",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 14750.0,
                 "y": 12648.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "CO2",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 14737.1863081771,
                 "y": 12376.985526422013
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Scope 2 emi",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 14746.0,
                 "y": 12474.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "lump_ore",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13159.408936359245,
                 "y": 12311.089363592457
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Biochar",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 12772.0,
                 "y": 12644.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Biochar",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13166.0,
                 "y": 12525.0
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "Electrode",
             "terminal-strid": "Mass",
-            "terminal-color": "#028cb6",
             "terminal-scenepos": {
                 "x": 13664.0,
                 "y": 12897.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "Power",
             "terminal-strid": "Power",
-            "terminal-color": "#474973",
             "terminal-scenepos": {
                 "x": 15170.286663170285,
                 "y": 12429.062442463162
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "WHeat",
             "terminal-strid": "Energy",
-            "terminal-color": "#f6ae2d",
             "terminal-scenepos": {
                 "x": 12039.0,
                 "y": 12357.0
             }
         },
         {
-            "terminal-class": "EntityClass.INP",
+            "terminal-class": "OUT",
             "terminal-label": "WHeat",
             "terminal-strid": "Energy",
-            "terminal-color": "#f6ae2d",
             "terminal-scenepos": {
                 "x": 12512.946592198909,
                 "y": 12493.000000000002
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "WHeat",
             "terminal-strid": "Energy",
-            "terminal-color": "#f6ae2d",
             "terminal-scenepos": {
                 "x": 13157.311991048862,
                 "y": 12275.4348133644
             }
         },
         {
-            "terminal-class": "EntityClass.OUT",
+            "terminal-class": "OUT",
             "terminal-label": "WHeat",
             "terminal-strid": "Energy",
-            "terminal-color": "#f6ae2d",
+            "terminal-scenepos": {
+                "x": 13698.828073008255,
+                "y": 12218.304032061847
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Coal",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 12042.0,
+                "y": 12420.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 12041.0,
+                "y": 12479.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 12775.0,
+                "y": 12533.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "fine ore",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 12768.0,
+                "y": 12485.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Lime",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 12775.0,
+                "y": 12579.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Lime",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13163.0,
+                "y": 12424.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Tar",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 12558.0,
+                "y": 12364.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Slag",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13565.941717817419,
+                "y": 12358.408936359247
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 13164.0,
+                "y": 12390.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Slag",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 14165.0,
+                "y": 12210.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 13701.204468179623,
+                "y": 12354.479359150177
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Scrap",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13700.204468179621,
+                "y": 12313.891695606013
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "PCI",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13163.0,
+                "y": 12358.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Scrap",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13657.0,
+                "y": 12632.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Lime",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13660.0,
+                "y": 12684.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Coal",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13660.0,
+                "y": 12731.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Slag",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 14217.0,
+                "y": 12740.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Lime",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13702.0,
+                "y": 12392.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 13667.0,
+                "y": 12832.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Coal",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13109.0,
+                "y": 12762.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "NG",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13107.0,
+                "y": 12802.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "H2",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13107.0,
+                "y": 12860.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 13106.0,
+                "y": 12911.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Fe_Ore",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 12517.0,
+                "y": 12926.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "WHeat",
+            "terminal-strid": "Energy",
+            "terminal-scenepos": {
+                "x": 14738.274523270842,
+                "y": 12407.264645281211
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Steel",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 14750.0,
+                "y": 12648.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "CO2",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 14737.1863081771,
+                "y": 12376.985526422013
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Scope 2 emi",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 14746.0,
+                "y": 12474.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "lump_ore",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13159.408936359245,
+                "y": 12311.089363592457
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Biochar",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 12772.0,
+                "y": 12644.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Biochar",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13166.0,
+                "y": 12525.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Electrode",
+            "terminal-strid": "Mass",
+            "terminal-scenepos": {
+                "x": 13664.0,
+                "y": 12897.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "Power",
+            "terminal-strid": "Power",
+            "terminal-scenepos": {
+                "x": 15170.286663170285,
+                "y": 12429.062442463162
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "WHeat",
+            "terminal-strid": "Energy",
+            "terminal-scenepos": {
+                "x": 12039.0,
+                "y": 12357.0
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "WHeat",
+            "terminal-strid": "Energy",
+            "terminal-scenepos": {
+                "x": 12512.946592198909,
+                "y": 12493.000000000002
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "WHeat",
+            "terminal-strid": "Energy",
+            "terminal-scenepos": {
+                "x": 13157.311991048862,
+                "y": 12275.4348133644
+            }
+        },
+        {
+            "terminal-class": "OUT",
+            "terminal-label": "WHeat",
+            "terminal-strid": "Energy",
             "terminal-scenepos": {
                 "x": 13698.828073008255,
                 "y": 12218.304032061847
@@ -1837,7 +3484,7 @@
     "CONNECTORS": [
         {
             "origin-parent-uid": "N0000",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "breeze_sint",
             "origin-scenepos": {
                 "x": 12369.0,
@@ -1853,7 +3500,7 @@
         },
         {
             "origin-parent-uid": "N0000",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "coke_bf",
             "origin-scenepos": {
                 "x": 12369.0,
@@ -1869,7 +3516,7 @@
         },
         {
             "origin-parent-uid": "N0001",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "sint_bf",
             "origin-scenepos": {
                 "x": 13106.373450324672,
@@ -1885,7 +3532,7 @@
         },
         {
             "origin-parent-uid": "N0002",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "hot metal",
             "origin-scenepos": {
                 "x": 13463.0,
@@ -1901,7 +3548,7 @@
         },
         {
             "origin-parent-uid": "N0005",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "sponge iron",
             "origin-scenepos": {
                 "x": 13457.0,
@@ -1917,7 +3564,7 @@
         },
         {
             "origin-parent-uid": "N0006",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "ore_dri",
             "origin-scenepos": {
                 "x": 12876.0,
@@ -1933,7 +3580,7 @@
         },
         {
             "origin-parent-uid": "N0003",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "cs_bof",
             "origin-scenepos": {
                 "x": 14039.204468179623,
@@ -1949,7 +3596,7 @@
         },
         {
             "origin-parent-uid": "N0003",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "bof gas",
             "origin-scenepos": {
                 "x": 14039.204468179623,
@@ -1965,7 +3612,7 @@
         },
         {
             "origin-parent-uid": "N0004",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "cs_eaf",
             "origin-scenepos": {
                 "x": 14016.0,
@@ -1981,7 +3628,7 @@
         },
         {
             "origin-parent-uid": "N0004",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "eaf gas",
             "origin-scenepos": {
                 "x": 14016.0,
@@ -1997,7 +3644,7 @@
         },
         {
             "origin-parent-uid": "N0002",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "bf gas",
             "origin-scenepos": {
                 "x": 13463.0,
@@ -2013,7 +3660,7 @@
         },
         {
             "origin-parent-uid": "N0001",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "sinter gas",
             "origin-scenepos": {
                 "x": 13106.373450324672,
@@ -2029,13 +3676,221 @@
         },
         {
             "origin-parent-uid": "N0007",
-            "origin-eclass": "EntityClass.OUT",
+            "origin-eclass": "OUT",
             "origin-label": "waspow",
             "origin-scenepos": {
                 "x": 14543.0,
                 "y": 12444.1832893519
             },
             "target-parent-uid": "N0009",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "waspow",
+            "target-scenepos": {
+                "x": 14848.561982168485,
+                "y": 12439.216401278833
+            }
+        },
+        {
+            "origin-parent-uid": "N0010",
+            "origin-eclass": "OUT",
+            "origin-label": "breeze_sint",
+            "origin-scenepos": {
+                "x": 12369.0,
+                "y": 12443.002403301767
+            },
+            "target-parent-uid": "N0011",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "breeze_sint",
+            "target-scenepos": {
+                "x": 12916.373450324672,
+                "y": 12462.969868181555
+            }
+        },
+        {
+            "origin-parent-uid": "N0010",
+            "origin-eclass": "OUT",
+            "origin-label": "coke_bf",
+            "origin-scenepos": {
+                "x": 12369.0,
+                "y": 12404.946472530171
+            },
+            "target-parent-uid": "N0012",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "coke_bf",
+            "target-scenepos": {
+                "x": 13273.0,
+                "y": 12456.441511143976
+            }
+        },
+        {
+            "origin-parent-uid": "N0011",
+            "origin-eclass": "OUT",
+            "origin-label": "sint_bf",
+            "origin-scenepos": {
+                "x": 13106.373450324672,
+                "y": 12491.668062181981
+            },
+            "target-parent-uid": "N0012",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "sint_bf",
+            "target-scenepos": {
+                "x": 13273.0,
+                "y": 12488.914479360652
+            }
+        },
+        {
+            "origin-parent-uid": "N0012",
+            "origin-eclass": "OUT",
+            "origin-label": "hot metal",
+            "origin-scenepos": {
+                "x": 13463.0,
+                "y": 12301.743428057964
+            },
+            "target-parent-uid": "N0013",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "hot metal",
+            "target-scenepos": {
+                "x": 13849.204468179623,
+                "y": 12265.085167428535
+            }
+        },
+        {
+            "origin-parent-uid": "N0015",
+            "origin-eclass": "OUT",
+            "origin-label": "sponge iron",
+            "origin-scenepos": {
+                "x": 13457.0,
+                "y": 12780.382493958878
+            },
+            "target-parent-uid": "N0014",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "sponge iron",
+            "target-scenepos": {
+                "x": 13826.0,
+                "y": 12776.51386218482
+            }
+        },
+        {
+            "origin-parent-uid": "N0016",
+            "origin-eclass": "OUT",
+            "origin-label": "ore_dri",
+            "origin-scenepos": {
+                "x": 12876.0,
+                "y": 12946.346010764946
+            },
+            "target-parent-uid": "N0015",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "ore_dri",
+            "target-scenepos": {
+                "x": 13267.0,
+                "y": 12939.944441462285
+            }
+        },
+        {
+            "origin-parent-uid": "N0013",
+            "origin-eclass": "OUT",
+            "origin-label": "cs_bof",
+            "origin-scenepos": {
+                "x": 14039.204468179623,
+                "y": 12327.76548465095
+            },
+            "target-parent-uid": "N0018",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "cs_bof",
+            "target-scenepos": {
+                "x": 14358.0,
+                "y": 12606.0
+            }
+        },
+        {
+            "origin-parent-uid": "N0013",
+            "origin-eclass": "OUT",
+            "origin-label": "bof gas",
+            "origin-scenepos": {
+                "x": 14039.204468179623,
+                "y": 12276.75348608205
+            },
+            "target-parent-uid": "N0017",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "bof gas",
+            "target-scenepos": {
+                "x": 14353.0,
+                "y": 12388.0
+            }
+        },
+        {
+            "origin-parent-uid": "N0014",
+            "origin-eclass": "OUT",
+            "origin-label": "cs_eaf",
+            "origin-scenepos": {
+                "x": 14016.0,
+                "y": 12688.56760999738
+            },
+            "target-parent-uid": "N0018",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "cs_eaf",
+            "target-scenepos": {
+                "x": 14358.0,
+                "y": 12688.0
+            }
+        },
+        {
+            "origin-parent-uid": "N0014",
+            "origin-eclass": "OUT",
+            "origin-label": "eaf gas",
+            "origin-scenepos": {
+                "x": 14016.0,
+                "y": 12648.069050160471
+            },
+            "target-parent-uid": "N0017",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "eaf gas",
+            "target-scenepos": {
+                "x": 14353.0,
+                "y": 12473.0
+            }
+        },
+        {
+            "origin-parent-uid": "N0012",
+            "origin-eclass": "OUT",
+            "origin-label": "bf gas",
+            "origin-scenepos": {
+                "x": 13463.0,
+                "y": 12418.1524760428
+            },
+            "target-parent-uid": "N0017",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "bf gas",
+            "target-scenepos": {
+                "x": 14353.0,
+                "y": 12416.98104001518
+            }
+        },
+        {
+            "origin-parent-uid": "N0011",
+            "origin-eclass": "OUT",
+            "origin-label": "sinter gas",
+            "origin-scenepos": {
+                "x": 13106.373450324672,
+                "y": 12568.541554541514
+            },
+            "target-parent-uid": "N0017",
+            "target-eclass": "EntityClass.INP",
+            "target-label": "sinter gas",
+            "target-scenepos": {
+                "x": 14353.0,
+                "y": 12447.986369254435
+            }
+        },
+        {
+            "origin-parent-uid": "N0017",
+            "origin-eclass": "OUT",
+            "origin-label": "waspow",
+            "origin-scenepos": {
+                "x": 14543.0,
+                "y": 12444.1832893519
+            },
+            "target-parent-uid": "N0019",
             "target-eclass": "EntityClass.INP",
             "target-label": "waspow",
             "target-scenepos": {

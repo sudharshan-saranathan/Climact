@@ -39,7 +39,8 @@ class JsonLib:
         elif _eclass == EntityClass.PAR:
             prefix = "parameter"
         else:
-            raise ValueError(f"Invalid entity class: {_eclass}")
+            logging.warning(f"Expected argument of type `EntityClass`, skipping JSON!")
+            return None
 
         # Create JSON-object:
         entity_obj = {
@@ -90,15 +91,14 @@ class JsonLib:
 
         # Read other attribute(s):
         _entity.symbol  = _object.get(f"{prefix}-symbol")
-        _entity.label   = _object.get(f"{_prefix}-label")
-        _entity.units   = _object.get(f"{_prefix}-units")
-        _entity.info    = _object.get(f"{_prefix}-info")
-        _entity.strid   = _object.get(f"{_prefix}-strid")
-        _entity.value   = _object.get(f"{_prefix}-value")
-        _entity.sigma   = _object.get(f"{_prefix}-sigma")
-        _entity.value   = _object.get(f"{_prefix}-value")
-        _entity.minimum = _object.get(f"{_prefix}-minimum")
-        _entity.maximum = _object.get(f"{_prefix}-maximum")
+        _entity.label   = _object.get(f"{prefix}-label")
+        _entity.units   = _object.get(f"{prefix}-units")
+        _entity.info    = _object.get(f"{prefix}-info")
+        _entity.strid   = _object.get(f"{prefix}-strid")
+        _entity.value   = _object.get(f"{prefix}-value")
+        _entity.sigma   = _object.get(f"{prefix}-sigma")
+        _entity.minimum = _object.get(f"{prefix}-minimum")
+        _entity.maximum = _object.get(f"{prefix}-maximum")
 
     @staticmethod
     def serialize(_item: QGraphicsObject):
@@ -178,7 +178,7 @@ class JsonLib:
                     "y": _item.origin.scenePos().y()
                 },
                 "target-parent-uid" : _item.target.parentItem().uid,
-                "target-eclass"     : str(_item.target.eclass),
+                "target-eclass"     : _item.target.eclass.name,
                 "target-label"      : _item.target.label,
                 "target-scenepos": {
                     "x": _item.target.scenePos().x(),
@@ -258,18 +258,21 @@ class JsonLib:
 
         # Read JSON and execute operations:
         # Nodes:
-        for node_json in root.get("NODES"):
+        for node_json in root.get("NODES") or []:
 
-            title = node_json.get("node-title")
-            npos  = QPointF(node_json.get("node-scenepos").get("x"),
+            height = node_json.get("node-height")
+            title  = node_json.get("node-title")
+            npos   = QPointF(node_json.get("node-scenepos").get("x"),
                             node_json.get("node-scenepos").get("y")
                             )
 
-            _node = _canvas.create_node(title,
-                                        npos,
-                                        False
-                                        )
-            _node.resize(int(node_json.get("node-height")) - 150)
+            _node = _canvas.create_node(
+                title,  # Title
+                npos,   # Coordinate
+                False   # Do not create a corresponding action
+            )
+
+            _node.resize(int(height) - 150) # Adjust node's height
             _canvas.node_db[_node] = True   # Add node to canvas' database:
             _canvas.addItem(_node)          # Add node to canvas
 
@@ -277,62 +280,86 @@ class JsonLib:
             batch.add_to_batch(CreateNodeAction(_canvas, _node))
 
             # Add variable(s):
-            for var_json in node_json.get("variables"):
+            for var_json in node_json.get("variables") or []:
 
-                eclass = EntityClass.INP if var_json.get("variable-eclass") == "EntityClass.INP" else EntityClass.OUT
-                hpos   = QPointF(var_json.get("variable-position").get("x"),
-                                 var_json.get("variable-position").get("y")
-                                 )
+                # Get variable's EntityClass:
+                eclass = EntityClass.INP if (
+                    var_json.get("variable-eclass") == "INP" or 
+                    var_json.get("variable-eclass") == "EntityClass.INP"
+                ) \
+                else EntityClass.OUT
 
-                # Variable:
+                # Get variable's coordinate:
+                hpos = QPointF(
+                    var_json.get("variable-position").get("x"),
+                    var_json.get("variable-position").get("y")
+                )
+
+                # Instantiate new variable with given EntityClass and coordinate:
                 _var = _node.create_handle(hpos, eclass)
-                _node[eclass, _var] = EntityState.ACTIVE
 
                 # Read other attribute(s):
                 JsonLib.json_to_entity(_var, eclass, var_json)
+
+                # Update variable's color and label:
                 _var.color = _canvas.find_stream(_var.strid).color
                 _var.rename(_var.label)
+                _var.sig_item_updated.emit(_var)    # Emit signal to notify application of changes
+
+                # Add variable to node's database:
+                _node[eclass, _var] = EntityState.ACTIVE
 
                 # Add action to batch:
                 batch.add_to_batch(CreateHandleAction(_node, _var))
 
             # Add parameter(s):
-            for par_json in node_json.get("parameters"):
+            for par_json in node_json.get("parameters") or []:
 
-                # Parameter:
+                # Instantiate new parameter:
                 _par = Entity()
                 _par.eclass = EntityClass.PAR
 
                 # Read other attribute(s):
                 JsonLib.json_to_entity(_par, EntityClass.PAR, par_json)
 
-                # Add to node:
+                # Add parameter to node's database:
                 _node[EntityClass.PAR, _par] = EntityState.ACTIVE
 
             # Add equations(s):
-            if node_json.get("equations"):  _node[EntityClass.EQN, None] = [equation for equation in node_json.get("equations")]
+            if node_json.get("equations") or []: 
+                _node[EntityClass.EQN, None] = [
+                    equation for equation in node_json.get("equations")
+                ]
 
         # Terminals:
-        for term_json in root.get("TERMINALS"):
+        for _term_json in root.get("TERMINALS") or []:
 
-            eclass = EntityClass.INP if term_json.get("terminal-eclass") == "EntityClass.INP" else EntityClass.OUT
-            tpos   = QPointF(term_json.get("terminal-scenepos").get("x"),
-                             term_json.get("terminal-scenepos").get("y"),
-                             )
+            # Get terminal's EntityClass and coordinate:
+            eclass = EntityClass.INP if (
+                _term_json.get("terminal-eclass") == "INP" or 
+                _term_json.get("terminal-eclass") == "EntityClass.INP"
+            ) \
+            else EntityClass.OUT
+
+            # Get terminal's coordinate:
+            tpos = QPointF(
+                _term_json.get("terminal-scenepos").get("x"),
+                _term_json.get("terminal-scenepos").get("y")
+            )
 
             # Create terminal:
             _terminal = _canvas.create_terminal(eclass, tpos)
-            _terminal.socket.rename(term_json.get("terminal-label"))
-            _terminal.socket.strid = term_json.get("terminal-strid")
+            _terminal.socket.rename( _term_json.get("terminal-label"))
+            _terminal.socket.strid = _term_json.get("terminal-strid")
             _terminal.socket.color = _canvas.find_stream(_terminal.socket.strid).color
-            _terminal.socket.sig_item_updated.emit(_terminal.socket)
+            _terminal.socket.sig_item_updated.emit(_terminal.socket)                    # Emit signal to update terminal's color
 
             # Add terminal to database and canvas:
             _canvas.term_db[_terminal] = True
             _canvas.addItem(_terminal)
 
         # Connections:
-        for conn_json in root.get("CONNECTORS"):
+        for conn_json in root.get("CONNECTORS") or []:
 
             # Origin handle's scene-position:
             opos = QPointF(
@@ -351,7 +378,6 @@ class JsonLib:
 
             # Establish a new connection:
             try:
-
                 # Create connector:
                 connector = graph.Connector(_canvas.create_cuid(),
                                             origin,
@@ -364,15 +390,15 @@ class JsonLib:
                 _canvas.addItem(connector)
 
                 # Add connector-creation action to batch:
-                batch.add_to_batch(CreateConnectorAction(_canvas, connector))
+                batch.add_to_batch(ConnectHandleAction(_canvas, connector))
 
             # If an exception occurs, print error:
             except Exception as exception:
-                logging.exception(f"An exception occurred: {exception}")
+                print(f"Connector creation skipped due to an exception: {exception}")
+                logging.exception(f"Connector creation skipped due to an exception: {exception}")
 
         # Execute batch:
-        if  _combine:
-            _canvas.manager.do(batch)
+        if _combine: _canvas.manager.do(batch)
 
 
 

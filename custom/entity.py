@@ -98,10 +98,10 @@ class Entity(Stream):
     def eclass(self) -> str: return self._prop["eclass"]
 
     @eclass.setter
-    def eclass(self, _eclass: str):
+    def eclass(self, _eclass: EntityClass):
 
         # Validate input-type:
-        if not isinstance(_eclass, EntityClass):
+        if  not isinstance(_eclass, EntityClass):
             raise TypeError("Expected argument of type `EntityClass`")
 
         # Set eclass:

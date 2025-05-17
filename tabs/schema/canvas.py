@@ -431,9 +431,9 @@ class Canvas(QGraphicsScene):
 
         # Get existing connector UIDs:
         id_set = {
-            int(connector.symbol.split('X')[1])
-            for connector in self.conn_db
-            if self.conn_db[connector]
+            int(_connector.symbol.split('X')[1])
+            for _connector in self.conn_db
+            if self.conn_db[_connector]
         }
 
         # If `id_set` is empty, return "X0":
@@ -544,11 +544,14 @@ class Canvas(QGraphicsScene):
                   _stack: bool = False      # Should the action be pushed to the undo-stack?
                   ):
         """
-        Paste an item onto the canvas.
+        Paste a node or a terminal item onto the canvas.
 
-        Parameters:
+        Args:
             _item (QGraphicsObject): The item to be pasted.
             _stack (bool):
+
+        Returns:
+            None
         """
 
         # Find type of item:
@@ -645,18 +648,21 @@ class Canvas(QGraphicsScene):
             _file, _code = QFileDialog.getOpenFileName(None, "Select JSON file", "./", "JSON files (*.json)")
             if not _code: 
                 logging.info("Open operation cancelled!")
-                return
+                return None
 
         # Open file:
         with open(_file, "r+") as _json_str:
             _code = _json_str.read()
             
         # Decode JSON-string:
-        _json = JsonLib.decode_json(_code, self, _combine=True)
+        _json = JsonLib.decode_json(_code, self, True)
 
         # Notify application of state-change:
-        # self.sig_json_loaded.emit (Path(_file).name )
+        self.sig_schema_setup.emit(_file)
         self.sig_canvas_state.emit(SaveState.UNSAVED)
+
+        # Return the file-path:
+        return _file
 
     @pyqtSlot(str)  # Method to export a JSON-schematic 
     def export_schema(self, _export_name: str | None = None):
@@ -690,11 +696,9 @@ class Canvas(QGraphicsScene):
 
         # Exception chain:
         except Exception as exception:
-
-            # Instantiate error-dialog:
-            _error_dialog = Dialog(QtMsgType.QtCriticalMsg, str(exception), QMessageBox.StandardButton.Ok)
-            _error_dialog.exec()
             
+            # Display error-dialog:
+            Dialog.standard_error(f"Error encoding JSON: {exception}")
             logging.error(f"Error encoding JSON: {exception}")
             return
 
@@ -703,10 +707,11 @@ class Canvas(QGraphicsScene):
         """
         Activate the transient-connector.
 
-        Parameters:
+        Args:
             _handle (Handle): Emitter of the signal (tabs/schema/graph/handle.py).
 
-        Returns: None
+        Returns: 
+            None
         """
 
         # Abort-conditions:
