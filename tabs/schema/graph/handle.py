@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (
     )
 
 from dataclasses    import dataclass
-from util           import random_id, load_svg
+from util import random_id, load_svg, random_hex, anti_color
 from custom         import *
 
 class Handle(QGraphicsObject, Entity):
@@ -94,6 +94,7 @@ class Handle(QGraphicsObject, Entity):
         self._styl = self.Style()
         self._huid = random_id(prefix='H')
 
+        self.contrast = False # Flag to determine whether handle's text-color should contrast its stream-color
         self.offset = _coords.toPoint().x()
         self.eclass = _eclass
         self.symbol = _symbol
@@ -159,9 +160,11 @@ class Handle(QGraphicsObject, Entity):
         # Sub-menu customization:
         prompt = QLineEdit()
         prompt.setPlaceholderText("Enter Category")
+        prompt.returnPressed.connect(lambda: self.create_stream(prompt.text()))
 
         action = QWidgetAction(self._subm)
         action.setDefaultWidget(prompt)
+        action.setObjectName("Prompt")
 
         # Add actions to sub-menu:
         self._subm.addAction(action)
@@ -223,7 +226,7 @@ class Handle(QGraphicsObject, Entity):
         ]
 
         # Sort menu-actions by label:
-        menu_actions.sort(key=lambda x: x.label())
+        menu_actions.sort(key=lambda x: x.label)
             
         # Add streams dynamically to sub-menu:
         for action in menu_actions:
@@ -377,7 +380,7 @@ class Handle(QGraphicsObject, Entity):
             return
 
         # Get stream-id:
-        _stream = _action.label()
+        _stream = _action.label
         _stream = _canvas.find_stream(_stream)
 
         # Set stream:
@@ -394,6 +397,9 @@ class Handle(QGraphicsObject, Entity):
         # Set stream:
         self.strid = _stream.strid
         self.color = _stream.color
+
+        # Change text-color, only if the `contrast` flag is set:
+        if self.contrast:   self._label.setDefaultTextColor(anti_color(self.color))
 
         # If handle is paired, update conjugate and connector:
         if  self.connected and self.eclass == EntityClass.OUT:
@@ -414,6 +420,23 @@ class Handle(QGraphicsObject, Entity):
 
     def set_decision(self, _flag: bool):    
         self._tags.setVisible(_flag)
+
+    def create_stream(self, _strid: str):
+
+        # Import canvas module:
+        from tabs.schema import Canvas
+
+        # Validate type of scene:
+        _canvas = self.scene()
+        if not isinstance(_canvas, Canvas): return
+
+        # Check if stream already exists:
+        if  _canvas.find_stream(_strid) is None:
+            _stream = Stream(_strid, QColor(random_hex()))
+            _canvas.type_db.add(_stream)
+
+        else:
+            self.set_stream(_canvas.find_stream(_strid))
 
     @property
     def uid(self):  return self._huid

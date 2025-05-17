@@ -584,7 +584,7 @@ class RemoveHandleAction(AbstractAction):
             logging.info(f"Handle {href.uid} deleted")
 
     # Execute operation:å
-    def execute(self)   -> None:
+    def execute(self):
 
         # Abort-conditions:
         if  self._is_obsolete:

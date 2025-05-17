@@ -46,8 +46,7 @@ class Thread(QThread):
                 cresponse = response.replace(match.group(0), "").strip()
                 self.response_ready.emit(cresponse, json_code)
 
-                with open("dump.json", "w") as _file:
-                    _file.write(json_code)
+                with open("dump.json", "w+") as _file:  _file.write(json_code)
 
             else:
                 self.response_ready.emit(response, None)

@@ -101,7 +101,13 @@ class StreamTerminal(QGraphicsObject):
 
         # Create handle and position it:
         self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
-        self.socket = Handle("Resource", self.offset, _eclass, self)
+        self.socket = Handle(
+            "Resource",
+            self.offset,
+            _eclass,
+            self
+        )
+        self.socket.contrast = True
         self.socket.sig_item_updated.connect(self.on_socket_updated)
 
         # Initialize context-menu:

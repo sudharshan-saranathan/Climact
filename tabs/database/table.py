@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QtMsgType
 from PyQt6.QtGui import QShortcut, QKeySequence, QIcon
 from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox
 
-from custom.dialog import Dialog
+from custom.message import Message
 from custom.entity import Entity, EntityClass, EntityState
 from tabs.schema.graph import Node, Handle
 
@@ -234,7 +234,7 @@ class Table(QTableWidget):
 
         # Abort if the entered value is not a string, float, or int:
         if not isinstance(value, str | float | int):
-            _error = Dialog(QtMsgType.QtCriticalMsg, "The entered value must be of type `str`, `float`, or `int`", QMessageBox.StandardButton.Ok)
+            _error = Message(QtMsgType.QtCriticalMsg, "The entered value must be of type `str`, `float`, or `int`", QMessageBox.StandardButton.Ok)
             _error.exec()
             return
 

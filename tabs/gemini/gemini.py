@@ -11,7 +11,7 @@ from typing             import Dict, Any
 from google             import genai
 from google.genai       import types
 
-from custom.dialog import Dialog
+from custom.message import Message
 
 # Class Gemini: A wrapper that fetches responses from Google's Gemini API:
 class Gemini:
@@ -39,13 +39,19 @@ class Gemini:
             self._prompts = open(instructions, 'r').read()
 
         # Validity checks:
-        if not self._enabled:       Dialog.standard_warning("Environment variable GOOGLE_API_KEY is undefined! The AI-assistant will be disabled")
-        if self._prompts is None:   Dialog.standard_warning("Genai-instructions are unavailable! Assistant will offer limited support!")
+        if not self._enabled:       Message.warning(None,
+                                                   "Climact: Warning",
+                                                   "Environment variable GOOGLE_API_KEY is undefined! The AI-assistant will be disabled")
+
+        if self._prompts is None:   Message.warning(None,
+                                                   "Climact: Warning",
+                                                   "Genai-instructions are unavailable! Assistant will offer limited support!")
 
         try:
             # Initialize Google-Generative AI:
             self._genai_client = genai.Client(api_key=self._api_key)
-            self._genai_stream = self._genai_client.chats.create(model="gemini-2.5-pro-preview-05-06")
+            # self._genai_stream = self._genai_client.chats.create(model="gemini-2.5-pro-preview-05-06")
+            self._genai_stream = self._genai_client.chats.create(model="gemini-2.0-flash")
             self._genai_config = types.GenerateContentConfig(
                 temperature=0.7,
                 system_instruction=self._prompts
@@ -65,8 +71,8 @@ class Gemini:
             _query (str): The query to send to Gemini.
             _json (str | None): The JSON to send to Gemini.
         """
-
-        print(_json)
+        # Debugging:
+        print(f"Encoded JSON:\n{_json}")
 
         # Disabled-check:
         if not self._enabled:   return "AI-assistant is disabled!"
@@ -79,8 +85,7 @@ class Gemini:
         else:   print(f"INFO: _json is None")
 
         # Write to history file:
-        with open("history.txt", "a") as file:
-            file.write(f"{_query}\n\n")
+        with open("history.txt", "a") as file:  file.write(f"{_query}\n\n")
 
         # Fetch response from API, compute response-time:
         start = time.perf_counter()

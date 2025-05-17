@@ -1,4 +1,5 @@
 import logging
+from json import JSONDecodeError
 from pathlib import Path
 
 from PyQt6.QtCore import (
@@ -11,18 +12,17 @@ from PyQt6.QtCore import (
 from PyQt6.QtWidgets import (
     QMenu,
     QTabBar,
-    QWidget, 
-    QCheckBox, 
+    QWidget,
+    QCheckBox,
     QTabWidget,
-    QMessageBox,
     QFileDialog,
+    QMessageBox,
     QInputDialog,
     QApplication
 )
 
-from tabs.schema.viewer import Viewer
-from tabs.schema.canvas import SaveState
-from custom import Dialog
+from tabs.schema import *
+from custom      import Message
 
 class TabBar(QTabBar):
 
@@ -140,42 +140,52 @@ class Tabber(QTabWidget):
     # Import schematic:
     def import_schema(self):
 
-        _file = self.currentWidget().canvas.import_schema()
-        _file = Path(_file).name.split('*')[0]
+        _index  = self.currentIndex ()  # Get index of the current widget
+        _viewer = self.currentWidget()  # Get current widget
 
-        print(f"Renaming tab to {_file}")
-        self.setTabText(self.currentIndex(), _file)
+        # Type-check:
+        if (
+            isinstance(_viewer, Viewer) and
+            isinstance(_viewer.canvas, Canvas)
+        ):
+            _file = _viewer.canvas.import_schema()      # Forward action to the canvas, get name of the opened file
+            _stem = Path(_file).stem                    # Extract stem from filename
+            self.setTabText(_index, _stem)  # Rename the current tab to the stem
 
     # Export schematic:
     def export_schema(self):
 
-        # Trigger save:
-        if  self._cbox.isChecked():
-            _save_name = self.tabText(self.currentIndex())  # Save file-name is the same as tab label
-            _save_name = _save_name.split('*')[0]           # Remove `*` from save-name
+        _viewer = self.currentWidget()  # Get current widget
+        _index  = self.currentIndex ()  # Get current index
+        _stem   = self.tabText(_index)  # Get tab-label
 
-            try:
-                _canvas = self.currentWidget().canvas       # Get canvas
-                _canvas.export_schema(f"{_save_name}.json") # Save schematic
-                self.set_indicator(SaveState.SAVED)         # Modify indicator
+        # Type-check:
+        if (
+            not isinstance(_viewer, Viewer) or
+            not isinstance(_viewer.canvas, Canvas)
+        ):
+            Message.warning(None,
+                           "Climact: Warning",
+                           "Invalid viewer or canvas, cannot save file!"
+                            )
+            return None
 
-            except Exception as exception:
-                logging.exception(f"An exception occurred: {exception}")
+        _name = f"{_stem}.json" if self._cbox.isChecked() \
+                                else QFileDialog.getSaveFileName(None,
+                                                                "Enter filename", ".",
+                                                                "JSON (*.json)"
+                                                                )[0]
 
-        else:
-            # File-dialog:
-            _file, _code = QFileDialog.getSaveFileName(None, "Select JSON file", "./", "JSON files (*.json)")\
+        # Export schematic as JSON:
+        try:
+            _canvas = _viewer.canvas   # Get canvas
+            _canvas.export_schema(f"{_name}")       # Save schematic
+            self.set_indicator(SaveState.SAVED)     # Remove asterisk from tab label
 
-            if _code:
-                try:
-                    _canvas = self.currentWidget().canvas   # Get canvas
-                    _canvas.export_schema(f"{_file}")       # Save schematic
-                    self.set_modified(False)                # Remove asterisk from tab label
+        except (RuntimeError, JSONDecodeError) as error:
 
-                # Display error-dialog:
-                except Exception as excp: 
-                    Dialog.standard_error(f"An exception occurred: {excp}")
-    
+            Message.critical(None, "Climact: Error", "An error occurred. Please check logfile for details!")
+            logging.critical(error)
 
     # Set/Unset the modified indicator:
     @pyqtSlot(SaveState)

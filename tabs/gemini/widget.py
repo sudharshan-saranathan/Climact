@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget
 )
 
+from custom import Message
 from tabs.schema.jsonlib import JsonLib
 from tabs.gemini.gemini  import Gemini
 from tabs.gemini.thread  import Thread
@@ -92,7 +93,7 @@ class Gui(QFrame):
         if not bool(self._prompt.toPlainText()): return
 
         # First, try to encode the canvas as JSON:
-        _json = JsonLib.encode_json(self._canvas)
+        _json = JsonLib.encode(self._canvas)
 
         thread = Thread(self.gemini,
                         self._prompt.toPlainText(),
@@ -147,8 +148,10 @@ class Gui(QFrame):
     def display_message(self, _response: str):
 
         # Validate argument(s):
-        if isinstance(_response, str):
-            self._window.setPlainText(_response)
+        if isinstance(_response, str):  self._window.setPlainText(_response)
+        else:
 
-        # Display a warning dialog:
-        else: Dialog.standard_warning(f"Expected a string-response, but got: {type(_response)}")
+            # Display error-message:
+            Message.critical(None,
+                            "Climact: Error",
+                            f"Expected a string-response, but got: {type(_response)}")

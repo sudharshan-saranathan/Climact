@@ -135,7 +135,6 @@ class StreamMenuAction(QWidgetAction):
         # Set text-label:
         self._text_label = StreamActionLabel(_stream.strid, _select, None)
 
-
         # Layout items:
         layout.addWidget(self._icon_label)
         layout.addWidget(self._text_label)
@@ -145,4 +144,5 @@ class StreamMenuAction(QWidgetAction):
         self.setChecked(_select)
         self.setDefaultWidget(widget)
 
+    @property
     def label(self):    return self._text_label.text()

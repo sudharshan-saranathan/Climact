@@ -134,7 +134,7 @@ class EqnView(QListWidget):
 
                 else:
                     # Display error message:
-                    warning = Dialog(QtMsgType.QtCriticalMsg,
+                    warning = Message(QtMsgType.QtCriticalMsg,
                                      f"Unrecognized variable(s):\n{str(', ').join(sym_eqns - sym_node)}",
                                      QMessageBox.StandardButton.Ok)
 
@@ -142,7 +142,7 @@ class EqnView(QListWidget):
 
             else:
                 # Display error message:
-                error = Dialog(QtMsgType.QtCriticalMsg,
+                error = Message(QtMsgType.QtCriticalMsg,
                                f"Equation must have exactly one '='",
                                QMessageBox.StandardButton.Ok)
 

@@ -7,6 +7,8 @@ import logging
 import weakref
 
 from dataclasses  import dataclass
+from json import JSONDecodeError
+
 from PyQt6.QtGui  import QColor, QTransform
 from PyQt6.QtCore import (
     Qt,
@@ -26,6 +28,7 @@ from PyQt6.QtWidgets import (
     QGraphicsScene,
     QGraphicsObject
     )
+from orjson.orjson import JSONEncodeError
 
 from .graph   import *
 from .jsonlib import JsonLib
@@ -173,9 +176,9 @@ class Canvas(QGraphicsScene):
         _exit = self._menu.addAction("Quit Application")
 
         # Connect actions to slots:
-        _node.triggered.connect(lambda: self.create_node("Node"))
         _load.triggered.connect(lambda: self.import_schema())
         _save.triggered.connect(lambda: self.export_schema())
+        _node.triggered.connect(lambda: self.create_node("Node"))
         _tinp.triggered.connect(lambda: self.create_terminal(EntityClass.INP, self._cpos))
         _tout.triggered.connect(lambda: self.create_terminal(EntityClass.OUT, self._cpos))
         _exit.triggered.connect(QApplication.quit)
@@ -328,11 +331,59 @@ class Canvas(QGraphicsScene):
     # 5. export_schema          Saves the canvas's contents as a JSON-schematic.
     # ------------------------------------------------------------------------------------------------------------------
 
+    def create_node(self, 
+                   _name: str = "Node", 
+                   _cpos: QPointF | None = None,
+                   _push: bool = True
+                   ):
+        """
+        Create a new node and add it to the scene
+
+        Args:
+            _name (str, optional): The name of the node (default: "Node").
+            _cpos (QPointF, optional): The position of the node (in scene-coordinates).
+            _push (bool): Flag that determines whether the action will be pushed to the stack.
+
+        Returns: 
+            Node: The newly created node.
+        """
+
+        # If the input coordinate is `None`, use the context menu's last-displayed position:
+        if _cpos is None:   _cpos = self._cpos
+
+        # Create a new node and assign a unique-identifier:
+        _node = Node(
+            _name,
+            _cpos,
+            None
+        )
+        _node.uid = self.create_nuid()
+
+        # Connect node's signal(s) to appropriate slots:
+        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+        _node.sig_exec_actions.connect(self.manager.do)
+        _node.sig_item_removed.connect(self.on_item_removed)
+        _node.sig_handle_clicked.connect(self.begin_transient)
+
+        # Add node to database and canvas:
+        self.node_db[_node] = True
+        self.addItem(_node)
+
+        # Push action to undo-stack:
+        if _push:   self.manager.do(CreateNodeAction(self, _node))
+
+        # Notify application of state-change:
+        self.sig_canvas_state.emit(SaveState.UNSAVED)
+
+        # Return reference to newly created node:
+        return _node
+
     def create_terminal(self,
-                      _eclass : EntityClass,  # EntityClass (INP or OUT), see custom/entity.py.
-                      _coords : QPointF,       # Position of the terminal (in scene-coordinates).
-                      _flag   : bool = True    # Should the action be pushed to the undo-stack?
-                      ):             
+                        _eclass : EntityClass,  # EntityClass (INP or OUT), see custom/entity.py.
+                        _coords : QPointF,      # Position of the terminal (in scene-coordinates).
+                        _flag   : bool = True   # Should the action be pushed to the undo-stack?
+                        ):
 
 
         """
@@ -348,11 +399,11 @@ class Canvas(QGraphicsScene):
 
         # Validate argument(s):
         if not isinstance(_flag, bool): return
-       
+
         # Validate _class:
         if _eclass not in [EntityClass.INP, EntityClass.OUT]:
             raise ValueError("Invalid entity class")
-        
+
         # Debugging:
         logging.info(f"Creating new terminal at {_coords}")
 
@@ -375,50 +426,6 @@ class Canvas(QGraphicsScene):
 
         # Return terminal:
         return _terminal
-
-    def create_node(self, 
-                   _name: str = "Node", 
-                   _cpos: QPointF | None = None,
-                   _push: bool = True
-                   ):
-        """
-        Create a new node at the specified scene-position
-
-        Args:
-            _name (str, optional): The name of the node (default: "Node").
-            _cpos (QPointF, optional): The position of the node (in scene-coordinates).
-            _push (bool): Flag that determines whether the action will be pushed to the stack.
-
-        Returns: 
-            Node: The newly created node.
-        """
-
-        # Set coordinate(s):
-        _cpos = self._cpos if _cpos is None else _cpos
-
-        # Create new node and position it:
-        _node = Node(_name, _cpos, None)
-        _node.uid = self.create_nuid()
-
-        # Connect node's signal(s) to appropriate slots:
-        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
-        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
-        _node.sig_exec_actions.connect(self.manager.do)
-        _node.sig_item_removed.connect(self.on_item_removed)
-        _node.sig_handle_clicked.connect(self.begin_transient)
-
-        # Add node to database and canvas:
-        self.node_db[_node] = True
-        self.addItem(_node)
-
-        # Push action to undo-stack:
-        if _push:   self.manager.do(CreateNodeAction(self, _node))
-
-        # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
-
-        # Return reference to newly created node:
-        return _node
 
     def create_cuid(self):
         """
@@ -600,15 +607,13 @@ class Canvas(QGraphicsScene):
         Returns: None
         """
 
-        print(f"Deleting: {_items}")
-
         # Create batch-commands:
         batch = BatchActions([])
 
         # Delete items in the dictionary:
         for item in _items:
 
-            if isinstance(item, Node) and self.node_db[item]:
+            if  isinstance(item, Node) and self.node_db[item]:
                 batch.add_to_batch(RemoveNodeAction(self, item))
 
             elif isinstance(item, StreamTerminal) and self.term_db[item]:
@@ -655,7 +660,7 @@ class Canvas(QGraphicsScene):
             _code = _json_str.read()
             
         # Decode JSON-string:
-        _json = JsonLib.decode_json(_code, self, True)
+        _json = JsonLib.decode(_code, self, True)
 
         # Notify application of state-change:
         self.sig_schema_setup.emit(_file)
@@ -665,42 +670,46 @@ class Canvas(QGraphicsScene):
         return _file
 
     @pyqtSlot(str)  # Method to export a JSON-schematic 
-    def export_schema(self, _export_name: str | None = None):
+    def export_schema(self, _name: str = str()):
         """
         Export the canvas's contents (schematic) as a JSON-file.
 
         Args:
-            _export_name (str): The name of the file to export the schematic to.
+            _name (str): The name of the file to export the schematic to.
 
         Returns: None
         """
 
-        # Get a save filename if `_export_name` is empty:
-        if  not bool(_export_name):
-            _export_name, _result = QFileDialog.getSaveFileName(None,
-                                                                "Select save-file",
-                                                                ".",
-                                                                "JSON (*.json)"
-                                                                )
-            if not _result: return  # Return if the operation was cancelled
+        # Get a new filename if `_export_name` is empty:
+        _name, _ = QFileDialog.getSaveFileName(None,
+                                                     "Select save-file",
+                                                     ".", "JSON (*.json)"
+                                                     ) \
+                   if   _name == str()  \
+                   else _name, True
 
-        # Try-block:
-        try:
-            # Encode canvas' contents to JSON-string, then write to file:
-            _json_str = JsonLib.encode_json(self)
-            with open(_export_name, "w+") as _file:
-                _file.write(_json_str)
+        # If name is valid:
+        if bool(_name):
 
-            # Notify application of state-change:
-            self.sig_canvas_state.emit(SaveState.SAVED)
+            try:
+                _json = JsonLib.encode(self)
+                _file = open(_name, "w+")
+                _file.write(_json)
 
-        # Exception chain:
-        except Exception as exception:
-            
-            # Display error-dialog:
-            Dialog.standard_error(f"Error encoding JSON: {exception}")
-            logging.error(f"Error encoding JSON: {exception}")
-            return
+                # Notify application of state-change:
+                self.sig_canvas_state.emit(SaveState.SAVED)
+
+                # Return filename to indicate success:
+                return _name
+
+            except (RuntimeError, JSONEncodeError) as exception:
+
+                Message.warning(None,
+                               "Climact: Save Failed",
+                               f"Error saving to file. Please check log file for details.")
+
+                logging.info(f"Exception caught: {exception}")  # Output to log file
+                return None
 
     @pyqtSlot(Handle)
     def begin_transient(self, _handle: Handle):
@@ -729,10 +738,7 @@ class Canvas(QGraphicsScene):
     @pyqtSlot()
     def reset_transient(self):
         """
-        Reset transient-connector's path, clear reference(s) to origin and target
-
-        Parameters: None
-        Returns: None
+        Reset the transient-connector, clear reference(s) to origin and target
         """
 
         # Reset transient-attributes:
@@ -744,6 +750,9 @@ class Canvas(QGraphicsScene):
     def on_item_removed(self):
         """
         Slot triggered when an emits a 'sig_item_removed' signal. Deletes the node.
+
+        Returns:
+            None
         """
 
         # Get signal-emitter:
@@ -787,22 +796,19 @@ class Canvas(QGraphicsScene):
 
         # Abort-conditions:
         if  len(self.items()) <= 1: # Less than 1 because the transient-connector must be discounted
-            message = Dialog(QtMsgType.QtInfoMsg, "No items in the scene!")
-            message.exec()
+            Message.information(None, "Info", "No items on the scene!")
             return
 
         # Initialize confirmation-dialog:
-        dialog = Dialog(QtMsgType.QtWarningMsg,
-                        "This action cannot be undone. Are you sure?",
-                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
-                        )
+        message = Message(QtMsgType.QtWarningMsg,
+                          "This action cannot be undone. Are you sure?",
+                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
+                         )
 
         # If user confirms, delete nodes and streams:
-        if dialog.exec() == QMessageBox.StandardButton.Yes:
-
-            # Delete nodes and terminals:
-            self.delete_items(self.node_db)
-            self.delete_items(self.term_db)
+        if message.exec() == QMessageBox.StandardButton.Yes:
+            self.delete_items(self.node_db) # Delete nodes
+            self.delete_items(self.term_db) # Delete terminals
 
             # Safe-delete undo and redo stacks:
             self.manager.wipe_stack()

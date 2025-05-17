@@ -193,7 +193,7 @@ class JsonLib:
         return None
 
     @staticmethod
-    def encode_json(_canvas):
+    def encode(_canvas):
         """
         Serializes all selected items from the canvas (or all active items if no items are selected)
         and returns a JSON-string.
@@ -228,10 +228,10 @@ class JsonLib:
         return json.dumps(schematic, indent=4)
 
     @staticmethod
-    def decode_json(_code: str,
-                    _canvas,
-                    _combine: bool = False
-                    ):
+    def decode(_code: str,
+               _canvas,
+               _combine: bool = False
+               ):
         """
         Parses a schematic JSON-string and reconstructs the corresponding nodes, variables, and connectors
         on the given `Canvas`. All actions are grouped into a single undoable `BatchAction`.
@@ -302,8 +302,8 @@ class JsonLib:
                 JsonLib.json_to_entity(_var, eclass, var_json)
 
                 # Update variable's color and label:
-                _var.color = _canvas.find_stream(_var.strid).color
                 _var.rename(_var.label)
+                _var.create_stream(_var.strid)
                 _var.sig_item_updated.emit(_var)    # Emit signal to notify application of changes
 
                 # Add variable to node's database:
@@ -349,10 +349,9 @@ class JsonLib:
 
             # Create terminal:
             _terminal = _canvas.create_terminal(eclass, tpos)
-            _terminal.socket.rename( _term_json.get("terminal-label"))
-            _terminal.socket.strid = _term_json.get("terminal-strid")
-            _terminal.socket.color = _canvas.find_stream(_terminal.socket.strid).color
-            _terminal.socket.sig_item_updated.emit(_terminal.socket)                    # Emit signal to update terminal's color
+            _terminal.socket.rename(_term_json.get("terminal-label"))
+            _terminal.socket.create_stream(_term_json.get("terminal-strid"))
+            _terminal.socket.sig_item_updated.emit(_terminal.socket)
 
             # Add terminal to database and canvas:
             _canvas.term_db[_terminal] = True

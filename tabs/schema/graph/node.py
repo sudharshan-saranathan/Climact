@@ -200,7 +200,7 @@ class Node(QGraphicsObject):
         # Additional actions:
         self._menu.addSeparator()
         _n_copy = self._menu.addAction("Duplicate")
-        _remove    = self._menu.addAction("Delete")
+        _remove = self._menu.addAction("Delete")
 
         # Connect actions to slots:
         _expand.triggered.connect(lambda: self.resize( self._attr.delta))
@@ -374,10 +374,10 @@ class Node(QGraphicsObject):
         _node.setSelected(self.isSelected())                # Copy selection-state.
 
         # Copy the contents of the current node:
-        for _entity in self[EntityClass.INP] | self[EntityClass.OUT] | self[EntityClass.PAR]:
-            
+        for _entity, _state in (self[EntityClass.VAR] | self[EntityClass.PAR]).items():
+
             # Ignore hidden handles:
-            if not _entity.isVisible(): continue
+            if _state == EntityState.HIDDEN: continue
 
             # Create a copied entity (parameter or handle):
             copied = _node.create_handle(
@@ -403,7 +403,7 @@ class Node(QGraphicsObject):
             copied.maximum = _entity.maximum
 
             # Add copied variable to the node's registry:
-            _node[_entity.eclass][copied] = True
+            _node[_entity.eclass][copied] = EntityState.ACTIVE
         
         # Copy equations:
         # [_node.equations.add(equation) for equation in self.equations]
@@ -542,8 +542,7 @@ class Node(QGraphicsObject):
         self.sig_item_updated.emit()
     
     # Triggered when a handle is removed:
-    def on_handle_removed(self, _handle: Handle):   
-        
+    def on_handle_removed(self, _handle: Handle):
         # Create an undoable remove-action and notify actions-manager:
         self.sig_exec_actions.emit(RemoveHandleAction(self, _handle))
 

@@ -5,6 +5,7 @@
 #-----------------------------------------------------------------------------------------------------------------------
 
 import logging
+from json import JSONDecodeError
 
 from PyQt6.QtGui import (
     QPainter,
@@ -29,7 +30,7 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
-from custom.dialog import Dialog
+from custom.message import Message
 from dataclasses   import dataclass
 from tabs.gemini   import widget
 from util          import *
@@ -95,7 +96,7 @@ class Viewer(QGraphicsView):
         self.setScene(self.canvas)
 
         self.canvas.sig_canvas_state.connect(self.update_state)
-        self.canvas.sig_schema_setup .connect(self.sig_json_loaded)
+        self.canvas.sig_schema_setup.connect(self.sig_json_loaded)
         logging.info(f"Canvas [UID = {self.canvas.uid}] initialized.")
 
         # Gemini AI assistant:
@@ -151,17 +152,16 @@ class Viewer(QGraphicsView):
 
     def execute_json(self, json_data: str):
 
-        if  json_data: 
-            
-            try: JsonLib.decode_json(json_data, self.canvas, True)
-            except Exception as exception:
-                # Display error-dialog:
-                Dialog.standard_error(f"Error decoding JSON: {exception}")
-                logging.error(f"Error decoding JSON: {exception}")
+        if  json_data:
+
+            try: JsonLib.decode(json_data, self.canvas, True)
+            except (RuntimeError, JSONDecodeError) as exception:
+                Message.critical(None, "Error", f"Error decoding JSON: {exception}")
+                logging.critical(exception)
                 return
-            
+
+            self.state = SaveState.UNSAVED
             self.canvas.sig_canvas_state.emit(SaveState.UNSAVED)
-            
 
     # Register the canvas' saved/unsaved state:
     def update_state(self, state: SaveState):   self.state = state
@@ -205,12 +205,12 @@ class Viewer(QGraphicsView):
         if self.canvas.state == SaveState.UNSAVED:
 
             # Confirm quit:
-            _dialog = Dialog(QtMsgType.QtWarningMsg,
+            _dialog = Message(QtMsgType.QtWarningMsg,
                          "Do you want to save unsaved changes?",
-                         QMessageBox.StandardButton.Yes     |
-                         QMessageBox.StandardButton.No |
-                         QMessageBox.StandardButton.Cancel
-                         )
+                              QMessageBox.StandardButton.Yes |
+                              QMessageBox.StandardButton.No |
+                              QMessageBox.StandardButton.Cancel
+                              )
 
             # Execute dialog and get result:
             _dialog_code = _dialog.exec()

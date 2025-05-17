@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QtMsgType
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QApplication
 
 from dataclasses   import dataclass
-from custom.dialog import Dialog
+from custom.message import Message
 
 from .tabber import Tabber
 from .navbar import NavBar
@@ -106,12 +106,12 @@ class Gui(QMainWindow):
     def closeEvent(self, event):
 
         # Confirm quit:
-        _dialog = Dialog(QtMsgType.QtWarningMsg,
+        _dialog = Message(QtMsgType.QtWarningMsg,
                          "Do you want to save unsaved changes?",
-                         QMessageBox.StandardButton.Yes     |
-                         QMessageBox.StandardButton.No |
-                         QMessageBox.StandardButton.Cancel
-                         )
+                          QMessageBox.StandardButton.Yes |
+                          QMessageBox.StandardButton.No |
+                          QMessageBox.StandardButton.Cancel
+                          )
 
         # Execute dialog and get result:
         _dialog_code = _dialog.exec()
