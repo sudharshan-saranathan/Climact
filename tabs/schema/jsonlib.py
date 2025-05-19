@@ -18,7 +18,7 @@ class JsonLib:
     ---------------
     - serialize(item):
         Serializes a single `Node` or `Connector` object to a JSON-compatible dictionary.
-        Includes node position, size, equations, and variables; or connector endpoints.
+        Includes _node position, size, equations, and variables; or connector endpoints.
 
     - encode_json(canvas):
         Serializes all selected items from the canvas (or all nodes and connectors if none are selected)
@@ -56,11 +56,11 @@ class JsonLib:
                     f"{prefix}-maximum"  : _entity.maximum,
                 }
         
-        # For variables, add coordinates relative to node and canvas:
+        # For variables, add coordinates relative to _node and canvas:
         if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
             
             entity_obj.update({
-                f"{prefix}-position" : {            # Position relative to node
+                f"{prefix}-position" : {            # Position relative to _node
                     "x": _entity.pos().x(),         
                     "y": _entity.pos().y()
                 },
@@ -112,17 +112,17 @@ class JsonLib:
             dict: A JSON-object containing the item's serialized attributes and children.
         """
 
-        # If instance is a node, serialize the node's variables, parameters, and equations:
+        # If instance is a _node, serialize the _node's variables, parameters, and equations:
         if isinstance(_item, graph.Node):
 
-            # Construct a list of the node's active variables:
+            # Construct a list of the _node's active variables:
             variables = [
                 JsonLib.entity_to_json(entity, EntityClass.VAR)
                 for entity, state in _item[EntityClass.VAR].items()
                 if  state == EntityState.ACTIVE
             ]
 
-            # Construct a list of the node's active parameters:
+            # Construct a list of the _node's active parameters:
             parameters = [
                 JsonLib.entity_to_json(entity, EntityClass.PAR)
                 for entity, state in _item[EntityClass.PAR].items()
@@ -134,9 +134,9 @@ class JsonLib:
 
             # JSON-composite:
             node_object = {
-                "node-title"    : _item.title,                      # Node's title
-                "node-height"   : _item.boundingRect().height(),    # Node's height
-                "node-scenepos" : {                                 # Node's scene-position
+                "_node-title"    : _item.title,                      # Node's title
+                "_node-height"   : _item.boundingRect().height(),    # Node's height
+                "_node-scenepos" : {                                 # Node's scene-position
                     "x": _item.scenePos().x(),
                     "y": _item.scenePos().y()
                 },
@@ -145,7 +145,7 @@ class JsonLib:
                 "equations"   : equations                           # Node's equations
             }
 
-            # Return the node's JSON-object:
+            # Return the _node's JSON-object:
             return node_object
 
         # If instance is a terminal, serialize the terminal's attributes:
@@ -189,7 +189,7 @@ class JsonLib:
             # Return the connector's JSON-object:
             return connection_obj
 
-        # If instance is not a node, terminal, or connector, return None:
+        # If instance is not a _node, terminal, or connector, return None:
         return None
 
     @staticmethod
@@ -260,10 +260,10 @@ class JsonLib:
         # Nodes:
         for node_json in root.get("NODES") or []:
 
-            height = node_json.get("node-height")
-            title  = node_json.get("node-title")
-            npos   = QPointF(node_json.get("node-scenepos").get("x"),
-                            node_json.get("node-scenepos").get("y")
+            height = node_json.get("_node-height")
+            title  = node_json.get("_node-title")
+            npos   = QPointF(node_json.get("_node-scenepos").get("x"),
+                            node_json.get("_node-scenepos").get("y")
                             )
 
             _node = _canvas.create_node(
@@ -272,9 +272,9 @@ class JsonLib:
                 False   # Do not create a corresponding action
             )
 
-            _node.resize(int(height) - 150) # Adjust node's height
-            _canvas.node_db[_node] = True   # Add node to canvas' database:
-            _canvas.addItem(_node)          # Add node to canvas
+            _node.resize(int(height) - 150) # Adjust _node's height
+            _canvas.node_db[_node] = True   # Add _node to canvas' database:
+            _canvas.addItem(_node)          # Add _node to canvas
 
             # Add action to batch:
             batch.add_to_batch(CreateNodeAction(_canvas, _node))
@@ -296,7 +296,7 @@ class JsonLib:
                 )
 
                 # Instantiate new variable with given EntityClass and coordinate:
-                _var = _node.create_handle(hpos, eclass)
+                _var = _node.create_handle(eclass, hpos)
 
                 # Read other attribute(s):
                 JsonLib.json_to_entity(_var, eclass, var_json)
@@ -306,7 +306,7 @@ class JsonLib:
                 _var.create_stream(_var.strid)
                 _var.sig_item_updated.emit(_var)    # Emit signal to notify application of changes
 
-                # Add variable to node's database:
+                # Add variable to _node's database:
                 _node[eclass, _var] = EntityState.ACTIVE
 
                 # Add action to batch:
@@ -322,7 +322,7 @@ class JsonLib:
                 # Read other attribute(s):
                 JsonLib.json_to_entity(_par, EntityClass.PAR, par_json)
 
-                # Add parameter to node's database:
+                # Add parameter to _node's database:
                 _node[EntityClass.PAR, _par] = EntityState.ACTIVE
 
             # Add equations(s):

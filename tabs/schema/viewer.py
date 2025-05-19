@@ -124,8 +124,8 @@ class Viewer(QGraphicsView):
         # Activate shortcuts:
         shortcut_ctrl_z.activated.connect(self.canvas.manager.undo)
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
-        shortcut_ctrl_c.activated.connect(self.canvas.copy_selection)
-        shortcut_ctrl_v.activated.connect(self.canvas.paste_selection)
+        shortcut_ctrl_c.activated.connect(self.canvas.store)
+        shortcut_ctrl_v.activated.connect(self.canvas.clone)
         shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.UNSAVED))
         shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.UNSAVED))
         shortcut_ctrl_a.activated.connect(lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db))

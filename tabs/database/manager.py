@@ -68,10 +68,10 @@ class DataManager(QWidget):
     # Tree-item selected:
     def on_tree_item_selected(self, nuid: str, huid: str):
 
-        # Find node using UID:
+        # Find _node using UID:
         node = self._canvas.find_node(nuid)
 
-        # Display data for node:
+        # Display data for _node:
         self._sheets.setRowCount(0)
         self._sheets.fetch(node)
 

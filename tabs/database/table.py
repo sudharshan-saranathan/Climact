@@ -188,7 +188,7 @@ class Table(QTableWidget):
         self._unsaved = True
         self.sig_table_modified.emit(self._node(), self._unsaved)
 
-    # Fetch and display node-data:
+    # Fetch and display _node-data:
     def fetch(self, node: Node):
 
         # Remove all rows, reset temporary objects:
@@ -196,18 +196,18 @@ class Table(QTableWidget):
 
         # Store weak-reference and block signals:
         self._node = weakref.ref(node)
-        self.blockSignals(True)             # Block signal (self.cellChanged()) from triggering slots when fetching node data
+        self.blockSignals(True)             # Block signal (self.cellChanged()) from triggering slots when fetching _node data
 
-        # Abort if the node is None:
+        # Abort if the _node is None:
         if self._node() is None:
             return
 
-        # Display the node's variables:
+        # Display the _node's variables:
         for variable, state in node[EntityClass.VAR].items():
             if state == EntityState.ACTIVE:
                 self.add_stream(variable)
 
-        # Display the node's parameters:
+        # Display the _node's parameters:
         for parameter, state in node[EntityClass.PAR].items():
             if state == EntityState.ACTIVE:
                 self.add_params(parameter)
@@ -268,16 +268,16 @@ class Table(QTableWidget):
 
     def commit(self):
 
-        # Abort if no node has been set:
+        # Abort if no _node has been set:
         if self._node() is None: return
 
-        # Clear the node's parameters and equations:
+        # Clear the _node's parameters and equations:
         self._node()[EntityClass.PAR].clear()
 
         # Save defined parameters:
         for row in range(self.rowCount()):
 
-            # Update the node's variable(s):
+            # Update the _node's variable(s):
             if row in self._hmap.keys():
 
                 variable = self._hmap[row]
@@ -302,7 +302,7 @@ class Table(QTableWidget):
                     conjugate.minimum = self.cell_data(row, 5)
                     conjugate.maximum = self.cell_data(row, 6)
 
-            # Update the node's parameters:
+            # Update the _node's parameters:
             else:
                 entity = Entity()
                 entity.eclass  = EntityClass.PAR

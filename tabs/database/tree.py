@@ -66,7 +66,7 @@ class Tree(QTreeWidget):
         item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
         item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
 
-        # Fetch the node's variable(s) and parameter(s):
+        # Fetch the _node's variable(s) and parameter(s):
         for variable, state in node[EntityClass.VAR].items():
             if state == EntityState.ACTIVE:
                 _eclass = "Input" if variable.eclass == EntityClass.INP else "Output"

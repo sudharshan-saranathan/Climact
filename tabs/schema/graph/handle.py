@@ -59,11 +59,11 @@ class Handle(QGraphicsObject, Entity):
 
     # Initializer:
     def __init__(self,
-                 _symbol: str,
-                 _coords: QPointF,
                  _eclass: EntityClass,
-                 _parent: QGraphicsObject | None = None):
-
+                 _coords: QPointF,
+                 _symbol: str,
+                 _parent: QGraphicsObject | None = None
+                ):
         """
         Initialize a new handle with given entity-class, coordinates, and symbol.
 
@@ -158,16 +158,16 @@ class Handle(QGraphicsObject, Entity):
         delete_action.triggered.connect(lambda: self.sig_item_removed.emit(self))
 
         # Sub-menu customization:
-        prompt = QLineEdit()
-        prompt.setPlaceholderText("Enter Category")
-        prompt.returnPressed.connect(lambda: self.create_stream(prompt.text()))
+        widget = QLineEdit()
+        widget.setPlaceholderText("Enter Category")
+        widget.returnPressed.connect(lambda: self.create_stream(widget.text()))
 
-        action = QWidgetAction(self._subm)
-        action.setDefaultWidget(prompt)
-        action.setObjectName("Prompt")
+        self._prompt = QWidgetAction(self._subm)
+        self._prompt.setDefaultWidget(widget)
+        self._prompt.setObjectName("Prompt")
 
         # Add actions to sub-menu:
-        self._subm.addAction(action)
+        self._subm.addAction(self._prompt)
         self._subm.addSeparator()
 
     # Re-implemented methods -------------------------------------------------------------------------------------------
@@ -299,6 +299,20 @@ class Handle(QGraphicsObject, Entity):
     # 6. set_editable           Make the handle's label temporarily editable.
     # ------------------------------------------------------------------------------------------------------------------
 
+    def clone_into(self, _copied):
+
+        # Call super-class implementation:
+        super().clone_into(_copied)
+
+        # Set additional attribute(s):
+        _copied.contrast = self.contrast
+        _copied.offset   = self.offset
+
+        # Rename, set position, then emit signal:
+        _copied.rename(self.label)
+        _copied.setPos(self.pos())
+        _copied.sig_item_updated.emit(_copied)
+
     def unpair(self):
         """
         Unpair this handle from its conjugate.
@@ -426,17 +440,17 @@ class Handle(QGraphicsObject, Entity):
         # Import canvas module:
         from tabs.schema import Canvas
 
-        # Validate type of scene:
+        # Define convenience variable:
         _canvas = self.scene()
-        if not isinstance(_canvas, Canvas): return
 
-        # Check if stream already exists:
-        if  _canvas.find_stream(_strid) is None:
-            _stream = Stream(_strid, QColor(random_hex()))
-            _canvas.type_db.add(_stream)
+        # Fetch stream:
+        _stream = _canvas.find_stream(_strid, True)         # This method will also add the stream to the database
+ 
+        # Set stream:
+        self.set_stream(_stream)
 
-        else:
-            self.set_stream(_canvas.find_stream(_strid))
+        # If the menu is open, update the sub-menu:
+        if  self._menu.isVisible(): self._menu.close()
 
     @property
     def uid(self):  return self._huid

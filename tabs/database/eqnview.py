@@ -20,7 +20,7 @@ class EqnView(QListWidget):
         # Initialize super-class:
         super().__init__(_parent)
 
-        # Reference to the node being updated, initialize with `None`:
+        # Reference to the _node being updated, initialize with `None`:
         self._node = None
         self._symb = []
 
@@ -61,19 +61,22 @@ class EqnView(QListWidget):
         self._menu = QMenu(self)
 
         # Actions:
-        _insert = self._menu.addAction("Insert Equations")
-        _insert.triggered.connect(self.open_editor)
+        _insert = self._menu.addAction("Insert Equation(s)")
+        _delete = self._menu.addAction("Delete Equation(s)")
 
-        _modify = self._menu.addAction("Modify Equations")
+        # Connect actions to slots:
+        _insert.triggered.connect(self.insert_equations)
+        _delete.triggered.connect(self.delete_equations)
+
 
     def contextMenuEvent(self, event):
         # Open menu at cursor position:
         self._menu.exec(event.globalPos())
         event.accept()
 
-    def open_editor(self):
+    def insert_equations(self):
 
-        # Abort if no node has been set:
+        # Abort if no _node has been set:
         if self._node() is None:
             return
 
@@ -101,9 +104,14 @@ class EqnView(QListWidget):
             equations = editor.toPlainText().split('\n')
             self.parse(equations)
 
+    def delete_equations(self):
+
+        # Get selected items:
+        items = self.selectedItems()
+
     def parse(self, equations):
 
-        # Abort if no node has been set:
+        # Abort if no _node has been set:
         if self._node() is None:
             return
 
@@ -158,11 +166,11 @@ class EqnView(QListWidget):
         self.addItem(item)
         self._node()[EntityClass.EQN].append(equation)
 
-    # Fetch and display node's equations
+    # Fetch and display _node's equations
     def fetch(self):
 
         # Clear all list items:
-        super().clear()             # Use super().clear() (not self.clear()) to avoid resetting node-reference
+        super().clear()             # Use super().clear() (not self.clear()) to avoid resetting _node-reference
 
         # Confirm reference validity:
         if self._node() is None:
