@@ -134,9 +134,9 @@ class JsonLib:
 
             # JSON-composite:
             node_object = {
-                "_node-title"    : _item.title,                      # Node's title
-                "_node-height"   : _item.boundingRect().height(),    # Node's height
-                "_node-scenepos" : {                                 # Node's scene-position
+                "node-title"    : _item.title,                      # Node's title
+                "node-height"   : _item.boundingRect().height(),    # Node's height
+                "node-scenepos" : {                                 # Node's scene-position
                     "x": _item.scenePos().x(),
                     "y": _item.scenePos().y()
                 },
@@ -260,10 +260,10 @@ class JsonLib:
         # Nodes:
         for node_json in root.get("NODES") or []:
 
-            height = node_json.get("_node-height")
-            title  = node_json.get("_node-title")
-            npos   = QPointF(node_json.get("_node-scenepos").get("x"),
-                            node_json.get("_node-scenepos").get("y")
+            height = node_json.get("node-height")
+            title  = node_json.get("node-title")
+            npos   = QPointF(node_json.get("node-scenepos").get("x"),
+                            node_json.get("node-scenepos").get("y")
                             )
 
             _node = _canvas.create_node(

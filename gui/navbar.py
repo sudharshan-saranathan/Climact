@@ -11,9 +11,9 @@ from PyQt6.QtWidgets import QWidget, QToolBar
 class NavBar(QToolBar):
 
     # Signals:
-    sig_open_schema = pyqtSignal()
-    sig_save_schema = pyqtSignal()
-    sig_show_widget = pyqtSignal(str)
+    sig_open_schema = pyqtSignal()      # Emitted when the user clicks the "Open" action
+    sig_save_schema = pyqtSignal()      # Emitted when the user clicks the "Save" action
+    sig_show_widget = pyqtSignal(str)   # Emitted when the user clicks one of the icons in the navbar
 
     # Initializer:
     def __init__(self, parent: QWidget | None, **kwargs):
@@ -26,14 +26,14 @@ class NavBar(QToolBar):
         self.setOrientation(Qt.Orientation.Vertical)
 
         # Actions:
-        self._import_schematic = self.addAction(QIcon("rss/icons/folder.png"), "Open")
-        self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")
-        self._switch_to_sheets = self.addAction(QIcon("rss/icons/sheets.png"), "Data")
-        self._switch_to_canvas = self.addAction(QIcon("rss/icons/canvas.png"), "Canvas")
-        self._switch_to_script = self.addAction(QIcon("rss/icons/script.png"), "Script")
-        self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optima")
-        self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")
-        self._template_library = self.addAction(QIcon("rss/icons/components.png"), "Library")
+        self._import_schematic = self.addAction(QIcon("rss/icons/folder.png"), "Open")          # Action for importing a schematic from a JSON file
+        self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")          # Action for saving a schematic to a JSON file
+        self._switch_to_canvas = self.addAction(QIcon("rss/icons/canvas.png"), "Canvas")        # Action for switching to the canvas tab
+        self._switch_to_sheets = self.addAction(QIcon("rss/icons/sheets.png"), "Data")          # Action for switching to the data tab
+        self._switch_to_script = self.addAction(QIcon("rss/icons/script.png"), "Script")        # Action for switching to the script tab
+        self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optima")        # Action for switching to the optimization tab
+        self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")  # Action for toggling the AI-assistant on and off
+        self._template_library = self.addAction(QIcon("rss/icons/components.png"), "Library")   # Action for opening the template library
 
         # Make canvas, sheets, script, and config checkable:
         self._switch_to_canvas.setCheckable(True)
