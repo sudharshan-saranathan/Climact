@@ -714,6 +714,8 @@ class Canvas(QGraphicsScene):
         # If name is valid:
         if bool(_name):
 
+            _name = _name.replace("*", "")
+
             try:
                 _json = JsonLib.encode(self)
                 _file = open(_name, "w+")
