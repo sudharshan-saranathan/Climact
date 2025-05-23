@@ -705,36 +705,31 @@ class Canvas(QGraphicsScene):
 
         # Get a new filename if `_export_name` is empty:
         _name, _ = QFileDialog.getSaveFileName(None,
-                                                     "Select save-file",
-                                                     ".", "JSON (*.json)"
-                                                     ) \
-                   if   _name == str()  \
+                                               "Select save-file",
+                                               ".", "JSON (*.json)"
+                                               ) \
+                   if   _name == str() or not isinstance(_name, str) \
                    else _name, True
 
-        # If name is valid:
-        if bool(_name):
+        try:
+            _json = JsonLib.encode(self)
+            _file = open(_name, "w+")
+            _file.write(_json)
 
-            _name = _name.replace("*", "")
+            # Notify application of state-change:
+            self.sig_canvas_state.emit(SaveState.SAVED)
 
-            try:
-                _json = JsonLib.encode(self)
-                _file = open(_name, "w+")
-                _file.write(_json)
+            # Return filename to indicate success:
+            return _name
 
-                # Notify application of state-change:
-                self.sig_canvas_state.emit(SaveState.SAVED)
+        except Exception as exception:
 
-                # Return filename to indicate success:
-                return _name
+            Message.warning(None,
+                            "Climact: Save Failed",
+                            f"Error saving to file. Please check log file for details.")
 
-            except (RuntimeError, JSONEncodeError) as exception:
-
-                Message.warning(None,
-                               "Climact: Save Failed",
-                               f"Error saving to file. Please check log file for details.")
-
-                logging.info(f"Exception caught: {exception}")  # Output to log file
-                return None
+            logging.info(f"Exception caught: {exception}")  # Output to log file
+            return None
 
     @pyqtSlot(Handle)
     def begin_transient(self, _handle: Handle):
