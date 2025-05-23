@@ -204,12 +204,12 @@ class Table(QTableWidget):
 
         # Display the _node's variables:
         for variable, state in node[EntityClass.VAR].items():
-            if state == EntityState.ACTIVE:
+            if state == EntityState.ACTIVE or state:
                 self.add_stream(variable)
 
         # Display the _node's parameters:
         for parameter, state in node[EntityClass.PAR].items():
-            if state == EntityState.ACTIVE:
+            if state == EntityState.ACTIVE or state:
                 self.add_params(parameter)
 
         # Unblock signals:

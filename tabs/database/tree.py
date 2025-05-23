@@ -76,7 +76,7 @@ class Tree(QTreeWidget):
                 var_item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
 
         for parameter in node[EntityClass.PAR]:
-            par_item = QTreeWidgetItem(item, [parameter.symbol, "EntityClass.PAR"])
+            par_item = QTreeWidgetItem(item, [parameter.symbol, parameter.label, "Parameter"])
             par_item.setIcon(0, QIcon("rss/icons/parameter.png"))
             par_item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
             par_item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)

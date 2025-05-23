@@ -77,7 +77,8 @@ class JsonLib:
     def json_to_entity(
         _entity: Entity,        # Entity object to be updated.
         _eclass: EntityClass,   # Entity's class
-        _object: json           # JSON-dictionary containing entity's attributes.
+        _object: json,          # JSON-dictionary containing entity's attributes.
+        _symbol: bool = True    # Whether to set symbol from the JSON code
     ):
 
         # Determine prefix:
@@ -90,7 +91,6 @@ class JsonLib:
             raise ValueError(f"Invalid entity class: {_eclass}")
 
         # Read other attribute(s):
-        _entity.symbol  = _object.get(f"{prefix}-symbol")
         _entity.label   = _object.get(f"{prefix}-label")
         _entity.units   = _object.get(f"{prefix}-units")
         _entity.info    = _object.get(f"{prefix}-info")
@@ -99,6 +99,8 @@ class JsonLib:
         _entity.sigma   = _object.get(f"{prefix}-sigma")
         _entity.minimum = _object.get(f"{prefix}-minimum")
         _entity.maximum = _object.get(f"{prefix}-maximum")
+
+        if _symbol: _entity.symbol  = _object.get(f"{prefix}-symbol")
 
     @staticmethod
     def serialize(_item: QGraphicsObject):
@@ -299,7 +301,12 @@ class JsonLib:
                 _var = _node.create_handle(eclass, hpos)
 
                 # Read other attribute(s):
-                JsonLib.json_to_entity(_var, eclass, var_json)
+                JsonLib.json_to_entity(
+                    _var,
+                    eclass,
+                    var_json,
+                    False
+                )
 
                 # Update variable's color and label:
                 _var.rename(_var.label)
