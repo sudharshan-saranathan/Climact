@@ -149,8 +149,9 @@ class Tabber(QTabWidget):
             isinstance(_viewer.canvas, Canvas)
         ):
             _file = _viewer.canvas.import_schema()      # Forward action to the canvas, get name of the opened file
-            _stem = Path(_file).stem                    # Extract stem from filename
-            self.setTabText(_index, _stem)  # Rename the current tab to the stem
+            if  _file:
+                _stem = Path(_file).stem                    # Extract stem from filename
+                self.setTabText(_index, _stem)  # Rename the current tab to the stem
 
     # Export schematic:
     def export_schema(self):
@@ -158,6 +159,7 @@ class Tabber(QTabWidget):
         _viewer = self.currentWidget()  # Get current widget
         _index  = self.currentIndex ()  # Get current index
         _stem   = self.tabText(_index)  # Get tab-label
+        _stem   = _stem.replace("*", "")    # Remove asterisk from label
 
         # Type-check:
         if (

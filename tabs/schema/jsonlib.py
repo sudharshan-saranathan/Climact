@@ -153,7 +153,7 @@ class JsonLib:
 
             # Create JSON-object:
             stream_obj = {
-                "terminal-class"    : _item.socket.eclass.name,
+                "terminal-eclass"   : _item.socket.eclass.name,
                 "terminal-label"    : _item.socket.label,
                 "terminal-strid"    : _item.socket.strid,
                 "terminal-scenepos" : {
