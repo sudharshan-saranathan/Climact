@@ -146,12 +146,6 @@ class Canvas(QGraphicsScene):
         """
         Initializes the canvas's context menu. Actions in the menu include _node- and terminal-creation, import and
         export from/to JSON files, and group/clear operations. This method is called once by the class's initializer.
-
-        Args: 
-            None
-
-        Returns: 
-            None
         """
 
         # Create menu:
