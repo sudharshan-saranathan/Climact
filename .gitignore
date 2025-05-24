@@ -4,6 +4,7 @@
 *.dat
 *.xml
 *.txt
+*.yaml
 
 # Ignore `.DS_Store` (macOS) and `Thumbs.db` (Windows)
 .DS_Store
