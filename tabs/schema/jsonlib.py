@@ -83,12 +83,16 @@ class JsonLib:
 
         # Determine prefix:
         prefix = str()
-        if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
-            prefix = "variable"
-        elif _eclass == EntityClass.PAR:
-            prefix = "parameter"
-        else:
-            raise ValueError(f"Invalid entity class: {_eclass}")
+        if _eclass in [
+            EntityClass.INP,
+            EntityClass.OUT,
+            EntityClass.VAR]:   prefix = "variable"
+
+        elif _eclass == EntityClass.PAR:    prefix = "parameter"
+        else:   raise ValueError(f"Invalid entity class: {_eclass}")
+
+        # If flag is set, copy symbol:
+        if _symbol: _entity.symbol = _object.get(f"{prefix}-symbol")
 
         # Read other attribute(s):
         _entity.label   = _object.get(f"{prefix}-label")
@@ -99,8 +103,6 @@ class JsonLib:
         _entity.sigma   = _object.get(f"{prefix}-sigma")
         _entity.minimum = _object.get(f"{prefix}-minimum")
         _entity.maximum = _object.get(f"{prefix}-maximum")
-
-        if _symbol: _entity.symbol  = _object.get(f"{prefix}-symbol")
 
     @staticmethod
     def serialize(_item: QGraphicsObject):

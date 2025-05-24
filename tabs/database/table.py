@@ -1,7 +1,7 @@
 import weakref
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QtMsgType
-from PyQt6.QtGui import QShortcut, QKeySequence, QIcon
+from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QColor
 from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox
 
 from custom.message import Message
@@ -27,7 +27,6 @@ class Table(QTableWidget):
         self._unsaved = False
 
         # Set headers:
-        self.setCornerButtonEnabled(False)
         self.verticalHeader().setFixedWidth(24)
         self.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -83,6 +82,10 @@ class Table(QTableWidget):
         symb_item = QTableWidgetItem(QIcon("rss/icons/variable.png"), handle.symbol)
         symb_item.setFlags(symb_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         symb_item.setData(Qt.ItemDataRole.UserRole, "Variable")
+        symb_item.setData(
+            Qt.ItemDataRole.BackgroundRole,
+            QColor(0x9AADBF) if handle.eclass == EntityClass.INP else QColor(0xD6FAFF)
+        )
 
         name_item = QTableWidgetItem(handle.info)
         unit_item = QTableWidgetItem(handle.units)

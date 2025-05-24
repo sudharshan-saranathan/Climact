@@ -105,6 +105,7 @@ class Gui(QMainWindow):
 
     def closeEvent(self, event):
 
+        """
         # Confirm quit:
         _dialog = Message(QtMsgType.QtWarningMsg,
                          "Do you want to save unsaved changes?",
@@ -120,3 +121,4 @@ class Gui(QMainWindow):
         if _dialog_code == QMessageBox.StandardButton.Yes:      event.accept()
         if _dialog_code == QMessageBox.StandardButton.No:       event.accept()
         if _dialog_code == QMessageBox.StandardButton.Cancel:   event.ignore()
+        """

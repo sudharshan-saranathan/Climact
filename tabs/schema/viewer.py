@@ -201,6 +201,9 @@ class Viewer(QGraphicsView):
     @pyqtSlot(QEvent)
     def closeEvent(self, event):
 
+        # Print save-state:
+        print(str(self.canvas.state))
+
         # Check if canvas has been modified:
         if self.canvas.state == SaveState.UNSAVED:
 

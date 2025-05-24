@@ -180,7 +180,7 @@ class Tabber(QTabWidget):
 
         # Export schematic as JSON:
         try:
-            _canvas = _viewer.canvas   # Get canvas
+            _canvas = _viewer.canvas                # Get canvas
             _canvas.export_schema(f"{_name}")       # Save schematic
             self.set_indicator(SaveState.SAVED)     # Remove asterisk from tab label
 

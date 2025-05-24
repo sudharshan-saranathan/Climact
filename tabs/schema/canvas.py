@@ -116,6 +116,7 @@ class Canvas(QGraphicsScene):
         self._rect = bounds
         self._cpos = QPointF()
         self._conn = Canvas.Transient()
+        self.state = SaveState.UNSAVED
 
         # Add transient-connector to scene:
         self.addItem(self._conn.connector)
@@ -717,7 +718,8 @@ class Canvas(QGraphicsScene):
             _file.write(_json)
 
             # Notify application of state-change:
-            self.sig_canvas_state.emit(SaveState.SAVED)
+            self.state = SaveState.SAVED
+            self.sig_canvas_state.emit(self.state)
 
             # Return filename to indicate success:
             return _name
@@ -790,7 +792,7 @@ class Canvas(QGraphicsScene):
         Find a stream by its name. If the stream does not exist, create it (optional)
 
         Args:
-            _stream (str): The name of the stream to find.
+            _strid (str): The name of the stream to find.
             _create (bool): If True, create the stream if it does not exist.
 
         Returns:
@@ -858,10 +860,3 @@ class Canvas(QGraphicsScene):
     # Unique ID setter:
     @uid.setter
     def uid(self, value: str):   self.setObjectName(value if isinstance(value, str) else self.uid)
-
-    @property
-    def state(self) -> SaveState:
-        """
-        Get the state of the canvas.
-        """
-        return SaveState.UNSAVED
