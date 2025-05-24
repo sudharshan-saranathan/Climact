@@ -1,13 +1,15 @@
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QStyle
+import logging
 
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont, QColor, QTextCursor
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QStyle
 from dataclasses import dataclass
 
+# Class Label: A custom-QGraphicsTextItem
 class Label(QGraphicsTextItem):
 
     # Signals:
-    sig_text_changed = pyqtSignal(str, name="Text Changed")
+    sig_text_changed = pyqtSignal(str, name="Label.sig_text_changed")
 
     @dataclass
     class Style:
@@ -15,61 +17,72 @@ class Label(QGraphicsTextItem):
         background = Qt.BrushStyle.NoBrush
 
     # Initializer:
-    def __init__(self, parent: QGraphicsItem | None, **kwargs):
+    def __init__(self, parent: QGraphicsItem | None, _text: str, **kwargs):
 
         # Initialize base-class:
-        super().__init__(parent)
+        super().__init__(_text, parent)
 
-        # Get keyword-attribute(s):
-        edit  = kwargs.get("edit")  if "edit"  in kwargs else True
-        font  = kwargs.get("font")  if "font"  in kwargs else QFont("Fira Sans", 12)
-        label = kwargs.get("label") if "label" in kwargs else ""
-        width = kwargs.get("width") if "width" in kwargs else 80
-        color = kwargs.get("color") if "color" in kwargs else Qt.GlobalColor.black
-        brush = kwargs.get("brush") if "brush" in kwargs else Qt.BrushStyle.NoBrush
-        align = kwargs.get("align") if "align" in kwargs else Qt.AlignmentFlag.AlignLeft
-
-        # Set alignment:
-        option = self.document().defaultTextOption()
-        option.setAlignment(align)
-
-        # Set edit flag:
-        self.edit = edit
-        self.flag = Qt.TextInteractionFlag.TextEditorInteraction if edit else Qt.TextInteractionFlag.NoTextInteraction
+        # Retrieve keywords:
+        editable = kwargs["editable"]   if "editable"   in kwargs.keys() else True
+        font     = kwargs["font"]       if "font"       in kwargs.keys() else QFont("Trebuchet MS", 13)
+        align    = kwargs["align"]      if "align"      in kwargs.keys() else Qt.AlignmentFlag.AlignCenter
+        color    = kwargs["color"]      if "color"      in kwargs.keys() else Qt.GlobalColor.black
+        width    = kwargs["width"]      if "width"      in kwargs.keys() else 80
 
         # Customize attribute(s):
         try:
-            self.setFont(font)
-            self.setPlainText(label)
-            self.setTextWidth(width)
-            self.setDefaultTextColor(color)
-            self.setTextInteractionFlags(self.flag)
+            option = self.document().defaultTextOption()
+            option.setAlignment(align)
             self.document().setDefaultTextOption(option)
 
-        except TypeError as error:
-            print(f"Label.__init__(): Invalid keyword-arguments")
+            self.editable = editable
+            self.setFont(font)
+            self.setTextWidth(width)
+            self.setDefaultTextColor(color)
+            self.setTextInteractionFlags(Qt.TextInteractionFlag.TextEditorInteraction if editable else Qt.TextInteractionFlag.NoTextInteraction)
+
+        except Exception as exception:
+            logging.exception(f"An exception occurred: {exception}")
             pass
+
+    # Edit text:
+    def edit(self):
+
+        # If not editable, return immediately:
+        if not self.editable:   return
+
+        # Make label editable:
+        self.setFocus(Qt.FocusReason.OtherFocusReason)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextEditorInteraction)
+
+        # Highlight text:
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.KeepAnchor)
+        self.setTextCursor(cursor)
 
     # Keyboard-event handler:
     def keyPressEvent(self, event):
 
-        # When the <Return> key is pressed, clear focus to exit edit mode:
+        # If the key pressed is `Return`, finish editing and clear focus:
         if event.key() == Qt.Key.Key_Return:
             self.clearFocus()
             event.accept()
             return
 
-        # Otherwise, handle event normally:
+        # Otherwise, call super-class implementation:
         super().keyPressEvent(event)
 
+    # Handle focus-out events:
     def focusOutEvent(self, event):
 
         # Clear text-selection and emit signal:
-        self.textCursor().clearSelection()
-        self.sig_text_changed.emit(self.toPlainText())
+        text = self.toPlainText()
+        self.textCursor().clearSelection()      # Clear text-selection
+        self.sig_text_changed.emit(text)        # Emit signal with new text as argument
 
-        if not self.edit:
-            self.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        # Toggle editable:
+        if not self.editable: self.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
 
         # Super-class implementation:
         super().focusOutEvent(event)

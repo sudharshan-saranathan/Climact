@@ -1,40 +1,39 @@
-from PyQt6.QtGui import QPen, QColor, QBrush, QPainter, QFont
-from PyQt6.QtCore import Qt, QRectF, pyqtSignal, QPoint, QLineF, pyqtSlot, QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsLineItem
+from PyQt6.QtGui import (
+    QPen, 
+    QColor, 
+)
 
-from core.button import Button
-from core.label import Label
-from core.resource import Resource
-from core.util import random_id
+from PyQt6.QtCore import (
+    Qt,
+    QRectF,
+    QLineF,
+    QPointF,
+    pyqtSignal
+)
 
-from tabs.schema.action       import *
-from tabs.schema.graph.anchor import Anchor, StreamType
-from tabs.schema.graph.handle import Handle
+from PyQt6.QtWidgets import (
+    QMenu, 
+    QGraphicsItem, 
+    QGraphicsObject, 
+    QGraphicsLineItem
+)
+
+from actions import *
+from custom  import *
+from util    import *
+
+from .anchor import Anchor
+from .handle import Handle
 
 class Node(QGraphicsObject):
 
     # Signals:
+    sig_exec_actions = pyqtSignal(AbstractAction)
     sig_item_updated = pyqtSignal()
     sig_item_removed = pyqtSignal()
     sig_handle_clicked = pyqtSignal(Handle)
     sig_handle_updated = pyqtSignal(Handle)
     sig_handle_removed = pyqtSignal(Handle)
-    sig_execute_action = pyqtSignal(AbstractAction)
-
-    # Global lists:
-    class Entity:
-        def __init__(self):
-            self.inp = dict()
-            self.out = dict()
-            self.par = dict()
-            self.eqn = set()
-
-    # Lists:
-    class Symbol:
-        def __init__(self):
-            self.inp = set()
-            self.out = set()
-            self.par = set()
 
     # Default Attrib:
     class Attr:
@@ -52,48 +51,61 @@ class Node(QGraphicsObject):
             self.background = Qt.GlobalColor.white
 
     # Initializer:
-    def __init__(self, coordinate: QPoint, name: str = "Node", parent: QGraphicsItem | None = None):
+    def __init__(self, 
+                 _name  : str,
+                 _spos  : QPointF, 
+                 _parent: QGraphicsItem | None = None,
+                 **kwargs
+                ):
+        """
+        Instantiate a new _node with the given name, coordinates, and parent.
 
-        # Initialize base-class:
-        super().__init__(parent)
+        Args:
+            _name  (str)       : The name of the _node.
+            _spos  (QPointF)   : The position of the _node (in scene-coordinates).
+            _parent(QGraphicsItem): The parent item of the _node.
+        """
 
-        # Initialize keywords:
-        self.setPos(coordinate.toPointF())
-        self.setObjectName(name)
+        # Validate argument(s):
+        if not isinstance(_name, str)       : raise TypeError("Expected argument of type `str`")
+        if not isinstance(_spos, QPointF)   : raise TypeError("Expected argument of type `QPoint`")
+
+        # Initialize super-class:
+        super().__init__(_parent)
 
         # Initialize style and attrib:
-        self._styl = self.Style()
-        self._attr = self.Attr()
-        self._data = self.Entity()
-        self._tags = self.Symbol()
+        self._nuid = str()              # The _node's unique ID
+        self._spos = _spos              # Used to track and emit signal if the _node has been moved
+        self._styl = self.Style()       # Instantiate the _node's style
+        self._attr = self.Attr()        # Instantiate the _node's attribute
+        self._data = dict({
+            EntityClass.INP:    dict(), # Dictionary for input variable(s)
+            EntityClass.OUT:    dict(), # Dictionary for output variable(s)
+            EntityClass.PAR:    dict(), # Dictionary for parameters
+            EntityClass.EQN:    list()  # List of equations
+        })
 
-        # Assign node ID:
-        self._nuid = random_id(length=4, prefix='N')
-
-        # Adjust behaviour:
+        # Customize behaviour:
         self.setAcceptHoverEvents(True)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
-        # Node-items:
-        self._label = Label(self,
-                            edit=False,
-                            font=QFont("Fira Sans", 10),
+        # Label to display the _node's unique identifier:
+        self._label = Label(self, self._nuid, 
                             width=60,
-                            label=self._nuid,
-                            color=QColor(0xadadad),
-                            align=Qt.AlignmentFlag.AlignCenter)
+                            color=QColor(0xadadad), 
+                            align=Qt.AlignmentFlag.AlignLeft,
+                            editable=False)
 
-        self._title = Label(self,
-                            edit=True,
-                            font=QFont("Fira Sans", 13),
+        # Label to display the _node's name:
+        self._title = Label(self, _name,
                             width=120,
-                            label=name,
-                            color=QColor(0x0),
-                            align=Qt.AlignmentFlag.AlignCenter)
+                            align=Qt.AlignmentFlag.AlignCenter,
+                            editable=True)
 
-        self._label.setPos(-108, -72)
-        self._title.setPos( -60, -74)
+        # Position labels:
+        self._label.setPos(-98, -72)
+        self._title.setPos(-60, -72)
 
         # Header-buttons:
         _expand = Button("rss/icons/expand.svg", self)
@@ -108,17 +120,18 @@ class Node(QGraphicsObject):
         _shrink.sig_button_clicked.connect(lambda: self.resize(-self._attr.delta))
         _remove.sig_button_clicked.connect(self.sig_item_removed.emit)
 
-        # Separator:
+        # Instantiate separator:
         _hline = QGraphicsLineItem(QLineF(-96, 0, 96, 0), self)
         _hline.moveBy(0, -48)
 
         self._divider = QGraphicsLineItem(QLineF(0, -40, 0, 68), self)
         self._divider.setPen(QPen(Qt.GlobalColor.gray, 0.5))
 
-        # Anchors:
-        self._anchor_inp = Anchor(StreamType.INP, self)
-        self._anchor_out = Anchor(StreamType.OUT, self)
+        # Instantiate anchors:
+        self._anchor_inp = Anchor(EntityClass.INP, self)
+        self._anchor_out = Anchor(EntityClass.OUT, self)
 
+        # Position anchors:
         self._anchor_inp.setPos(-95, 0)
         self._anchor_out.setPos( 95, 0)
 
@@ -126,327 +139,235 @@ class Node(QGraphicsObject):
         self._anchor_out.sig_item_clicked.connect(self.on_anchor_clicked)
 
         # Initialize menu:
-        self._menu = None
+        self._menu = QMenu()
         self._init_menu()
 
+        # Process keyword-arguments:
+        if "uid" in kwargs:    self.uid = kwargs.get("uid")
+
+    def __getitem__(self, _eclass: EntityClass):
+        """
+        Returns a dictionary or list depending on the entity sought:
+
+        Args:
+            _eclass (EntityClass): Class of the entity (INP, OUT, PAR, or EQN)
+
+        Returns:
+            dict | list: Dictionary or list
+        """
+
+        if _eclass == EntityClass.VAR:  return self._data[EntityClass.INP] | self._data[EntityClass.OUT]
+        else:                           return self._data[_eclass]
+
+    def __setitem__(self,
+                    _tuple: tuple,
+                    _value: EntityState | str | list
+                    ):
+        """
+        Sets the state of an entity belonging to the _node.
+
+        Args:
+            _tuple (tuple): A tuple containing the entity class and the entity.
+            _value (EntityState | str | list): The state to set for the entity.
+        """
+
+        # Validate argument(s):
+        if not isinstance(_tuple, tuple): raise TypeError("Expected argument of type `tuple`")
+
+        # Resolve tuple:
+        _eclass, _entity = _tuple
+
+        # Assign data:
+        if  _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.PAR]:
+            self._data[_eclass][_entity] = _value
+
+        if  _eclass == EntityClass.EQN:
+            self._data[_eclass] = _value
+
     def _init_menu(self):
-        self._menu = QMenu()
+        """
+        Adds actions to the context menu and connects them to appropriate slots.
 
-    def __hash__(self):
-        return hash(self._nuid)
+        Returns: 
+            None
+        """
 
-    def __eq__(self, other):
-        return isinstance(other, Node) and self._nuid == other._nuid
+        # Add actions to menu:
+        _template = self._menu.addAction("Save as Template", lambda: print("Save as Template"))
 
-    # Get stream-lists:
-    def __getitem__(self, stream: StreamType):
+        # Additional actions:
+        self._menu.addSeparator()
+        _expand = self._menu.addAction("Expand", lambda: self.resize( self._attr.delta))
+        _shrink = self._menu.addAction("Shrink", lambda: self.resize(-self._attr.delta))
 
-        if stream == StreamType.INP:
-            return self._data.inp
+        # Additional actions:
+        self._menu.addSeparator()
+        _clone = self._menu.addAction("Clone" , self.clone)
+        _close = self._menu.addAction("Delete", self.sig_item_removed.emit)
 
-        elif stream == StreamType.OUT:
-            return self._data.out
+    # Re-implemented methods -------------------------------------------------------------------------------------------
+    # Name                      Description
+    # ------------------------------------------------------------------------------------------------------------------
+    # 1. boundingRect           Implementation of QGraphicsObject.boundingRect() (see Qt documentation).
+    # 2. paint                  Implementation of QGraphicsObject.paint() (see Qt documentation).
+    # ------------------------------------------------------------------------------------------------------------------
 
-        elif stream == StreamType.PAR:
-            return self._data.par
+    def boundingRect(self):
+        """
+        Re-implementation of QGraphicsObject.boundingRect().
 
-        else:
-            logging.warning(f"Unrecognized stream type")
-            return None
+        Returns:
+            QRectF: The bounding rectangle of the _node.
+        """
 
-    # Set parameter list:
-    def __setitem__(self, key: StreamType, value):
+        # Return bounding-rectangle:
+        return self._attr.rect
 
-        if  not isinstance(value, list) or \
-            not isinstance(key, StreamType):
-            return None
+    def paint(self, _painter, _option, _widget = ...):
+        """
+        Re-implementation of QGraphicsObject.paint().
 
-        if key == StreamType.PAR:
-            self._data.par = value.copy()
+        Args:
+            _painter (QPainter) : The painter object.
+            _option (QStyleOptionGraphicsItem) : The option object.
+            _widget (QWidget) : The widget object.
+        """
 
-    @property
-    # Gets the node's UID:
-    def uid(self):  return self._nuid
+        # Select different pens for selected and unselected states:
+        _pen = self._styl.pen_select if self.isSelected() else self._styl.pen_border
+                 
+        # Draw border:
+        _painter.setPen(_pen)
+        _painter.setBrush(self._styl.background)
+        _painter.drawRoundedRect(self._attr.rect, 12, 6)
 
-    @uid.setter
-    def uid(self, value):
-        self._nuid = value if isinstance(value, str) else self.uid
-        self._label.setPlainText(self._nuid)
-
-    @property
-    # Gets the node's name:
-    def name(self):
-        return self._title.toPlainText()
-
-    @property
-    # Gets the border-pen:
-    def border(self):   return self._styl.pen_border
-
-    @border.setter
-    # Sets the border-pen:
-    def border(self, _value):   self._styl.pen_border = _value if isinstance(_value, QPen) else self.border
-
-    def symbol(self, stream: StreamType):
-
-        if stream == StreamType.INP:
-            return self._tags.inp
-
-        if stream == StreamType.OUT:
-            return self._tags.out
-
-        if stream == StreamType.PAR:
-            return self._tags.par
-
-        logging.warning("Node.symbol(): Unrecognized stream type")
-        return None
-
-    def print(self):
-
-        total = self[StreamType.INP] | self[StreamType.OUT]
-        for handle in total:
-            print(handle, total[handle])
-
-    # Paint-event handler:
-    def paint(self, painter, option, widget = ...):
-        painter.setPen  (self._styl.pen_select if self.isSelected() else self._styl.pen_border)
-        painter.setBrush(self._styl.background)
-        painter.drawRoundedRect(self._attr.rect, 12, 6)
-
-    # ItemChange handler:
     def itemChange(self, change, value):
 
-        # Import Canvas:
-        from tabs.schema.canvas import Canvas
+        # Import canvas module:
+        from tabs.schema import SaveState
 
-        # Handle scene-changes:
-        if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
+        # If this node has been added to a canvas:
+        if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
 
-            if isinstance(value, Canvas):
-                self.sig_item_removed.connect(value.on_item_removed, Qt.ConnectionType.UniqueConnection)
+            # Connect node's signals to the canvas's slots:
+            self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.UNSAVED))
+            self.sig_item_removed.connect(value.on_item_removed)
 
-            elif value is None:
-                self.sig_item_removed.disconnect()
+            # Connect signal-exec actions:
+            self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(SaveState.UNSAVED))
+            self.sig_exec_actions.connect(value.manager.do)
+
+            # Forward handle's signals:
+            self.sig_handle_clicked.connect(value.begin_transient)
+
+            # Adjust scene-position:
+            self.setPos(self._spos)
 
         return value
 
-    # Returns the bounding rectangle of this item:
-    def boundingRect(self):
-        return self._attr.rect
+    # Event-handlers ---------------------------------------------------------------------------------------------------
+    # Name                      Description
+    # ------------------------------------------------------------------------------------------------------------------
+    # 1. hoverEnterEvent        Triggered when the mouse enters the _node.
+    # 2. hoverLeaveEvent        Triggered when the mouse leaves the _node.
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Hover-event handler:
+    def contextMenuEvent(self, event):
+        """
+        Triggered when the context menu is requested.
+
+        Args:
+            event (QContextMenuEvent) : Context-menu event, instantiated by Qt.
+        """
+
+        # Forward event to super-class:
+        super().contextMenuEvent(event)
+        if event.isAccepted(): return
+
+        # Display context menu:
+        self.setSelected(True)
+        self._menu.exec(event.screenPos())
+        event.accept()
+
     def hoverEnterEvent(self, event):
-        self.setCursor(Qt.CursorShape.ArrowCursor)
-        super().hoverEnterEvent(event)
+        """
+        Triggered when the mouse enters the _node.
 
-    # Hover-event handler:
+        Args:
+            event (QHoverEvent) : Hover event, triggered and managed by Qt.
+        """
+        super().hoverEnterEvent(event)              # Forward to super-class
+        self.setCursor(Qt.CursorShape.ArrowCursor)  # Set arrow-cursor
+    
     def hoverLeaveEvent(self, event):
-        self.unsetCursor()
-        super().hoverLeaveEvent(event)
+        """
+        Triggered when the mouse leaves the _node.
 
-    # Double-click handler:
-    def mouseDoubleClickEvent(self, event):
+        Args:
+            event (QHoverEvent) : Hover event, triggered and managed by Qt.
+        """
+        super().hoverLeaveEvent(event)              # Forward to super-class
+        self.unsetCursor()                          # Unset cursor
 
-        for handle in self.variables:
-            print(handle.symbol, handle.value)
+    def mouseReleaseEvent(self, event):
+        """
+        Triggered when the mouse is released.
 
-        super().mouseDoubleClickEvent(event)
+        Args:
+            event (QMouseEvent) : Mouse event, instantiated by Qt.
+        """
 
-    # Creates a handle at the specified coordinate:
-    def create_handle(self,
-                      cpos  : QPointF,
-                      symbol: str,
-                      stream: StreamType
-                      ):
+        # Forward event to super-class:
+        super().mouseReleaseEvent(event)
+        
+        # If the _node has been moved, notify canvas:
+        if  self.scenePos() != self._spos:
+            self.sig_item_updated.emit()
 
-        # Create handle and add to operations-stack:
-        handle = Handle(cpos, symbol, stream, self)
-        handle.sig_item_clicked.connect(self.sig_handle_clicked.emit)
-        handle.sig_item_updated.connect(self.sig_handle_updated.emit)
-        handle.sig_item_removed.connect(self.remove_handle)
-
-        # Return reference:
-        return handle
-
-    # Removes handle(s):
-    @pyqtSlot()
-    @pyqtSlot(Handle)
-    def remove_handle(self, handle: Handle | None = None):
-
-        handle = self.sender()
-        if not isinstance(handle, Handle):
-            return
-
-        action = RemoveHandleAction(self, handle)
-        self.sig_execute_action.emit(action)
-
-    # Returns a unique symbol:
-    def unique_symbol(self, stream: StreamType):
-
-        if stream == StreamType.PAR:
-            return None
-
-        _prefix  = 'R'            if stream == StreamType.INP else 'P'
-        _varlist = self._data.inp if stream == StreamType.INP else self._data.out   # Variable list
-
-        indices = set()
-        for variable in _varlist:
-            if  _varlist[variable]:
-                indices.add(int(variable.symbol.split(_prefix)[1]))
-
-        if not indices:
-            return _prefix + str("00")
-
-        sequence = set(range(0, max(indices) + 2))
-        reusable = sequence - indices
-
-        return _prefix + str(min(reusable)).zfill(2)
-
-    @pyqtSlot(QPointF)
-    # Creates a handle where the anchor was clicked:
-    def on_anchor_clicked(self, coordinate: QPointF):
-
-        anchor = self.sender()
-        if not isinstance(anchor, Anchor):
-            return
-
-        # Get handle-attributes:
-        stream = anchor.stream()
-        coords = anchor.mapToParent(coordinate)
-
-        handle = self.create_handle(coords, self.unique_symbol(stream), stream)
-        handle.sig_item_clicked.emit(handle)
-
-        # Notify action-manager:
-        action = CreateHandleAction(self, handle)
-        self.sig_execute_action.emit(action)
-
-    @pyqtSlot(int)
-    # Resizes the node in discrete steps:
-    def resize(self, delta: int):
-
-        if not isinstance(delta, int):
-            return
-
-        if delta < 0 and self._attr.rect.height() < 200:
-            return
-
-        self._anchor_inp.resize(delta)
-        self._anchor_out.resize(delta)
-
-        self._divider.setLine(self._anchor_inp.line)
-        self._divider.setX(0)
-        self.update()
-
-        shifted_bottom = self._attr.rect.bottom() + delta
-        self._attr.rect.setBottom(shifted_bottom)
-        self._attr.steps += int(delta / self._attr.delta)
-
-    # Creates a duplicate of the node:
-    def duplicate(self, canvas):
-
-        cpos = self.scenePos().toPoint() + QPoint(25, 25)
-        name = self._title.toPlainText()
-
-        node = Node(cpos, name)
-        node.setSelected(True)
-
-        # Create batch-actions with node-creation as the first task:
-        batch = BatchActions([])
-        batch.add_to_batch(CreateNodeAction(canvas, node))
-
-        # Resize the copied node:
-        delta = self._attr.rect.height() - 50
-        node.resize(delta)
-
-        # Copy input/output streams:
-        for handle in self.variables:
-
-            # Create an identical handle with the same coordinate, symbol, and `StreamType`:
-            handle_copy = node.create_handle(handle.pos(), handle.symbol, handle.stream)
-            Handle.cmap[handle] = handle_copy
-
-            # Copy properties:
-            handle_copy.label   = handle.label
-            handle_copy.units   = handle.units
-            handle_copy.value   = handle.value
-            handle_copy.sigma   = handle.sigma
-            handle_copy.cname   = handle.cname
-            handle_copy.minimum = handle.minimum
-            handle_copy.maximum = handle.maximum
-
-            # Add handle-creation to batch:
-            batch.add_to_batch(CreateHandleAction(node, handle_copy))
-
-        # Copy parameter(s):
-        for parameter in self.parameters.keys():
-
-            resource = Resource()
-            resource.symbol  = parameter.symbol
-            resource.label   = parameter.label
-            resource.units   = parameter.units
-            resource.value   = parameter.value
-            resource.sigma   = parameter.sigma
-            resource.cname   = parameter.cname
-            resource.minimum = parameter.minimum
-            resource.maximum = parameter.maximum
-            node._data.par[resource] = True
-
-        # Copy equation(s):
-        for equation in self.equations:
-            node.equations.add(equation)
-
-        # Return node and batch-actions:
-        return node, batch
-
-    @property
-    # Gets the node's handles (disabled handles are ignored):
-    def variables(self)   -> set:
-
-        hset = set()
-        for handle in self[StreamType.INP] | self[StreamType.OUT]:
-            if handle.isVisible():
-                hset.add(handle)
-
-        return hset
-
-    @property
-    # Gets the node's parameters:
-    def parameters(self)    -> dict:    return self._data.par
-
-    @parameters.setter
-    # Sets the node's parameters:
-    def parameters(self, dictionary):
-        if isinstance(dictionary, dict):
-            self._data.par = dictionary
-
-    @property
-    # Returns the node's equations:
-    def equations(self) -> set:    return self._data.eqn
-
-    @equations.setter
-    def equations(self, value):
-        self._data.eqn = value if isinstance(value, set) else self.equations
+    # User-defined methods ---------------------------------------------------------------------------------------------
+    # Name                      Description
+    # ------------------------------------------------------------------------------------------------------------------
+    # 1. clone                  Duplicates the _node.
+    # 2. resize                 Resizes the _node in discrete steps.
+    # 3. create_handle          Creates a new handle.
+    # 4. create_huid            Creates a unique identifier for each handle.
+    # 5. on_anchor_clicked      Triggered when an anchor is clicked.
+    # 6. on_handle_clicked      Triggered when a handle is clicked.
+    # 7. on_handle_updated      Triggered when a handle is updated.
+    # 8. on_handle_removed      Triggered when a handle is removed.
+    # ------------------------------------------------------------------------------------------------------------------
 
     # Return transformed equations:
-    def substituted(self)   -> list[str]:
+    def substituted(self) -> list[str]:
 
         transformed = list()
         node_prefix = self.uid
-        equations   = self.equations.copy()
+
+        _vars = [
+            variable for variable, state in self[EntityClass.VAR].items()
+            if state == EntityState.ACTIVE
+        ]
+
+        _pars = [
+            parameter for parameter, state in self[EntityClass.PAR].items()
+            if state == EntityState.ACTIVE
+        ]
+
+        _eqns = self._data[EntityClass.EQN].copy()
 
         # Create a dictionary of symbol-replacements:
         replacements  = dict()
 
         # Variable symbols (R00, P00, ...) are replaced with connector symbols (X0, X1, ...)
-        for var in self.variables:
+        for var in _vars:
             replacements[var.symbol] = var.connector().symbol if var.connected else None
 
-        # Parameters symbols are prefixed with the node's UID:
-        for par in self.parameters:
+        # Parameters symbols are prefixed with the _node's UID:
+        for par in _pars:
             replacements[par.symbol] = f"{node_prefix}_{par.symbol}"
 
         # Modify all equations:
-        for equation in equations:
+        for equation in _eqns:
             tokens = equation.split(' ')
             update = [replacements.get(token, token) for token in tokens]
 
@@ -455,11 +376,217 @@ class Node(QGraphicsObject):
 
         return transformed
 
-    # Return defined symbols as a set:
-    def symbols(self) -> set:
+    def clone(self, **kwargs):
+        """
+        Create an identical copy of this _node.
 
-        sym_list = set()
-        for variable in self.variables:     sym_list.add(variable.symbol)
-        for param in self[StreamType.PAR]:  sym_list.add(param.symbol)
+        Returns:
+            Node: A new _node with the same properties as the original _node.
+        """
 
-        return sym_list
+        # Instantiate a new _node:
+        _node = Node(self._title.toPlainText(),
+                     self.scenePos() + QPointF(25, 25),
+                     self.parentItem()
+                     )
+
+        # Adjust _node-height:
+        _diff = self.boundingRect().height() - _node.boundingRect().height()
+        _node.resize(_diff)
+        _node.setSelected(self.isSelected())
+
+        # Construct lists of active data:
+        _var_active = [_variable  for _variable , _state in self[EntityClass.VAR].items() if _state == EntityState.ACTIVE]
+        _par_active = [_parameter for _parameter, _state in self[EntityClass.PAR].items() if _state == EntityState.ACTIVE]
+
+        # Copy this _node's variable(s):
+        for _entity in _var_active:
+
+            # Instantiate new handle and copy attribute(s):
+            _copied = _node.create_handle(_entity.eclass,_entity.pos())
+            _entity.clone_into(_copied)
+
+            # Add copied variable to the _node's registry:
+            _node[_entity.eclass][_copied] = EntityState.ACTIVE
+            Handle.cmap[_entity] = _copied
+
+        # Copy this _node's parameter(s):
+        for _entity in _par_active:
+            _copied = Entity()              # Instantiate a new entity
+            _entity.clone_into(_copied)     # Copy attributes into new entity
+
+            # Add copied variable to the _node's registry:
+            _node[_entity.eclass][_copied] = EntityState.ACTIVE
+
+        # Deselect this _node:
+        self.setSelected(False)
+
+        # Process keyword-args:
+        if "set_uid" in kwargs: _node.uid = kwargs.get("set_uid")
+
+        # Return reference to the created _node:
+        return _node
+
+    def resize(self, delta: int | float):
+        """
+        Resizes the _node in discrete steps.
+
+        Args:
+            delta (int) : Increment or decrement step-size.
+        """
+
+        # Set a minimum _node-height:
+        if delta < 0 and self._attr.rect.height() < 200: return
+
+        # Resize _node, adjust contents:
+        self._attr.rect.adjust(0, 0, 0, delta)
+        self._anchor_inp.resize(delta)
+        self._anchor_out.resize(delta)
+
+        self._divider.setLine(self._anchor_inp.line)
+        self._divider.setX(0)
+        self.update()
+
+        # Notify application of state-change:
+        self.sig_item_updated.emit()
+
+    def symbols(self) -> list:
+
+        _symbols = list()
+        for _entity, _state in self[EntityClass.VAR].items():
+            if  _state == EntityState.ACTIVE:
+                _symbols.append(_entity.symbol)
+
+        for _entity, _state in self[EntityClass.PAR].items():
+            if  _state == EntityState.ACTIVE:
+                _symbols.append(_entity.symbol) 
+
+        return _symbols
+
+    def create_handle(self,
+                      _eclass: EntityClass,
+                      _coords: QPointF,
+                      _clone : Handle = None
+                      ):
+        """
+        Creates a new handle at the given coordinate, returns reference to the handle.
+
+        Args:
+            _eclass (EntityClass): The stream-direction of the new handle (INP or OUT).
+            _coords (QPointF)    : The coordinates of the new handle (must be in the _node's coordinate-system).
+            _clone (Handle)      : If provided, the created handle will be a clone of this handle
+
+        Returns:
+            Handle: Reference to the new handle.
+        """
+
+        # Instantiate new handle:
+        _handle = Handle(_eclass,
+                         _coords,
+                         self.create_huid(_eclass),
+                         self
+                        )
+
+        # Connect handle's signals to the _node's slots:
+        _handle.sig_item_clicked.connect(self.sig_handle_clicked.emit)
+        _handle.sig_item_updated.connect(self.sig_handle_updated.emit)
+        _handle.sig_item_cleared.connect(self.on_handle_cleared)
+        _handle.sig_item_removed.connect(self.on_handle_removed)
+
+        # Add handle to the _node's database:
+        self[_eclass][_handle] = EntityState.ACTIVE
+
+        # Return reference to handle:
+        return _handle 
+
+    def create_huid(self, _eclass: EntityClass):
+        """
+        Creates a unique identifier for each handle.
+
+        Returns:
+            str: The unique identifier for the handle.
+        """
+
+        # Validate argument(s):
+        if _eclass not in [EntityClass.INP, EntityClass.OUT]: raise ValueError("Expected argument: `EntityClass.INP` or `EntityClass.OUT`")
+
+        # Create a unique handle-identifier:
+        prefix = "P" if _eclass == EntityClass.OUT else "R"
+        id_set = {
+            int(handle.symbol[1:])         # Get the _node's currently used symbols
+            for handle, state in self[_eclass].items()
+            if  state
+        }
+
+        # If `id_set` is empty, return prefix + "00":
+        if not id_set:  return prefix + "00"
+
+        # Get sequence of integers from 0 to `max(id_set) + 1`, not in `id_set`:
+        sequence = set(range(0, max(id_set) + 2))
+        reusable = sequence - id_set
+
+        # Return UID (prefix + smallest integer not in `id_set`):
+        return prefix + str(min(reusable)).zfill(2)
+
+    # Triggered when an anchor is clicked:
+    def on_anchor_clicked(self, _coords: QPointF):
+        """
+        Triggered when an anchor is clicked.
+
+        Args:
+            _coords (QPointF): The click-position in anchor's coordinate-system.
+        """
+
+        # Validate argument(s):
+        _anchor = self.sender()
+        if not isinstance(_coords, QPointF) : raise TypeError("Expected argument of type `QPointF`")
+        if not isinstance(_anchor, Anchor)  : raise TypeError("Expected signal-emitter of type `Anchor`")
+
+        # Create handle at anchor's position:
+        _eclass = _anchor.stream()                          # Get anchor's stream (EntityClass.INP or EntityClass.OUT)
+        _coords = self.mapFromItem(_anchor, _coords)        # Map coordinate to _node's coordinate-system
+        _handle = self.create_handle(_eclass, _coords)
+        _handle.sig_item_clicked.emit(_handle)              # Emit signal to begin transient-connection.
+
+        # Enter handle into the _node's database:
+        self[_eclass, _handle] = EntityState.ACTIVE         # Set state `EntityState.ACTIVE`
+
+        # Notify application of state-change:
+        self.sig_exec_actions.emit(CreateHandleAction(self, _handle))
+        self.sig_item_updated.emit()
+    
+    # Triggered when a handle is removed:
+    def on_handle_removed(self, _handle: Handle):
+        # Create an undoable remove-action and notify actions-manager:
+        self.sig_exec_actions.emit(RemoveHandleAction(self, _handle))
+
+    # Triggered when a handle is cleared:
+    def on_handle_cleared(self, handle: Handle):
+        
+        # Create an undoable disconnect-action:
+        _action = DisconnectHandleAction(self.scene(), handle.connector())
+
+        # Emit signal to disconnect handle:
+        self.sig_exec_actions.emit(_action)
+
+    # Properties -------------------------------------------------------------------------------------------------------
+    # Name                      Description
+    # ------------------------------------------------------------------------------------------------------------------
+    # 1. uid                   The _node's unique identifier.
+    # 2. name                  The _node's name.
+    # ------------------------------------------------------------------------------------------------------------------
+    
+    @property
+    def uid(self):  return self._nuid
+    
+    @property
+    def title(self): return self._title.toPlainText()
+
+    @uid.setter
+    def uid(self, value: str):
+        self._nuid = value
+        self._label.setPlainText(value)
+
+    @title.setter
+    def title(self, value: str):
+        self._title.setPlainText(value)

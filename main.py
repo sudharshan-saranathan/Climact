@@ -6,21 +6,33 @@
 
 import sys
 import logging
-import weakref
+import platform
 
-from PyQt6.QtGui     import QFont
-from PyQt6.QtCore    import pyqtSlot
+from PyQt6.QtGui     import QFont, QFontDatabase
 from PyQt6.QtWidgets import QApplication
 
-from gui.splash import SplashScreen
+from gui.splash import StartupWindow, StartupChoice
 from util            import *
 from gui.window      import Gui
 
 # Application Subclass:
 class Climact(QApplication):
 
+    # Constants:
+    class Metadata:
+        APP_NAME    = "Climact"
+        APP_LOGO    = "rss/icons/logo.png"
+        APP_VERSION = "0.1.0"
+        APP_AUTHOR  = "Sudharshan Saranathan"
+        APP_GITHUB  = "https://github.com/sudharshan-saranathan/climact"
+        APP_MODULES = "PyQt6, Google-AI (Gemini)"
+
+    class Constants:
+        QSS_SHEET = "rss/style/macos.qss"
+        FONT_SIZE = 14
+
     # Initializer
-    def __init__(self, argv: list[weakref]):
+    def __init__(self, argv: list):
 
         # Initialize super-class:
         super().__init__(argv)
@@ -34,38 +46,18 @@ class Climact(QApplication):
         )
 
         # Initialize stylesheet, set font:
-        self.qss = "rss/style/macos.qss"
-        self.setStyleSheet(read_qss(self.qss))
-        self.setFont(QFont("Nunito", 14))
-        logging.info(f"Application styled with {self.qss}")
+        self.setFont(QFont("Trebuchet MS", self.Constants.FONT_SIZE))
+        self.setStyleSheet(read_qss (self.Constants.QSS_SHEET))
+        logging.info(f"Stylesheet: {self.Constants.QSS_SHEET}")
 
         # Open splash-screen and show project options:
-        self._init_gui()
-        self._init_splash()
+        self._window  = Gui()
+        self._startup = StartupWindow()
+        self._result  = self._startup.exec()
 
-    # Open splash-screen:
-    @pyqtSlot(name="Climact._init_splash")
-    def _init_splash(self):
-
-        # Initialize splash-screen:
-        self.splash = SplashScreen()
-        self.result = self.splash.exec()
-
-        # Initialize GUI, open existing project if chosen:
-        if self.result == 24:   self._init_gui(_open = False)
-        if self.result == 25:   self._init_gui(_open = True)
-
-    # Open main GUI:
-    @pyqtSlot(name="Climact._init_gui")
-    @pyqtSlot(bool, name="Climact._init_gui")
-    def _init_gui(self, _open: bool = False):
-
-        # Instantiate new GUI:
-        self._gui = Gui()
-        self._gui.sig_init_window.connect(self._init_splash)
-
-        # Open project (if flag is set):
-        if _open:   self._gui.open_project()
+        if  self._result == StartupChoice.LOAD_SAVED_PROJECT.value:
+            self._window.load_project()
+            
 
 # Instantiate application and enter event-loop:
 def main():

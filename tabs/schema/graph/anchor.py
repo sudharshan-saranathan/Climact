@@ -1,12 +1,13 @@
-from enum import Enum
-from PyQt6.QtCore import Qt, QRectF, QPointF, QLineF, pyqtSignal
-from PyQt6.QtGui import QPen, QColor, QBrush
+from PyQt6.QtCore import (Qt,
+                          QRectF,
+                          QLineF,
+                          QPointF,
+                          pyqtSignal)
+
+from PyQt6.QtGui import QPen, QColor
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject, QGraphicsEllipseItem
 
-class StreamType(Enum):
-    INP = 1
-    OUT = 2
-    PAR = 3
+from custom import EntityClass
 
 class Anchor(QGraphicsObject):
 
@@ -25,13 +26,29 @@ class Anchor(QGraphicsObject):
         background  = QColor(0xffffff)
 
     # Initializer:
-    def __init__(self, stream: StreamType, parent: QGraphicsItem):
-        super().__init__(parent)
+    def __init__(self, 
+                _eclass: EntityClass, 
+                _parent: QGraphicsItem
+                ):
+        """
+        Initialize a new anchor.
+
+        Args:
+            _eclass (EntityClass)   : Anchor's entity-class (i.e. `EntityClass.INP` or `EntityClass.OUT`)
+            _parent (QGraphicsItem) : The parent item of the anchor.
+        """
+
+        # Validate arguments:
+        if _eclass not in [EntityClass.INP, EntityClass.OUT]:
+            raise ValueError("Expected `EntityClass.INP` or `EntityClass.OUT` for argument `_eclass`")
+
+        # Initialize super-class:
+        super().__init__(_parent)
 
         # Attrib:
-        self._attr = self.Attr()
-        self._styl = self.Style()
-        self._strm = stream
+        self._attr   = self.Attr()
+        self._style  = self.Style()
+        self._stream = _eclass
 
         # Initialize hint:
         self._hint = QGraphicsEllipseItem(QRectF(-2.5, -2.5, 5.0, 5.0), self)
@@ -44,17 +61,16 @@ class Anchor(QGraphicsObject):
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     @property
-    def line(self):
-        return self._attr.dims
+    def line(self): return self._attr.dims
 
     # Event-handler for paint-event:
     def paint(self, painter, option, widget = ...):
-        painter.setPen(self._styl.pen_default)
+        painter.setPen(self._style.pen_default)
         painter.drawLine(self._attr.dims)
 
     # Returns the anchor's stream:
     def stream(self):
-        return self._strm
+        return self._stream
 
     # Returns bounding-rectangle:
     def boundingRect(self):

@@ -1,11 +1,12 @@
 * {
-	border					: none;
-	background				: white;
+    font        : 13pt "Trebuchet MS";
+	border      : none;
+	background  : white;
 }
 
 QFrame {
-    border                  : none;
-    background              : white;
+    border      : none;
+    background  : white;
 }
 
 QInputDialog QLabel {
@@ -74,6 +75,7 @@ QTextEdit:focus {
 }
 
 QMenu {
+    font                    : 13pt "Trebuchet MS";
     border                  : 1px solid black;
     padding                 : 4px 4px 4px 4px;
     color                   : black;
@@ -90,7 +92,7 @@ QMenu::right-arrow {
 QMenu::item {
     padding                 : 4px 4px 4px 4px;
     color                   : black;
-    min-width               : 120px;
+    min-width               : 100px;
     background-color        : white;
 }
 
@@ -302,7 +304,7 @@ QToolBar QToolButton:!checked:hover, QToolButton:!checked:hover {
 }
 
 QCheckBox {
-    margin                  : 8px;
+    margin                  : 2px;
     border                  : none;
     color                   : black;
 	background-color		: transparent;
@@ -395,17 +397,6 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical{
 	border					: none;
 	background 				: transparent;
 }
-
-/*
-QHeaderView {
-    border                  : 1px solid black;
-    color                   : white;
-    margin                  : 2px;
-    padding                 : 2px 2px 2px -3px;
-    border-radius           : 6px;
-    background              : #D8E9DF;
-}
-*/
 
 QHeaderView::down-arrow {
     image       : url(rss/icons/expand.svg);

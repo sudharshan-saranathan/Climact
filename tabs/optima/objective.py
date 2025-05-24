@@ -1,6 +1,6 @@
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import *
-from core.radiogroup import RadioButtonGroup
+from custom.radiogroup import RadioButtonGroup
 
 class CostEditor(QLineEdit):
 

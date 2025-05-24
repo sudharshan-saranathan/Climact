@@ -9,16 +9,15 @@ from PyQt6.QtGui import QKeySequence
 from PyQt6.QtCore import Qt, pyqtSignal, QtMsgType
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QApplication
 
-from dataclasses import dataclass
-from core.dialog import Dialog
-from tabs.optima import Optimizer
-from tabs.sheets.database import DatabaseManager
+from dataclasses   import dataclass
+from custom.message import Message
 
 from .tabber import Tabber
 from .navbar import NavBar
 
-
-# from tabs.sheets.manager import DatabaseManager
+from tabs.optima.optimizer import Optimizer
+from tabs.database.manager import DataManager
+# from tabs.sheets.manager import Manager
 
 class Gui(QMainWindow):
 
@@ -43,25 +42,22 @@ class Gui(QMainWindow):
         self._tabber = Tabber(self._wstack)     # Tab-widget to hold multiple canvas
         self._navbar = NavBar(self)             # Detachable, interactive navigation-bar
 
-        self._optimize = Optimizer(self._tabber.active_canvas, self)
-        self._database = DatabaseManager(self._tabber.active_canvas, self)    # Database manager
+        self._data   = DataManager(self._tabber.currentWidget().canvas, self)
+        self._optima = Optimizer  (self._tabber.currentWidget().canvas, self)
 
         # Add stack-widgets:
-        self._wstack.addWidget(self._tabber)
-        self._wstack.addWidget(self._database)
-        self._wstack.addWidget(self._optimize)
+        self._wstack.addWidget(self._tabber)    # Tab-widget to hold multiple canvas
+        self._wstack.addWidget(self._data)      # Data-manager
+        self._wstack.addWidget(self._optima)    # Optimizer
 
         # Add `_navbar` as a toolbar:
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self._navbar)
         self.setCentralWidget(self._wstack)
 
-        # Connect the tab-widget's signals:
-        self._tabber.currentChanged.connect(self.on_tab_changed)
-
         # Connect navbar's signal:
         self._navbar.sig_open_schema.connect(self._tabber.import_schema)
         self._navbar.sig_save_schema.connect(self._tabber.export_schema)
-        self._navbar.sig_show_widget.connect(self._select_widget)
+        self._navbar.sig_show_widget.connect(self.show_widget)
 
         # Initialize menu:
         self._init_menubar()
@@ -95,40 +91,34 @@ class Gui(QMainWindow):
         _export_action.triggered.connect(self._tabber.export_schema)
         _quit_action.triggered.connect(QApplication.instance().quit)
 
-    def _select_widget(self, _name: str):
+    def load_project(self): self._tabber.import_schema()
 
-        if _name == "Database":
-            self._wstack.setCurrentWidget(self._database)
-            self._database.reload()
+    def show_widget(self, _label: str):
 
-        if _name == "Canvas":
-            self._wstack.setCurrentWidget(self._tabber)
+        if _label == "Data":
+            self._data.reload(self._tabber.currentWidget().canvas)
+            self._wstack.setCurrentWidget(self._data)
 
-        if _name == "Optimization":
-            self._wstack.setCurrentWidget(self._optimize)
-
-    def on_tab_changed(self):
-        self._database.canvas = self._tabber.active_canvas
-        self._optimize.canvas = self._tabber.active_canvas
-
-    def open_project(self): self._tabber.import_schema()
+        if _label == "Canvas":      self._wstack.setCurrentWidget(self._tabber)
+        if _label == "Optima":      self._wstack.setCurrentWidget(self._optima)
+        if _label == "Assistant":   self._tabber.currentWidget().toggle_assistant()
 
     def closeEvent(self, event):
 
+        """
         # Confirm quit:
-        _dialog = Dialog(QtMsgType.QtWarningMsg,
+        _dialog = Message(QtMsgType.QtWarningMsg,
                          "Do you want to save unsaved changes?",
-                         QMessageBox.StandardButton.Yes     |
-                         QMessageBox.StandardButton.No |
-                         QMessageBox.StandardButton.Cancel
-                         )
+                          QMessageBox.StandardButton.Yes |
+                          QMessageBox.StandardButton.No |
+                          QMessageBox.StandardButton.Cancel
+                          )
 
         # Execute dialog and get result:
         _dialog_code = _dialog.exec()
 
         # Handle close-event accordingly:
-        if _dialog_code == QMessageBox.StandardButton.Yes:
-            event.accept()
-
+        if _dialog_code == QMessageBox.StandardButton.Yes:      event.accept()
         if _dialog_code == QMessageBox.StandardButton.No:       event.accept()
         if _dialog_code == QMessageBox.StandardButton.Cancel:   event.ignore()
+        """

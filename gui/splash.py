@@ -1,24 +1,44 @@
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QIcon, QPixmap
-from PyQt6.QtWidgets import QDialog, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QApplication, QFrame
+from PyQt6.QtGui     import QPixmap
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import (QDialog,
+                             QLabel,
+                             QPushButton,
+                             QVBoxLayout,
+                             QHBoxLayout)
 
-# Splash Screen
-class SplashScreen(QDialog):
+from enum import Enum
+from util import random_id
 
-    # Instance Initializer:
+# StartupChoice enum:
+class StartupChoice(Enum):
+    OPEN_BLANK_PROJECT = 1
+    LOAD_SAVED_PROJECT = 2
+    SHOW_RECENT        = 3
+
+# Class StartupWindow: A QDialog subclass that is displayed on application startup:
+class StartupWindow(QDialog):
+
+    # Constants:
+    class Constants:
+        WINDOW_WIDTH  = 400
+        WINDOW_HEIGHT = 300
+
+    # Initializer:
     def __init__(self):
 
         # Initialize super-class:
         super().__init__()
 
         # Customize attribute(s):
-        self.setFixedSize(400, 300)
-        self.setStyleSheet("QDialog {background: #efefef;}")
+        self.setObjectName("Startup Window")
+        self.setFixedSize(self.Constants.WINDOW_WIDTH, self.Constants.WINDOW_HEIGHT)
 
-        logo, pixmap = QLabel(), QPixmap("rss/icons/logo.png").scaledToWidth(96, Qt.TransformationMode.SmoothTransformation)
-        logo.setPixmap(pixmap)
+        # Load logo and
+        logo, pixmap = QLabel(), QPixmap("rss/icons/logo.png").scaledToWidth(96)
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo.setPixmap(pixmap)
 
+        # Title-card with icon and label:
         title = QLabel(
             """
             <div align="center">
@@ -33,30 +53,18 @@ class SplashScreen(QDialog):
         top_layout.addWidget(title)
 
         # Add buttons:
-        new_project = QPushButton("Blank Project")
-        exs_project = QPushButton("Open Existing")
-        recent_list = QPushButton("Recent Projects")
+        blank_project = QPushButton("Open Blank Project")
+        saved_project = QPushButton("Load Saved Project")
+        show_recents  = QPushButton("Recent Projects")
 
         # Connect buttons to handlers:
-        new_project.pressed.connect(lambda: self.done(24))
-        exs_project.pressed.connect(lambda: self.done(25))
+        blank_project.pressed.connect(lambda: self.done(StartupChoice.OPEN_BLANK_PROJECT.value))
+        saved_project.pressed.connect(lambda: self.done(StartupChoice.LOAD_SAVED_PROJECT.value))
+        show_recents.pressed .connect(lambda: self.done(StartupChoice.SHOW_RECENT.value))
 
-        # Arrange UI elements in layout:
+        # Arrange buttons in startup-window:
         layout = QVBoxLayout(self)
         layout.addLayout(top_layout)
-        layout.addWidget(new_project)
-        layout.addWidget(exs_project)
-        layout.addWidget(recent_list)
-
-    # Handle choice `New Project`:
-    def open_new(self):
-        self.done(24)
-        self.accept()
-
-    # Handle choice `Open Project`:
-    def open_exs(self):
-        self.done(25)
-        self.accept()
-
-
-
+        layout.addWidget(blank_project)
+        layout.addWidget(saved_project)
+        layout.addWidget(show_recents)

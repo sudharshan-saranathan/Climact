@@ -1,7 +1,9 @@
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QGridLayout, QTextEdit, QLabel, QPushButton, QFrame, QStackedWidget, QTabWidget
 
-from core.separator import Separator
+from custom.entity import EntityClass, EntityState
+from custom.separator import Separator
+
 from tabs.optima.ampl import AMPLEngine
 from tabs.optima.objective import ObjectiveSetup
 from tabs.schema.canvas import Canvas
@@ -119,13 +121,18 @@ class Optimizer(QWidget):
         obj_section = "# Objective(s):\n"
         par_section = "# Parameter(s):\n"
 
-        for flow in self._canvas.flow_items.keys():
+        for terminal, state in self._canvas.term_db.items():
 
-            # Null-check:
-            if not bool(flow.label) or not flow.socket.connected:    continue
+            # Skip unconnected terminals or hidden terminals::
+            if (
+                not bool(terminal.socket.label) or 
+                not terminal.socket.connected or
+                not state
+            ):  
+                continue
 
             # Define entity name:
-            entity_name = f"TOTAL_{flow.label}"
+            entity_name = f"TOTAL_{terminal.socket.label}"
 
             # Define total-flow variable:
             if (
@@ -133,13 +140,13 @@ class Optimizer(QWidget):
                     entity_name not in par_set
             ):
 
-                if bool(flow.socket.value): # If value is provided, define entity as parameter
+                if bool(terminal.socket.value): # If value is provided, define entity as parameter
 
-                    par_section = f"param TOTAL_{flow.label} = {flow.socket.value};\n"
+                    par_section = f"param TOTAL_{terminal.socket.label} = {terminal.socket.value};\n"
                     par_set.add(entity_name)
 
                     # Map variable name to entity:
-                    self.entity_map[entity_name] = flow.socket
+                    self.entity_map[entity_name] = terminal.socket
 
                 else:   # Define as variable
 
@@ -147,17 +154,29 @@ class Optimizer(QWidget):
                     var_set.add(entity_name)
 
                     # Map variable name to entity:
-                    self.entity_map[entity_name] = flow.socket
+                    self.entity_map[entity_name] = terminal.socket
 
-                    group, equation = self._canvas.group_flows(flow.label, generate_eqn = True)
-                    eqn_section += f"{eqn_prfx}{ecount}: {equation}\n"
-                    ecount += 1
+                    # group, equation = self._canvas.group_flows(terminal.socket.label, generate_eqn = True)
+                    # eqn_section += f"{eqn_prfx}{ecount}: {equation}\n"
+                    #ecount += 1
 
-        for node in self._canvas.node_items.keys():
+        for node, state in self._canvas.node_db.items():
+
+            # Skip hidden nodes:
+            if not state: continue
 
             n_prefix = node.uid
-            var_list = node.variables
-            par_list = node.parameters
+            var_list = [
+                variable for variable, state in node[EntityClass.VAR].items() 
+                if state == EntityState.ACTIVE
+            ]
+
+            par_list = [
+                parameter for parameter, state in node[EntityClass.PAR].items()
+                if state == EntityState.ACTIVE
+            ]
+
+            print(f"Node has {len(var_list)} variables and {len(par_list)} parameters")
 
             for variable in var_list:
 

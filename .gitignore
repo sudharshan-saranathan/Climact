@@ -1,13 +1,13 @@
 # Ignore all `.log` files:
-*.log
 *.json
+*.log
+*.txt
 
 # Ignore `.DS_Store` (macOS) and `Thumbs.db` (Windows)
 .DS_Store
 .Thumbs.db
 
 # Ignore schematic save directories:
-library/save/
-library/comp/
-library/sys/
-ignore
+/library/save/
+/library/systems/
+/library/components/

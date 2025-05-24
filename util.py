@@ -1,8 +1,11 @@
-from PyQt6.QtGui import QColor
-from enum        import Enum
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui  import QColor
+from enum         import Enum
 
 import string
 import random
+
+from PyQt6.QtSvgWidgets import QGraphicsSvgItem
 
 # Parse a qss-stylesheet:
 def read_qss(filename: str) -> str:
@@ -52,23 +55,71 @@ def random_id(length: int = 4, prefix: str = ""):
 def random_hex():   return "#{:06x}".format(random.randint(0, 0xffffff))
 
 # Find the best contrasting color to any given color:
-def anti_color(color: QColor):
+def anti_color(_color: QColor | Qt.GlobalColor | str):
     """
-    Returns a contrasting color (either white or black) based on the luminance of the input color
-    :param color: The color against which the contrasting color is sought.
+    Returns a contrasting color (white or black) based on the luminance of the input color.
+
+    :param _color: The color against which the contrasting color is sought.
     :return: Black if the input color is light, otherwise white.
     """
+
+    # Validate argument(s):
+    try:
+        _color = QColor(_color) 
+
+    except TypeError:
+        raise TypeError("Unable to convert argument to `QColor`")
+
+    # Method to normalize color values:
     def normalize(c):
         c /= 255.0
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
 
-    luminance = (0.2126 * normalize(color.red()) +
-                 0.7152 * normalize(color.green()) +
-                 0.0722 * normalize(color.blue()))
+    # Compute luminance:
+    luminance = (0.2126 * normalize(_color.red()) +
+                 0.7152 * normalize(_color.green()) +
+                 0.0722 * normalize(_color.blue()))
 
+    # Return black or white based on luminance:
     return QColor(0x000000) if luminance > 0.5 else QColor(0xffffff)
 
 # Convert string to float, return None if not possible:
 def str_to_float(arg: str):
+    """
+    Converts a string to a float, returns None if not possible.
+    
+    Args:
+        arg (str): The string to convert.
+
+    Returns:
+        float: The float value of the string, or None if not possible.
+    """
+
     try:                return float(arg)
     except ValueError:  return None
+
+# Scale an SVG to a specific width:
+def load_svg(_file: str, _width: int):
+    """
+    Loads an SVG-icon and rescales it to a specific width.
+
+    Args:
+        _file (str): The path to the SVG-icon.
+        _width (int): The width to rescale the SVG to.
+
+    Returns:
+        QGraphicsSvgItem: The rescaled SVG-icon.
+    """
+
+    # Validate argument(s):
+    if (
+        not isinstance(_file , str) or
+        not isinstance(_width, int)
+    ):
+        return
+
+    # Load SVG-icon and rescale:
+    _svg = QGraphicsSvgItem(_file)
+    _svg.setScale(float(_width / _svg.boundingRect().width()))  # Rescale the SVG
+
+    return _svg

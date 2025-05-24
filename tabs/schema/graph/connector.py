@@ -1,23 +1,14 @@
-from PyQt6.QtGui import (QPen,
-                         QFont,
-                         QColor,
-                         QBrush,
-                         QPainterPath)
+import logging 
+import weakref
 
-from PyQt6.QtCore import (Qt,
-                          QRect,
-                          QRectF,
-                          QPointF,
-                          pyqtSlot,
-                          pyqtSignal)
+from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSlot, pyqtSignal
+from PyQt6.QtGui import QPainterPath, QPen, QColor
+from PyQt6.QtWidgets import QGraphicsObject, QGraphicsItem, QGraphicsSceneMouseEvent
 
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject
-
-from core.label import Label
-from core.util import random_id
+from custom import Label, EntityClass
+from util import random_id
 from enum import Enum
 
-from tabs.schema.graph.anchor import StreamType
 from tabs.schema.graph.handle import Handle
 
 class PathGeometry(Enum):
@@ -29,20 +20,17 @@ class PathGeometry(Enum):
 class BubbleLabel(QGraphicsObject):
 
     # Constructor:
-    def __init__(self, text: str, parent: QGraphicsItem = None):
+    def __init__(self, _text: str, _parent: QGraphicsItem = None):
 
         # Initialize super-class:
-        super().__init__(parent)
+        super().__init__(_parent)
 
         # Text attributes:
         self._rect  = QRectF(-18, -10, 36, 20)
-        self._label = Label(self,
-                            edit=False,
-                            font=QFont("Fira Sans", 12),
+        self._label = Label(self, _text,
+                            align=Qt.AlignmentFlag.AlignCenter,
                             width=30,
-                            label=text,
-                            color=QColor(0x0),
-                            align=Qt.AlignmentFlag.AlignCenter)
+                            editable=False)
 
         self._label.setPos(-15, -11)
 
@@ -81,10 +69,32 @@ class Connector(QGraphicsObject):
             self.pen_select = QPen(Qt.GlobalColor.darkGray, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
 
     # Initializer:
-    def __init__(self, parent: QGraphicsObject | None, overwrite=True, **kwargs):
+    def __init__(self, 
+                _symbol: str, 
+                _origin: Handle | None = None, 
+                _target: Handle | None = None, 
+                _overwrite: bool = True, 
+                _parent: QGraphicsObject | None = None):
+
+        """
+        Initialize a new connector.
+
+        Parameters:
+            _symbol (str): Symbol of the connector.
+            _origin (Handle): Origin handle (default: None).
+            _target (Handle): Target handle (default: None).
+            _overwrite (bool): Overwrite the target handle's data with the origin handle's data (default: True).
+            _parent (QGraphicsObject, optional): Parent object of the connector (default: None).
+        """
+
+        # Validate arguments:
+        if not isinstance(_symbol, str): raise TypeError("Expected argument `_symbol` of type `str`")
+        if not isinstance(_origin, Handle | None): raise TypeError("Expected argument `_origin` of type `Handle`")
+        if not isinstance(_target, Handle | None): raise TypeError("Expected argument `_target` of type `Handle`")
+        if not isinstance(_overwrite, bool): raise TypeError("Expected argument `_overwrite` of type `bool`")
 
         # Initialize base-class:
-        super().__init__(parent)
+        super().__init__(_parent)
 
         # Attrib:
         self._cuid = random_id(length=4, prefix='C')
@@ -93,54 +103,60 @@ class Connector(QGraphicsObject):
         self._text = None
         self._is_obsolete = False
 
-        # Customize behavior:
+        # Customize behavior:   
         self.setZValue(-1)
 
-        # Check if valid origin and target handles were provided:
+        # Return if `origin` or `target` is None:
         if (
-            not bool(kwargs.get("origin"))              or  # If no origin handle was provided
-            not bool(kwargs.get("target"))              or  # If no target handle was provided
-            not isinstance(kwargs["origin"], Handle)    or  # If the origin object is not a handle
-            not isinstance(kwargs["target"], Handle)    or  # If the target object is not a handle
-            kwargs["origin"].stream == StreamType.PAR   or  # If the origin handle is not of INP/OUT StreamType
-            kwargs["target"].stream == StreamType.PAR       # If the target handle is not of INP/OUT StreamType
-        ):
+            _origin is None or 
+            _target is None
+        ):  
             return
 
-        # Store weak-references to the handles:
-        self.origin = kwargs["origin"] if kwargs["origin"].stream == StreamType.OUT else kwargs["target"]
-        self.target = kwargs["target"] if kwargs["target"].stream == StreamType.INP else kwargs["origin"]
+        # Abort-conditions:
+        if _origin == _target:                           raise ValueError("Origin and target handles must be different")
+        if _origin.eclass == EntityClass.PAR:            raise ValueError("Origin handle must be of INP/OUT stream")
+        if _target.eclass == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
+        if _origin.eclass == _target.eclass:             raise ValueError("Origin and target handles must be of different streams")
+        if _origin.parentItem() == _target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
 
-        # Setup references:
+        # Initialize bubble-label:
+        self._text = BubbleLabel(_symbol, self)
+
+        # Store references:
+        self.origin = _origin if _origin.eclass == EntityClass.OUT else _target
+        self.target = _target if _target.eclass == EntityClass.INP else _origin
+
+        # Setup references in handles:
         self.origin.lock(self.target, self)
         self.target.lock(self.origin, self)
 
         # Connect handles' signals to slots:
-        self.origin.sig_item_updated.connect(self.on_origin_updated)
-        self.origin.sig_item_shifted.connect(self.redraw)
-        self.target.sig_item_shifted.connect(self.redraw)
+        self.origin.sig_item_updated.connect(self.on_origin_updated)    # Emit signal to notify application that origin is now connected
+        self.origin.sig_item_shifted.connect(self.redraw)               # Connect origin's `sig_item_shifted` signal to `redraw`
+        self.target.sig_item_shifted.connect(self.redraw)               # Connect target's `sig_item_shifted` signal to `redraw`
 
         # If either of the handles are destroyed, set obsolete:
-        self.origin.destroyed.connect(self.set_obsolete)
-        self.target.destroyed.connect(self.set_obsolete)
+        self.origin.destroyed.connect(self.set_obsolete)                # If origin handle is destroyed, set connector obsolete
+        self.target.destroyed.connect(self.set_obsolete)                # If target handle is destroyed, set connector obsolete 
 
         # Assign origin's data to target:
-        if overwrite:
-            self.target.cname   = self.origin.cname
-            self.target.color   = self.origin.color
-            self.target.units   = self.origin.units
-            self.target.value   = self.origin.value
-            self.target.sigma   = self.origin.sigma
-            self.target.minimum = self.origin.minimum
-            self.target.maximum = self.origin.maximum
+        if _overwrite:
+            
+            self.target.strid   = self.origin.strid     # Copy stream ID
+            self.target.color   = self.origin.color     # Copy color
+            self.target.units   = self.origin.units     # Copy units
+            self.target.value   = self.origin.value     # Copy value
+            self.target.sigma   = self.origin.sigma     # Copy sigma
+            self.target.minimum = self.origin.minimum   # Copy minimum
+            self.target.maximum = self.origin.maximum   # Copy maximum
 
-        self.target.sig_item_updated.emit(self.target)
+        # Notify application that the target handle has been updated:
+        self.target.rename(self.origin.label)
+        self.target.sig_item_updated.emit(self.target)                  # Emit signal to notify application that `target` has been updated
 
-        # Setup label:
-        self._text = BubbleLabel(kwargs["symbol"], self)
-        self._styl.pen_border = QPen(self.origin.color, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-
-        # Redraw the path:
+        # Update color, and redraw path:
+        self.set_color(self.origin.color)
         self.draw(self.origin.scenePos(), self.target.scenePos(), self.geometry)
 
     @property
@@ -158,31 +174,25 @@ class Connector(QGraphicsObject):
     def boundingRect(self): return self._attr.path.boundingRect().adjusted(-10, -10, 10, 10)
 
     def paint(self, painter, option, widget=None):
-        pen_active = self._styl.pen_select if self.isSelected() else self._styl.pen_border
-        painter.setPen(pen_active)
+        painter.setPen(self._styl.pen_border)
         painter.drawPath(self._attr.path)
+
+    def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
+        
+        # Debugging:
+        print(f"Connector.mouseDoubleClickEvent(): {self.symbol} {self.origin.connected} {self.target.connected}")
+
+        return super().mouseDoubleClickEvent(event)
 
     def clear(self):    self._attr.path.clear()
 
-    def delete(self):
-
-        if self._is_obsolete:           return
-        if self.origin == self.target:  return
-
-        self.origin.free()
-        self.target.free()
-
-        # Schedule for deletion:
-        self.deleteLater()
-
     def on_origin_updated(self):
+        if self._is_obsolete:
+            return
 
-        if self._is_obsolete:           return
-        if self.origin == self.target:  return
-
-        self._styl.pen_border = QPen(self.origin.color, 4, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        self._styl.pen_border = QPen(self.origin.color, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         if  self.origin.connected:
-            self.target.cname = self.origin.cname
+            self.target.strid = self.origin.strid
             self.target.color = self.origin.color
             self.target.sig_item_updated.emit(self.target)
 
@@ -230,6 +240,14 @@ class Connector(QGraphicsObject):
     def set_obsolete(self)  -> None:    self._is_obsolete = True
 
     def set_relevant(self)  -> None:    self._is_obsolete = False
+
+    def set_color(self, _color: QColor):
+
+        # Validate input:
+        if not isinstance(_color, QColor): return
+
+        # Change pen-color:
+        self._styl.pen_border.setColor(_color)
 
     # Line-segment:
     def construct_segment(self, opos: QPointF, tpos: QPointF):

@@ -2,16 +2,19 @@ import json
 import logging
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui     import (QShortcut,
-                         QKeySequence)
-from PyQt6.QtWidgets import (QFrame,
-                             QTextEdit,
-                             QVBoxLayout, QSizePolicy, QWidget)
+from PyQt6.QtGui import QShortcut, QKeySequence
+from PyQt6.QtWidgets import (
+    QFrame,
+    QTextEdit,
+    QVBoxLayout,
+    QSizePolicy,
+    QWidget
+)
 
-from tabs.gemini.gemini import Gemini
-from tabs.gemini.thread import Thread
-from tabs.schema.fileio import JsonLib
-
+from custom import Message
+from tabs.schema.jsonlib import JsonLib
+from tabs.gemini.gemini  import Gemini
+from tabs.gemini.thread  import Thread
 
 class Gui(QFrame):
 
@@ -86,14 +89,15 @@ class Gui(QFrame):
 
     def return_pressed(self):
 
-        # Null-check:
-        if not bool(self._prompt.toPlainText()):
-            return
+        # Return if the prompt is empty:
+        if not bool(self._prompt.toPlainText()): return
 
-        # Create a new thread:
+        # First, try to encode the canvas as JSON:
+        _json = JsonLib.encode(self._canvas)
+
         thread = Thread(self.gemini,
                         self._prompt.toPlainText(),
-                        JsonLib.encode_json(self._canvas))
+                        _json)
 
         # Notify user:
         self._window.setPlainText("The assistant is thinking...")
@@ -128,7 +132,7 @@ class Gui(QFrame):
                                    "}")
 
         # Send the JSON code-block through the `sig_json_available` signal:
-        if json_block is not None:
+        if  json_block is not None:
             self.sig_json_available.emit(json_block)
 
     def handle_error(self, error_msg: str):
@@ -141,5 +145,13 @@ class Gui(QFrame):
                                    "background: green;"
                                    "}")
 
-    def display_message(self, string: str):
-        self._window.setPlainText(string)
+    def display_message(self, _response: str):
+
+        # Validate argument(s):
+        if isinstance(_response, str):  self._window.setPlainText(_response)
+        else:
+
+            # Display error-message:
+            Message.critical(None,
+                            "Climact: Error",
+                            f"Expected a string-response, but got: {type(_response)}")

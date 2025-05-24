@@ -1,11 +1,28 @@
 import logging
+from json import JSONDecodeError
+from pathlib import Path
 
-from PyQt6.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-from PyQt6.QtGui import QPalette, QIcon, QMouseEvent, QCursor
-from PyQt6.QtWidgets import QTabWidget, QWidget, QCheckBox, QTabBar, QApplication, QMenu, QPushButton, QToolButton, \
-    QHBoxLayout, QInputDialog, QFileDialog
+from PyQt6.QtCore import (
+    Qt, 
+    QtMsgType, 
+    pyqtSignal,
+    pyqtSlot
+)
 
-from tabs.schema.viewer import Viewer
+from PyQt6.QtWidgets import (
+    QMenu,
+    QTabBar,
+    QWidget,
+    QCheckBox,
+    QTabWidget,
+    QFileDialog,
+    QMessageBox,
+    QInputDialog,
+    QApplication
+)
+
+from tabs.schema import *
+from custom      import Message
 
 class TabBar(QTabBar):
 
@@ -65,7 +82,7 @@ class Tabber(QTabWidget):
         self.setTabBar(_tab_bar)
 
         # Corner widget:
-        self._cbox = QCheckBox("Set tab-label as save-name")
+        self._cbox = QCheckBox("Save As")
         self._cbox.setChecked(True)
 
         # Create first tab:
@@ -92,7 +109,11 @@ class Tabber(QTabWidget):
         if not isinstance(_viewer, Viewer): return
 
         # Connect viewer's signals:
-        _viewer.canvas.changed.connect(self.set_modified)
+        _viewer.canvas.sig_canvas_state.connect(self.set_indicator)
+        _viewer.canvas.sig_schema_setup.connect(lambda file: self.setTabText(
+            self.currentIndex(),
+            Path(file).name.split('.')[0]
+        ))
 
         # Call super-class implementation:
         super().addTab(_viewer, _label)
@@ -101,65 +122,88 @@ class Tabber(QTabWidget):
     @pyqtSlot(int)
     def removeTab(self, _index):
 
-        # Delete widget:
-        widget = self.widget(_index)
-        widget.close()
+        # Get currently active `Viewer`:
+        _viewer = self.widget(_index)
+        _viewer.close()
 
-        # Call super-class implementation:
-        super().removeTab(_index)
+        if _viewer.closed:
+            super().removeTab(_index)   # Call super-class implementation:
 
     @pyqtSlot(int)
     def rename_tab(self, _index):
         name, code = QInputDialog.getText(self, "Rename Tab", "Enter new name:")
         if code: self.setTabText(_index, f"{name}*")
 
+    # Toggle assistant:
+    def toggle_assistant(self): self.currentWidget().toggle_assistant()
+
+    # Import schematic:
+    def import_schema(self):
+
+        _index  = self.currentIndex ()  # Get index of the current widget
+        _viewer = self.currentWidget()  # Get current widget
+
+        # Type-check:
+        if (
+            isinstance(_viewer, Viewer) and
+            isinstance(_viewer.canvas, Canvas)
+        ):
+            _file = _viewer.canvas.import_schema()      # Forward action to the canvas, get name of the opened file
+            if  _file:
+                _stem = Path(_file).stem                    # Extract stem from filename
+                self.setTabText(_index, _stem)  # Rename the current tab to the stem
+
+    # Export schematic:
+    def export_schema(self):
+
+        _viewer = self.currentWidget()  # Get current widget
+        _index  = self.currentIndex ()  # Get current index
+        _stem   = self.tabText(_index)  # Get tab-label
+        _stem   = _stem.replace("*", "")    # Remove asterisk from label
+
+        # Type-check:
+        if (
+            not isinstance(_viewer, Viewer) or
+            not isinstance(_viewer.canvas, Canvas)
+        ):
+            Message.warning(None,
+                           "Climact: Warning",
+                           "Invalid viewer or canvas, cannot save file!"
+                            )
+            return None
+
+        _name = f"{_stem}.json" if self._cbox.isChecked() \
+                                else QFileDialog.getSaveFileName(None,
+                                                                "Enter filename", ".",
+                                                                "JSON (*.json)"
+                                                                )[0]
+
+        # Export schematic as JSON:
+        try:
+            _canvas = _viewer.canvas                # Get canvas
+            _canvas.export_schema(f"{_name}")       # Save schematic
+            self.set_indicator(SaveState.SAVED)     # Remove asterisk from tab label
+
+        except (RuntimeError, JSONDecodeError) as error:
+
+            Message.critical(None, "Climact: Error", "An error occurred. Please check logfile for details!")
+            logging.critical(error)
+
     # Set/Unset the modified indicator:
-    @pyqtSlot()
-    @pyqtSlot(bool)
-    def set_modified(self, _flag: bool = True):
+    @pyqtSlot(SaveState)
+    def set_indicator(self, _state: SaveState):
+
+        # Validate argument(s):
+        if not isinstance(_state, SaveState): raise TypeError("Expected argument of type `SaveState`")
 
         # Get current index and label:
         _index = self.indexOf(self.currentWidget())
         _label = self.tabText(_index)
 
-        # Display/Remove indicator according to the input flag:
-        if  _flag and not _label.endswith('*'):
+        # Display `UNSAVED` indicator (asterisk):
+        if  _state == SaveState.UNSAVED and not _label.endswith('*'):
             self.setTabText(_index, f"{_label}*")
 
-        elif not _flag and _label.endswith('*'):
+        # Remove `UNSAVED` indicator (asterisk):
+        elif _state == SaveState.SAVED and _label.endswith('*'):
             self.setTabText(_index, f"{_label.split('*')[0]}")
-
-    # Import schematic:
-    def import_schema(self):    self.currentWidget().canvas.import_json()
-
-    # Export schematic:
-    def export_schema(self):
-
-        # Trigger save:
-        if  self._cbox.isChecked():
-            _save_name = self.tabText(self.currentIndex())  # Save file-name is the same as tab label
-            _save_name = _save_name.split('*')[0]           # Remove `*` from save-name
-
-            try:
-                _canvas = self.currentWidget().canvas       # Get canvas
-                _canvas.export_json(f"{_save_name}.json")   # Save schematic
-                self.set_modified(False)                    # Modify indicator
-
-            except Exception as exception:
-                logging.exception(f"An exception occurred: {exception}")
-
-        else:
-            # File-dialog:
-            _file, _code = QFileDialog.getSaveFileName(None, "Select JSON file", "./", "JSON files (*.json)")
-
-            if _code:
-                try:
-                    _canvas = self.currentWidget().canvas   # Get canvas
-                    _canvas.export_json(f"{_file}")         # Save schematic
-                    self.set_modified(False)                # Remove asterisk from tab label
-
-                except Exception as exception:
-                    logging.exception(f"An exception occurred: {exception}")
-
-    @property # Get active canvas
-    def active_canvas(self):    return self.currentWidget().canvas
