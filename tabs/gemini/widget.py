@@ -59,12 +59,12 @@ class Gui(QFrame):
         self._prompt.setFixedHeight(80)
         self._prompt.setPlaceholderText("Type your query here!")
 
-        # Customize appearance of text editors:
+        # Customize the appearance of text editors:
         self._window.setStyleSheet("color: black; background:transparent; border: none;")
         self._prompt.setStyleSheet("color: white; background:#44506C; border: none; border-radius: 7px;")
-        self._prompt.setCursorWidth(8)
+        self._prompt.setCursorWidth(2)
 
-        # Install shortcut on the prompt:
+        # Install a shortcut on the prompt:
         shortcut = QShortcut(QKeySequence("Ctrl+Return"), self._prompt)
         shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         shortcut.activated.connect(self.return_pressed)

@@ -160,7 +160,7 @@ class Canvas(QGraphicsScene):
         self._subm.setIcon(QIcon("rss/icons/menu-plus.svg"))  # Set the icon for the submenu.
 
         # Submenu for creating scene-items:
-        _node = self._subm.addAction(QIcon("rss/icons/node.png"), "Node", self.create_node)  # Action to create a new node.
+        _node = self._subm.addAction(QIcon("rss/icons/node-js.png"), "Node", self.create_node)  # Action to create a new node.
         _tout = self._subm.addAction(
             QIcon("rss/icons/input.png"),
             "Terminal (Out)",

@@ -1,4 +1,4 @@
-from PyQt6.QtGui     import QPixmap
+from PyQt6.QtGui     import QIcon, QPixmap
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import (QDialog,
                              QLabel,
@@ -34,7 +34,7 @@ class StartupWindow(QDialog):
         self.setFixedSize(self.Constants.WINDOW_WIDTH, self.Constants.WINDOW_HEIGHT)
 
         # Load logo and
-        logo, pixmap = QLabel(), QPixmap("rss/icons/logo.png").scaledToWidth(96)
+        logo, pixmap = QLabel(), QPixmap("rss/icons/logo.png").scaledToWidth(96, Qt.TransformationMode.SmoothTransformation)
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo.setPixmap(pixmap)
 
@@ -43,7 +43,7 @@ class StartupWindow(QDialog):
             """
             <div align="center">
                 <span style="font-size:64pt; font-weight:600;">Climact</span><br>
-                <span style="font-size:16pt;">Decarbonization Modeler</span>
+                <span style="font-size:18pt;">Decarbonization Modeler</span>
             </div>
             """
         )
