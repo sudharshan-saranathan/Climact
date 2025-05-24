@@ -91,7 +91,7 @@ class Viewer(QGraphicsView):
 
         # Initialize Canvas (QGraphicsScene derivative)
         self.closed = False
-        self.state  = SaveState.UNSAVED
+        self.state  = SaveState.MODIFIED
         self.canvas = Canvas(QRectF(0, 0, x_bounds, y_bounds), self)
         self.setScene(self.canvas)
 
@@ -126,8 +126,8 @@ class Viewer(QGraphicsView):
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
         shortcut_ctrl_c.activated.connect(self.canvas.store)
         shortcut_ctrl_v.activated.connect(self.canvas.clone)
-        shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.UNSAVED))
-        shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.UNSAVED))
+        shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.MODIFIED))
+        shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.MODIFIED))
         shortcut_ctrl_a.activated.connect(lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db))
         shortcut_delete.activated.connect(lambda: self.canvas.delete_items(set(self.canvas.selectedItems())))
 
@@ -160,8 +160,8 @@ class Viewer(QGraphicsView):
                 logging.critical(exception)
                 return
 
-            self.state = SaveState.UNSAVED
-            self.canvas.sig_canvas_state.emit(SaveState.UNSAVED)
+            self.state = SaveState.MODIFIED
+            self.canvas.sig_canvas_state.emit(SaveState.MODIFIED)
 
     # Register the canvas' saved/unsaved state:
     def update_state(self, state: SaveState):   self.state = state
@@ -205,7 +205,7 @@ class Viewer(QGraphicsView):
         print(str(self.canvas.state))
 
         # Check if canvas has been modified:
-        if self.canvas.state == SaveState.UNSAVED:
+        if self.canvas.state == SaveState.MODIFIED:
 
             # Confirm quit:
             _dialog = Message(QtMsgType.QtWarningMsg,

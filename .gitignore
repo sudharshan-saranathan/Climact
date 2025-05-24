@@ -1,6 +1,8 @@
 # Ignore all `.log` files:
 *.json
 *.log
+*.dat
+*.xml
 *.txt
 
 # Ignore `.DS_Store` (macOS) and `Thumbs.db` (Windows)

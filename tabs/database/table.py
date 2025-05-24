@@ -22,7 +22,7 @@ class Table(QTableWidget):
         # References and temporary objects:
         self._node = None
         self._hmap = dict()     # Handle reference, needed to push user-modifications to handle's data
-        self._pmap = dict()     # Params reference, needed to push user-modifications to params'  data
+        self._pmap = dict()     # Params reference, needed to push user-modifications to param's  data
         self._cmap = dict()     # Row reference, needed during copy-paste operations
         self._unsaved = False
 
@@ -84,21 +84,21 @@ class Table(QTableWidget):
         symb_item.setData(Qt.ItemDataRole.UserRole, "Variable")
         symb_item.setData(
             Qt.ItemDataRole.BackgroundRole,
-            QColor(0x9AADBF) if handle.eclass == EntityClass.INP else QColor(0xD6FAFF)
+            QColor(0x9AADBF) if handle.eclass == EntityClass.INP else QColor(0xFFA85C)
         )
 
-        name_item = QTableWidgetItem(handle.info)
-        unit_item = QTableWidgetItem(handle.units)
-        unit_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_item = QTableWidgetItem(handle.info)                   # Name column
+        unit_item = QTableWidgetItem(handle.units)                  # Unit column
+        unit_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)    # Center-align units
 
-        type_item = QTableWidgetItem(handle.strid)
-        type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        type_item = QTableWidgetItem(handle.strid)                  # String-ID column
+        type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)    # Center-align string-ID
 
-        value_item = QTableWidgetItem(str(handle.value))
-        value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        value_item = QTableWidgetItem(str(handle.value))            # Value column
+        value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)   # Center-align value
 
-        sigma_item = QTableWidgetItem(str(handle.sigma))
-        sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        sigma_item = QTableWidgetItem(str(handle.sigma))            # Sigma column
+        sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)   # Center-align sigma
 
         lower_item = QTableWidgetItem(str(handle.minimum))
         lower_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)

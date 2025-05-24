@@ -4,7 +4,6 @@ from pathlib import Path
 
 from PyQt6.QtCore import (
     Qt, 
-    QtMsgType, 
     pyqtSignal,
     pyqtSlot
 )
@@ -16,7 +15,6 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QTabWidget,
     QFileDialog,
-    QMessageBox,
     QInputDialog,
     QApplication
 )
@@ -182,7 +180,7 @@ class Tabber(QTabWidget):
         try:
             _canvas = _viewer.canvas                # Get canvas
             _canvas.export_schema(f"{_name}")       # Save schematic
-            self.set_indicator(SaveState.SAVED)     # Remove asterisk from tab label
+            self.set_indicator(SaveState.EXPORTED)     # Remove asterisk from tab label
 
         except (RuntimeError, JSONDecodeError) as error:
 
@@ -200,10 +198,10 @@ class Tabber(QTabWidget):
         _index = self.indexOf(self.currentWidget())
         _label = self.tabText(_index)
 
-        # Display `UNSAVED` indicator (asterisk):
-        if  _state == SaveState.UNSAVED and not _label.endswith('*'):
+        # Display `MODIFIED` indicator (asterisk):
+        if  _state == SaveState.MODIFIED and not _label.endswith('*'):
             self.setTabText(_index, f"{_label}*")
 
-        # Remove `UNSAVED` indicator (asterisk):
-        elif _state == SaveState.SAVED and _label.endswith('*'):
+        # Remove `MODIFIED` indicator (asterisk):
+        elif _state == SaveState.EXPORTED and _label.endswith('*'):
             self.setTabText(_index, f"{_label.split('*')[0]}")

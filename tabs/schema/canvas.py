@@ -1,14 +1,13 @@
 #-----------------------------------------------------------------------------------------------------------------------
 # Author    : Sudharshan Saranathan
 # GitHub    : https://github.com/sudharshan-saranathan/climact
-# Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
+# Module(s) : PyQt6 (pip install PyQt6),
+#             google-genai (pip install google-generative-ai)
 #-----------------------------------------------------------------------------------------------------------------------
 import logging
 import weakref
 
 from dataclasses  import dataclass
-from json import JSONDecodeError
-
 from PyQt6.QtGui  import QColor, QTransform
 from PyQt6.QtCore import (
     Qt,
@@ -28,7 +27,6 @@ from PyQt6.QtWidgets import (
     QGraphicsScene,
     QGraphicsObject
     )
-from orjson.orjson import JSONEncodeError
 
 from .graph   import *
 from .jsonlib import JsonLib
@@ -39,9 +37,10 @@ from custom  import *
 from actions import *
 from pathlib import Path
 
+# Enum for SaveState:
 class SaveState(Enum):
-    SAVED = 0
-    UNSAVED = 1
+    EXPORTED = 0
+    MODIFIED = 1
 
 # Class Canvas - Subclass of QGraphicsScene, manages graphical items:
 class Canvas(QGraphicsScene):
@@ -95,17 +94,20 @@ class Canvas(QGraphicsScene):
 
     # CANVAS (Initializers) --------------------------------------------------------------------------------------------
     # Instance initializer:
-    def __init__(self, bounds: QRectF, parent: QObject | None = None):
+    def __init__(self,
+                 _bounds: QRectF,
+                 _parent: QObject | None = None
+                 ):
         """
         Initialize the canvas with a given rectangular boundary and optional parent
 
         Parameters:
-            rect (QRectF): The initial dimensions of the scene
-            parent (QObject, optional): Optional parent QObject (default: None)
+            _bounds (QRectF): The initial dimensions of the scene
+            _parent (QObject, optional): Optional parent QObject (default: None)
         """
 
         # Initialize super-class:
-        super().__init__(bounds, parent)
+        super().__init__(_bounds, _parent)
 
         # Initialize actions-manager:
         self.actions = BatchActions([])
@@ -113,16 +115,16 @@ class Canvas(QGraphicsScene):
 
         # Convenience variables:
         self._ntot = 0
-        self._rect = bounds
+        self._rect = _bounds
         self._cpos = QPointF()
         self._conn = Canvas.Transient()
-        self.state = SaveState.UNSAVED
+        self.state = SaveState.MODIFIED
 
         # Add transient-connector to scene:
         self.addItem(self._conn.connector)
 
         # Customize attribute(s):
-        self.setSceneRect(bounds)
+        self.setSceneRect(self._rect)
         self.setBackgroundBrush(QColor(0xefefef))
         self.setObjectName(random_id(length=4, prefix='S'))
 
@@ -308,7 +310,7 @@ class Canvas(QGraphicsScene):
         self.manager.do(ConnectHandleAction(self, _connector))
 
         # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
         # Reset transient-connector:
         self.reset_transient()
@@ -319,13 +321,23 @@ class Canvas(QGraphicsScene):
     # Custom Methods ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. create_terminal        Creates a new source or sink terminal with a single connection point.
-    # 2. create_node            Creates a new _node with a single connection point.
-    # 3. create_cuid            Creates a unique ID for a new connector.
-    # 4. import_schema          Reads a JSON-schematic and populates the canvas with the schematic's contents.
-    # 5. export_schema          Saves the canvas's contents as a JSON-schematic.
+    # 01. create_node           Creates a new _node with a single connection point.
+    # 02. connect_node_signals  Connects the _node's signals to appropriate slots for state management.
+    # 03. create_terminal       Creates a new terminal (input or output) at a specified position.
+    # 04. create_cuid           Creates a unique ID for a new connector.
+    # 05. create_nuid           Creates a unique ID for a new _node.
+    # 06. store                 Adds selected items to the clipboard.
+    # 07. clone                 Clones the clipboard's contents and adds them to the canvas.
+    # 08. paste_item            Pastes a _node or terminal item onto the canvas.
+    # 09. select_items          Selects items in the canvas based on a dictionary of items.
+    # 10. delete_items          Deletes items from the canvas using undoable batch-actions.
+    # 11. symbols               Returns a list of symbols from the canvas's _nodes and connectors.
+    # 12. import_schema         Reads a JSON-schematic and populates the canvas with the schematic's contents.
+    # 13. export_schema         Saves the canvas's contents as a JSON-schematic.
+    # 14. begin_transient       Begins a transient connection by setting the origin handle and activating the connector.
     # ------------------------------------------------------------------------------------------------------------------
 
+    # Create a new node and add it to the scene:
     def create_node(self, 
                    _name: str = "Node", 
                    _cpos: QPointF | None = None,
@@ -362,7 +374,7 @@ class Canvas(QGraphicsScene):
         if _push:   self.manager.do(CreateNodeAction(self, _node))
 
         # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
         # Return reference to newly created _node:
         return _node
@@ -373,8 +385,8 @@ class Canvas(QGraphicsScene):
         if not isinstance(_node, Node): raise TypeError(f"Argument `_node` must be of type `Node`")
 
         # Connect the _node's signals to appropriate slots:
-        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
-        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
         _node.sig_exec_actions.connect(self.manager.do)
         _node.sig_item_removed.connect(self.on_item_removed)
         _node.sig_handle_clicked.connect(self.begin_transient)
@@ -412,7 +424,7 @@ class Canvas(QGraphicsScene):
         _terminal = StreamTerminal(_eclass, None)
         _terminal.setPos(_coords)
         _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
-        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
+        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
         _terminal.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
@@ -423,7 +435,7 @@ class Canvas(QGraphicsScene):
         if _flag: self.manager.do(CreateStreamAction(self, _terminal))
 
         # Set state-variable:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
         # Return terminal:
         return _terminal
@@ -572,24 +584,21 @@ class Canvas(QGraphicsScene):
         Args:
             _item (QGraphicsObject): The item to be pasted.
             _stack (bool):
-
-        Returns:
-            None
         """
 
         # Find type of item:
         if isinstance(_item, Node):
             _item.uid = self.create_nuid()
             _item.sig_item_removed.connect(self.on_item_removed)
-            _item.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
-            _item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+            _item.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            _item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
             _item.sig_exec_actions.connect(self.manager.do)
             _item.sig_handle_clicked.connect(self.begin_transient)
             self.node_db[_item] = True
 
         elif isinstance(_item, StreamTerminal):
             _item.socket.sig_item_clicked.connect(self.begin_transient)
-            _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+            _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
             _item.sig_item_removed.connect(self.on_item_removed)
             self.term_db[_item] = True
 
@@ -602,7 +611,7 @@ class Canvas(QGraphicsScene):
             pass
 
         # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
     def select_items(self, _items_dict: dict = None):
         """
@@ -610,9 +619,9 @@ class Canvas(QGraphicsScene):
         """
 
         [
-            item.setSelected(True)
-            for item, state in _items_dict.items()
-            if  state
+            item.setSelected(True)                  # Select all items
+            for item, state in _items_dict.items()  # in the dictionary
+            if  item in self.items() and state      # if they belong to the canvas and are visible/enabled
         ]
 
     def delete_items(self, _items: dict):
@@ -682,7 +691,7 @@ class Canvas(QGraphicsScene):
 
         # Notify application of state-change:
         self.sig_schema_setup.emit(_file)
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
         # Return the file-path:
         return _file
@@ -712,7 +721,7 @@ class Canvas(QGraphicsScene):
             _file.write(_json)
 
             # Notify application of state-change:
-            self.state = SaveState.SAVED
+            self.state = SaveState.EXPORTED
             self.sig_canvas_state.emit(self.state)
 
             # Return filename to indicate success:

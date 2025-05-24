@@ -250,11 +250,11 @@ class Node(QGraphicsObject):
         if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
 
             # Connect node's signals to the canvas's slots:
-            self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.UNSAVED))
+            self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
             self.sig_item_removed.connect(value.on_item_removed)
 
             # Connect signal-exec actions:
-            self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(SaveState.UNSAVED))
+            self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
             self.sig_exec_actions.connect(value.manager.do)
 
             # Forward handle's signals:
