@@ -10,8 +10,9 @@ import weakref
 from dataclasses import dataclass
 from PyQt6.QtGui import (
     QIcon,
+    QBrush,
     QColor,
-    QTransform
+    QTransform, QKeySequence
 )
 
 from PyQt6.QtCore import (
@@ -155,50 +156,85 @@ class Canvas(QGraphicsScene):
         """
 
         # Create menu:
-        self._menu = QMenu()                                # Main context-menu.
-        self._subm = self._menu.addMenu("Create Object")    # Submenu for creating objects.
-        self._subm.setIcon(QIcon("rss/icons/menu-plus.svg"))  # Set the icon for the submenu.
+        self._menu = QMenu()                                    # Main context-menu.
+        self._subm = self._menu.addMenu("Create Object")        # Submenu for creating objects.
+        self._subm.setIcon(QIcon("rss/icons/menu-plus.svg"))    # Set the icon for the submenu.
 
         # Submenu for creating scene-items:
-        _node = self._subm.addAction(QIcon("rss/icons/node-js.png"), "Node", self.create_node)  # Action to create a new node.
+        _node = self._subm.addAction(QIcon("rss/icons/node.png"), "Node", QKeySequence("Ctrl+N"), self.create_node)
         _tout = self._subm.addAction(
             QIcon("rss/icons/input.png"),
-            "Terminal (Out)",
-            lambda: self.create_terminal(
-                EntityClass.INP,
-                self._cpos
-            )
-        )  # Action to create a new output terminal
-
-        _tinp = self._subm.addAction(
-            QIcon("rss/icons/output.png"),
-            "Terminal (Out)",
+            "Terminal (Inp)", QKeySequence("Ctrl+["),
             lambda: self.create_terminal(
                 EntityClass.OUT,
                 self._cpos
             )
         )  # Action to create a new output terminal
 
+        _tinp = self._subm.addAction(
+            QIcon("rss/icons/output.png"),
+            "Terminal (Out)", QKeySequence("Ctrl+]"),
+            lambda: self.create_terminal(
+                EntityClass.INP,
+                self._cpos
+            )
+        )  # Action to create a new output terminal
+
         # Import and export actions:
         self._menu.addSeparator()
-        _load = self._menu.addAction(QIcon("rss/icons/menu-open.svg")  , "Import Schema", self.import_schema)
-        _save = self._menu.addAction(QIcon("rss/icons/menu-floppy.svg"), "Export Schema", self.export_schema)
+        _load = self._menu.addAction(QIcon("rss/icons/menu-open.svg")  , "Import Schema", QKeySequence.StandardKey.Open, self.import_schema)
+        _save = self._menu.addAction(QIcon("rss/icons/menu-floppy.svg"), "Export Schema", QKeySequence.StandardKey.Save, self.export_schema)
+
+        # Actions for cloning and pasting items:
+        self._menu.addSeparator()
+        _undo  = self._menu.addAction(QIcon("rss/icons/menu-undo.png"), "Undo", QKeySequence.StandardKey.Undo, self.manager.undo)
+        _redo  = self._menu.addAction(QIcon("rss/icons/menu-redo.png"), "Redo", QKeySequence.StandardKey.Redo, self.manager.undo)
+        _clone = self._menu.addAction(QIcon("rss/icons/menu-clone.svg"), "Clone", QKeySequence.StandardKey.Copy , self.store)
+        _paste = self._menu.addAction(QIcon("rss/icons/menu-paste.svg"), "Paste", QKeySequence.StandardKey.Paste, self.clone)
+
+        # Actions for selecting and deleting items:
+        self._menu.addSeparator()
+        _select = self._menu.addAction(QIcon("rss/icons/menu-select.png"), "Select All", QKeySequence.StandardKey.SelectAll)
+        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence.StandardKey.Delete, lambda: self.delete_items(set(self.selectedItems())))
 
         # Group and Clear actions:
         self._menu.addSeparator()
-        _group = self._menu.addAction(QIcon("rss/icons/menu-group.svg"), "Group Items")
-        _clear = self._menu.addAction(QIcon("rss/icons/menu-erase.svg"), "Clear Scene", self.clear)
-
-        self._menu.addSeparator()
-        _exit = self._menu.addAction(QIcon("rss/icons/menu-power.svg"), "Quit Application", QApplication.quit)
+        _group = self._menu.addAction(QIcon("rss/icons/menu-group.svg"), "Group Items", QKeySequence("Ctrl+G"))
+        _clear = self._menu.addAction(QIcon("rss/icons/menu-erase.svg"), "Clear Scene", QKeySequence("Ctrl+Delete"), self.clear)
+        _exit = self._menu.addAction(QIcon("rss/icons/menu-power.svg"), "Quit" , QKeySequence.StandardKey.Quit,  QApplication.quit)
 
         # Show icons:
         _node.setIconVisibleInMenu(True)
         _load.setIconVisibleInMenu(True)
         _save.setIconVisibleInMenu(True)
+        _undo.setIconVisibleInMenu(True)
+        _redo.setIconVisibleInMenu(True)
         _exit.setIconVisibleInMenu(True)
         _tout.setIconVisibleInMenu(True)
         _tinp.setIconVisibleInMenu(True)
+        _clone.setIconVisibleInMenu(True)
+        _paste.setIconVisibleInMenu(True)
+        _select.setIconVisibleInMenu(True)
+        _delete.setIconVisibleInMenu(True)
+
+        # Make shortcuts visible:
+        _node.setShortcutVisibleInContextMenu(True)
+        _tout.setShortcutVisibleInContextMenu(True)
+        _tinp.setShortcutVisibleInContextMenu(True)
+        _load.setShortcutVisibleInContextMenu(True)
+        _save.setShortcutVisibleInContextMenu(True)
+        _undo.setShortcutVisibleInContextMenu(True)
+        _redo.setShortcutVisibleInContextMenu(True)
+
+        _select.setShortcutVisibleInContextMenu(True)
+        _delete.setShortcutVisibleInContextMenu(True)
+
+        _clone.setShortcutVisibleInContextMenu(True)
+        _paste.setShortcutVisibleInContextMenu(True)
+        _exit .setShortcutVisibleInContextMenu(True)
+
+        _group.setShortcutVisibleInContextMenu(True)
+        _clear.setShortcutVisibleInContextMenu(True)
 
         _group.setIconVisibleInMenu(True)
         _clear.setIconVisibleInMenu(True)

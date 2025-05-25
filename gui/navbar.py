@@ -22,14 +22,14 @@ class NavBar(QToolBar):
         super().__init__(parent)
 
         # Adjust width:
-        self.setIconSize(QSize(40, 40))
+        self.setIconSize(QSize(32, 32))
         self.setOrientation(Qt.Orientation.Vertical)
 
         # Actions:
-        self._import_schematic = self.addAction(QIcon("rss/icons/folder.png"), "Open")          # Action for importing a schematic from a JSON file
+        self._import_schematic = self.addAction(QIcon("rss/icons/json.png"), "Open")          # Action for importing a schematic from a JSON file
         self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")          # Action for saving a schematic to a JSON file
         self._switch_to_canvas = self.addAction(QIcon("rss/icons/hammer.png"), "Canvas")        # Action for switching to the canvas tab
-        self._switch_to_sheets = self.addAction(QIcon("rss/icons/sheets.png"), "Data")          # Action for switching to the data tab
+        self._switch_to_sheets = self.addAction(QIcon("rss/icons/excel.png"), "Data")          # Action for switching to the data tab
         self._switch_to_script = self.addAction(QIcon("rss/icons/charts.png"), "Script")        # Action for switching to the script tab
         self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optima")        # Action for switching to the optimization tab
         self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")     # Action for toggling the AI assistant on and off

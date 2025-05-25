@@ -83,7 +83,7 @@ class Tabber(QTabWidget):
         self._cbox = QCheckBox("Save As")
         self._cbox.setChecked(True)
 
-        # Create first tab:
+        # Create the first tab:
         self.addTab()
         self.setCornerWidget(self._cbox)
 

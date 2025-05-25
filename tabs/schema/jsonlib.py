@@ -11,7 +11,7 @@ from actions     import *
 
 class JsonLib:
     """
-    Utility class for serializing and deserializing schematics (nodes and connectors)
+    Class for serializing and deserializing schematics (nodes and connectors)
     to and from JSON format for the canvas-based process modeling application.
 
     Static Methods:
@@ -21,7 +21,7 @@ class JsonLib:
         Includes _node position, size, equations, and variables; or connector endpoints.
 
     - encode_json(canvas):
-        Serializes all selected items from the canvas (or all nodes and connectors if none are selected)
+        Serializes all selected items from the canvas (or all nodes and connectors if none are selected)3
         into a JSON string. Used for exporting schematics or dragging between scenes.
 
     - decode_json(code: str, canvas):
@@ -33,7 +33,6 @@ class JsonLib:
     def entity_to_json(_entity: Entity, _eclass: EntityClass):
 
         # Determine prefix:
-        prefix = str()
         if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
             prefix = "variable"
         elif _eclass == EntityClass.PAR:
@@ -78,11 +77,10 @@ class JsonLib:
         _entity: Entity,        # Entity object to be updated.
         _eclass: EntityClass,   # Entity's class
         _object: json,          # JSON-dictionary containing entity's attributes.
-        _symbol: bool = True    # Whether to set symbol from the JSON code
+        _symbol: bool = True    # Whether to set the symbol from the JSON code
     ):
 
         # Determine prefix:
-        prefix = str()
         if _eclass in [
             EntityClass.INP,
             EntityClass.OUT,
@@ -91,7 +89,7 @@ class JsonLib:
         elif _eclass == EntityClass.PAR:    prefix = "parameter"
         else:   raise ValueError(f"Invalid entity class: {_eclass}")
 
-        # If flag is set, copy symbol:
+        # If the flag is set, copy the symbol:
         if _symbol: _entity.symbol = _object.get(f"{prefix}-symbol")
 
         # Read other attribute(s):
@@ -107,7 +105,7 @@ class JsonLib:
     @staticmethod
     def serialize(_item: QGraphicsObject):
         """
-        Serializes a single `QGraphicsObject` to a JSON-object.
+        Serializes a single `QGraphicsObject` to a JSON object.
 
         Args:
             _item (QGraphicsObject): The `QGraphicsObject` to serialize.
@@ -116,7 +114,7 @@ class JsonLib:
             dict: A JSON-object containing the item's serialized attributes and children.
         """
 
-        # If instance is a _node, serialize the _node's variables, parameters, and equations:
+        # If the instance is a _node, serialize the _node's variables, parameters, and equations:
         if isinstance(_item, graph.Node):
 
             # Construct a list of the _node's active variables:
@@ -133,7 +131,7 @@ class JsonLib:
                 if  state == EntityState.ACTIVE
             ]
 
-            # Create list of equations:
+            # Create a list of equations:
             equations = _item[EntityClass.EQN]
 
             # JSON-composite:
@@ -149,10 +147,10 @@ class JsonLib:
                 "equations"   : equations                           # Node's equations
             }
 
-            # Return the _node's JSON-object:
+            # Return the _node's JSON object:
             return node_object
 
-        # If instance is a terminal, serialize the terminal's attributes:
+        # If the instance is a terminal, serialize the terminal's attributes:
         if isinstance(_item, graph.StreamTerminal):
 
             # Create JSON-object:
@@ -166,10 +164,10 @@ class JsonLib:
                 }
             }
 
-            # Return the terminal's JSON-object:
+            # Return the terminal's JSON object:
             return stream_obj
 
-        # If instance is a connector, serialize the connector's attributes:
+        # If the instance is a connector, serialize the connector's attributes:
         if isinstance(_item, graph.Connector):
 
             # Create JSON-object:
@@ -190,23 +188,23 @@ class JsonLib:
                 }
             }
 
-            # Return the connector's JSON-object:
+            # Return the connector's JSON object:
             return connection_obj
 
-        # If instance is not a _node, terminal, or connector, return None:
+        # If the instance is not a _node, terminal, or connector, return None:
         return None
 
     @staticmethod
     def encode(_canvas):
         """
         Serializes all selected items from the canvas (or all active items if no items are selected)
-        and returns a JSON-string.
+        and returns a JSON string.
 
         Args:
-            _canvas (Canvas): The canvas whose items to serialize.
+            _canvas (Canvas): The canvas, whose items are to be serialized.
 
         Returns:
-            str: A JSON-string containing the serialized items.
+            str: A JSON string containing the serialized items.
         """
 
         item_list = (
@@ -216,19 +214,19 @@ class JsonLib:
             [_item for _item, _state in _canvas.conn_db.items() if _state]       # Active connectors
         )
 
-        # Fetch serialized JSON-objects for each item-type:
+        # Fetch serialized JSON objects for each item-type:
         node_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.Node)]
         conn_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.Connector)]
         term_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.StreamTerminal)]
 
-        # Initialize JSON-objects:
+        # Initialize JSON objects:
         schematic = {
             "NODES"      : node_array,  # Add all active nodes
             "TERMINALS"  : term_array,  # Add all active terminals
             "CONNECTORS" : conn_array   # Add all active connectors
         }
 
-        # Return JSON-string:
+        # Return JSON string:
         return json.dumps(schematic, indent=4)
 
     @staticmethod
@@ -237,11 +235,11 @@ class JsonLib:
                _combine: bool = False
                ):
         """
-        Parses a schematic JSON-string and reconstructs the corresponding nodes, variables, and connectors
+        Parses a schematic JSON string and reconstructs the corresponding nodes, variables, and connectors
         on the given `Canvas`. All actions are grouped into a single undoable `BatchAction`.
 
         Args:
-            _code (str): The JSON-string to parse.
+            _code (str): The JSON string to parse.
             _canvas (Canvas): The canvas to reconstruct the schematic on.
             _combine (bool): Whether to combine the actions into a single undoable `BatchAction`.
 
@@ -257,7 +255,7 @@ class JsonLib:
         batch = BatchActions([])
 
         # Validate argument(s):
-        if not isinstance(_code, str):      raise ValueError("Invalid JSON-code")
+        if not isinstance(_code, str):      raise ValueError("Invalid JSON code")
         if not isinstance(_canvas, Canvas): raise ValueError("Invalid `Canvas` object")
 
         # Read JSON and execute operations:
@@ -362,7 +360,7 @@ class JsonLib:
             _terminal.socket.create_stream(_term_json.get("terminal-strid"))
             _terminal.socket.sig_item_updated.emit(_terminal.socket)
 
-            # Add terminal to database and canvas:
+            # Add terminal to the database and canvas:
             _canvas.term_db[_terminal] = True
             _canvas.addItem(_terminal)
 
@@ -386,7 +384,7 @@ class JsonLib:
 
             # Establish a new connection:
             try:
-                # Create connector:
+                # Create a new connector:
                 connector = graph.Connector(_canvas.create_cuid(),
                                             origin,
                                             target,
