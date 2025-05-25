@@ -117,8 +117,12 @@ class Gui(QMainWindow):
             self._data.reload(self._tabber.currentWidget().canvas)
             self._wstack.setCurrentWidget(self._data)
 
+        if _label == "Optima":
+            self._optima.reload(self._tabber.currentWidget().canvas)
+            self._wstack.setCurrentWidget(self._optima)
+
+
         if _label == "Canvas":      self._wstack.setCurrentWidget(self._tabber)
-        if _label == "Optima":      self._wstack.setCurrentWidget(self._optima)
         if _label == "Assistant":   self._tabber.currentWidget().toggle_assistant()
 
     def closeEvent(self, event):
