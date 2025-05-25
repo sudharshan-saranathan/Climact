@@ -50,7 +50,7 @@ class Climact(QApplication):
         self.setStyleSheet(read_qss (self.Constants.QSS_SHEET))
         logging.info(f"Stylesheet: {self.Constants.QSS_SHEET}")
 
-        # Open splash-screen and show project options:
+        # Open the splash-screen and show project options:
         self._window  = Gui()
         self._startup = StartupWindow()
         self._result  = self._startup.exec()

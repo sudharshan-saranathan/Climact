@@ -12,6 +12,7 @@ from PyQt6.QtGui import (
     QIcon,
     QBrush,
     QColor,
+    QAction,
     QTransform, QKeySequence
 )
 
@@ -26,8 +27,8 @@ from PyQt6.QtCore import (
     )
 
 from PyQt6.QtWidgets import (
-    QMenu, 
-    QFileDialog, 
+    QMenu,
+    QFileDialog,
     QMessageBox, 
     QApplication,
     QGraphicsScene,
@@ -156,15 +157,13 @@ class Canvas(QGraphicsScene):
         """
 
         # Create menu:
-        self._menu = QMenu()                                    # Main context-menu.
-        self._subm = self._menu.addMenu("Create Object")        # Submenu for creating objects.
-        self._subm.setIcon(QIcon("rss/icons/menu-plus.svg"))    # Set the icon for the submenu.
+        self._menu = QMenu()                                # Main context-menu.
+        self._subm = self._menu.addMenu("Create Objects")   # Submenu for creating items.
 
         # Submenu for creating scene-items:
         _node = self._subm.addAction(QIcon("rss/icons/node.png"), "Node", QKeySequence("Ctrl+N"), self.create_node)
         _tout = self._subm.addAction(
-            QIcon("rss/icons/input.png"),
-            "Terminal (Inp)", QKeySequence("Ctrl+["),
+            QIcon("rss/icons/input.png"), "Terminal (Inp)", QKeySequence("Ctrl+["),
             lambda: self.create_terminal(
                 EntityClass.OUT,
                 self._cpos
@@ -172,8 +171,7 @@ class Canvas(QGraphicsScene):
         )  # Action to create a new output terminal
 
         _tinp = self._subm.addAction(
-            QIcon("rss/icons/output.png"),
-            "Terminal (Out)", QKeySequence("Ctrl+]"),
+            QIcon("rss/icons/output.png"), "Terminal (Out)", QKeySequence("Ctrl+]"),
             lambda: self.create_terminal(
                 EntityClass.INP,
                 self._cpos
