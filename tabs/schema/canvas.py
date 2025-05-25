@@ -291,6 +291,9 @@ class Canvas(QGraphicsScene):
                                       PathGeometry.BEZIER
                                       )
 
+        # Store the cursor position in scene-coordinates:
+        self._cpos = event.scenePos()  # Update the cursor position in scene-coordinates.
+
     def mouseReleaseEvent(self, event):
         """
         Re-implementation of QGraphicsScene.mouseReleaseEvent(). If a connection was being drawn when this event is 
@@ -410,6 +413,7 @@ class Canvas(QGraphicsScene):
 
         # If the input coordinate is `None`, use the context menu's last-displayed position:
         if _cpos is None:   _cpos = self._cpos
+        print(self._cpos)
 
         # Create a new _node and assign a unique-identifier:
         _node = Node(
@@ -445,9 +449,9 @@ class Canvas(QGraphicsScene):
         _node.sig_handle_clicked.connect(self.begin_transient)
 
     def create_terminal(self,
-                        _eclass: EntityClass,   # EntityClass (INP or OUT), see custom/entity.py.
-                        _coords: QPointF,       # Position of the terminal (in scene-coordinates).
-                        _flag  : bool = True    # Should the action be pushed to the undo-stack?
+                        _eclass: EntityClass,       # EntityClass (INP or OUT), see custom/entity.py.
+                        _coords: QPointF = None,    # Position of the terminal (in scene-coordinates).
+                        _flag  : bool = True        # Should the action be pushed to the undo-stack?
                         ):
         """
         Create a new terminal and add it to the scene.
@@ -460,7 +464,6 @@ class Canvas(QGraphicsScene):
         Returns:
             _terminal (StreamTerminal): Reference to the newly created terminal
         """
-
         # Type-check input args:
         if  not isinstance(_flag, bool):
             logging.info(f"Invalid arg-type: {type(_flag)}")
@@ -469,6 +472,9 @@ class Canvas(QGraphicsScene):
         if  _eclass not in [EntityClass.INP, EntityClass.OUT]:
             logging.info(f"Invalid arg-type: {type(_eclass)}")
             return None
+
+        # If the input coordinate is `None`, use the cursor position:
+        if _coords is None:   _coords = self._cpos
 
         # Debugging:
         logging.info(f"Creating new terminal at {_coords}")

@@ -1,5 +1,6 @@
 from PyQt6.QtGui import (
-    QPen, 
+    QPen,
+    QIcon,
     QColor, 
 )
 
@@ -197,13 +198,17 @@ class Node(QGraphicsObject):
 
         # Additional actions:
         self._menu.addSeparator()
-        _expand = self._menu.addAction("Expand", lambda: self.resize( self._attr.delta))
-        _shrink = self._menu.addAction("Shrink", lambda: self.resize(-self._attr.delta))
+        _expand = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize( self._attr.delta))
+        _shrink = self._menu.addAction(QIcon("rss/icons/shrink.svg"), "Shrink", lambda: self.resize(-self._attr.delta))
 
         # Additional actions:
         self._menu.addSeparator()
-        _clone = self._menu.addAction("Clone" , self.clone)
-        _close = self._menu.addAction("Delete", self.sig_item_removed.emit)
+        _close = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
+
+        # Make icons visible:
+        _expand.setIconVisibleInMenu(True)
+        _shrink.setIconVisibleInMenu(True)
+        _close.setIconVisibleInMenu(True)
 
     # Re-implemented methods -------------------------------------------------------------------------------------------
     # Name                      Description
@@ -413,7 +418,7 @@ class Node(QGraphicsObject):
         # Copy this _node's parameter(s):
         for _entity in _par_active:
             _copied = Entity()              # Instantiate a new entity
-            _entity.clone_into(_copied)     # Copy attributes into new entity
+            _entity.clone_into(_copied)     # Copy attributes into the new entity
 
             # Add copied variable to the _node's registry:
             _node[_entity.eclass][_copied] = EntityState.ACTIVE

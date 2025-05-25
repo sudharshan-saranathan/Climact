@@ -30,6 +30,7 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
+from custom.entity  import EntityClass
 from custom.message import Message
 from dataclasses   import dataclass
 from tabs.gemini   import widget
@@ -114,6 +115,9 @@ class Viewer(QGraphicsView):
         _layout.insertStretch(0, 10)
 
         # Action shortcuts:
+        shortcut_ctrl_n = QShortcut(QKeySequence("Ctrl+N"), self)
+        shortcut_term_i = QShortcut(QKeySequence("Ctrl+["), self)
+        shortcut_term_o = QShortcut(QKeySequence("Ctrl+]"), self)
         shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self)
         shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
         shortcut_ctrl_c = QShortcut(QKeySequence.StandardKey.Copy, self)
@@ -122,6 +126,9 @@ class Viewer(QGraphicsView):
         shortcut_delete = QShortcut(QKeySequence.StandardKey.Delete, self)
 
         # Connect action shortcuts:
+        shortcut_ctrl_n.activated.connect(self.canvas.create_node)
+        shortcut_term_i.activated.connect(lambda: self.canvas.create_terminal(EntityClass.INP))
+        shortcut_term_o.activated.connect(lambda: self.canvas.create_terminal(EntityClass.OUT))
         shortcut_ctrl_z.activated.connect(self.canvas.manager.undo)
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
         shortcut_ctrl_c.activated.connect(self.canvas.store)
