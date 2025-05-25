@@ -180,7 +180,7 @@ class Canvas(QGraphicsScene):
         # Actions for cloning and pasting items:
         self._menu.addSeparator()
         _undo  = self._menu.addAction(QIcon("rss/icons/menu-undo.png"), "Undo", QKeySequence.StandardKey.Undo, self.manager.undo)
-        _redo  = self._menu.addAction(QIcon("rss/icons/menu-redo.png"), "Redo", QKeySequence.StandardKey.Redo, self.manager.undo)
+        _redo  = self._menu.addAction(QIcon("rss/icons/menu-redo.png"), "Redo", QKeySequence.StandardKey.Redo, self.manager.redo)
         _clone = self._menu.addAction(QIcon("rss/icons/menu-clone.svg"), "Clone", QKeySequence.StandardKey.Copy , self.store)
         _paste = self._menu.addAction(QIcon("rss/icons/menu-paste.svg"), "Paste", QKeySequence.StandardKey.Paste, self.clone)
 

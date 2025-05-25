@@ -127,8 +127,8 @@ class Viewer(QGraphicsView):
 
         # Connect action shortcuts:
         shortcut_ctrl_n.activated.connect(self.canvas.create_node)
-        shortcut_term_i.activated.connect(lambda: self.canvas.create_terminal(EntityClass.INP))
-        shortcut_term_o.activated.connect(lambda: self.canvas.create_terminal(EntityClass.OUT))
+        shortcut_term_i.activated.connect(lambda: self.canvas.create_terminal(EntityClass.OUT))
+        shortcut_term_o.activated.connect(lambda: self.canvas.create_terminal(EntityClass.INP))
         shortcut_ctrl_z.activated.connect(self.canvas.manager.undo)
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
         shortcut_ctrl_c.activated.connect(self.canvas.store)
