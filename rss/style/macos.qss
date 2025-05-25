@@ -204,6 +204,7 @@ QTabWidget::tab-bar {
 
 QTabWidget::pane {
     border-top   : 1px solid black;
+    border-left  : 1px solid black;
 }
 
 QTabBar::tab {
@@ -276,13 +277,12 @@ QTabBar::tab:!selected:hover {
 */
 
 QToolBar {
-    border-right    : 1px solid black;
     background      : #B6C1CE;
 }
 
 QToolBar QToolButton, QToolButton {
     margin: 8px 2px 8px 2px;
-    padding: 2px;
+    padding: 4px;
     border-radius: 8px;
     background: transparent;
 }
@@ -294,7 +294,7 @@ QToolBar QToolButton:checked, QToolButton:checked {
 }
 
 QToolBar QToolButton:pressed, QToolButton:pressed {
-    padding         : 4px;
+    padding         : 6px;
     border-radius   : 8px;
 }
 

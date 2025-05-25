@@ -113,7 +113,7 @@ class Viewer(QGraphicsView):
         _layout.addWidget(self._gemini, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
         _layout.insertStretch(0, 10)
 
-        # Define shortcuts:
+        # Action shortcuts:
         shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self)
         shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
         shortcut_ctrl_c = QShortcut(QKeySequence.StandardKey.Copy, self)
@@ -121,7 +121,7 @@ class Viewer(QGraphicsView):
         shortcut_ctrl_r = QShortcut(QKeySequence.StandardKey.Redo, self)
         shortcut_delete = QShortcut(QKeySequence.StandardKey.Delete, self)
 
-        # Activate shortcuts:
+        # Connect action shortcuts:
         shortcut_ctrl_z.activated.connect(self.canvas.manager.undo)
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
         shortcut_ctrl_c.activated.connect(self.canvas.store)

@@ -61,11 +61,13 @@ class Table(QTableWidget):
     def _init_menu(self):
 
         self._menu = QMenu()
-        self._menu.addAction("Assign", QKeySequence("Ctrl+Return"   ), self.assign)
-        self._menu.addAction("Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
+        _equal = self._menu.addAction(QIcon("rss/icons/menu-equal.png"), "Assign", QKeySequence("Ctrl+Return"   ), self.assign)
+        _clear = self._menu.addAction(QIcon("rss/icons/menu-clear.png"), "Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
 
-        self._menu.addSeparator()
-        self._menu.addAction("Delete", QKeySequence("Delete"), self.delete_row)
+        _equal.setIconVisibleInMenu(True)
+        _clear.setIconVisibleInMenu(True)
+        _equal.setShortcutVisibleInContextMenu(True)
+        _clear.setShortcutVisibleInContextMenu(True)
 
     # Context-menu event:
     def contextMenuEvent(self, event):
@@ -106,6 +108,12 @@ class Table(QTableWidget):
         upper_item = QTableWidgetItem(str(handle.maximum))
         upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        inter_item = QTableWidgetItem()
+        inter_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        auto_item = QTableWidgetItem()
+        auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+
         # Install cells:
         self.setItem(row, 0, symb_item)
         self.setItem(row, 1, name_item)
@@ -115,6 +123,8 @@ class Table(QTableWidget):
         self.setItem(row, 7, sigma_item)
         self.setItem(row, 5, lower_item)
         self.setItem(row, 6, upper_item)
+        self.setItem(row, 8, inter_item)
+        self.setItem(row, 9, auto_item)
 
         # Store in hash-map:
         self._hmap[row] = handle
@@ -154,7 +164,6 @@ class Table(QTableWidget):
 
         auto_item = QTableWidgetItem()
         auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        auto_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.setItem(row, 0, symb_item)
         self.setItem(row, 1, name_item)
@@ -174,15 +183,17 @@ class Table(QTableWidget):
     # Delete selected rows:
     def delete_row(self):
 
-        # Get unique rows:
+        # Get all selected rows:
         rows = set([item.row() for item in self.selectedItems()])
 
-        # Sort in reverse order for `removeRow()` to work properly:
+        # Sort in reverse order for `removeRow()` to work correctly:
         for row in sorted(rows, reverse=True):
+
             is_selected = True
             for column in range(self.columnCount()):
-                print(row, column)
-                is_selected &= self.item(row, column).isSelected()
+                item = self.item(row, column)
+                if item:
+                    is_selected &= item.isSelected()
 
             # Remove row if it is selected:
             if is_selected: self.removeRow(row)

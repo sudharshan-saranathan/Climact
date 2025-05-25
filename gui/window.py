@@ -5,9 +5,18 @@
 #-----------------------------------------------------------------------------------------------------------------------
 import logging
 
-from PyQt6.QtGui import QKeySequence
-from PyQt6.QtCore import Qt, pyqtSignal, QtMsgType
-from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QApplication
+from PyQt6.QtGui  import QShortcut, QKeySequence
+from PyQt6.QtCore import (
+    Qt,
+    QtMsgType,
+    pyqtSignal
+)
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QMessageBox,
+    QApplication,
+    QStackedWidget
+)
 
 from dataclasses   import dataclass
 from custom.message import Message
@@ -61,15 +70,17 @@ class Gui(QMainWindow):
 
         # Initialize menu:
         self._init_menubar()
+        self._init_shortcuts()
+
         self.showMaximized()
 
-    # Create menu-bar and menu items:
+    # Create a menu-bar and add menu items:
     def _init_menubar(self):
 
         # Instantiate menu-bar:
         _menu = self.menuBar()
-        _menu.setNativeMenuBar(False)       # Menu should appear within main-window (for macOS)
-        _menu.setObjectName("Climact Menu") # Set unique object name
+        _menu.setNativeMenuBar(False)       # Menu should appear within the main-window (for macOS)
+        _menu.setObjectName("Climact Menu") # Set a unique object name
 
         _file_menu = _menu.addMenu("File")  # New project, import/export, quit
         _edit_menu = _menu.addMenu("Edit")  # Edit menu
@@ -77,19 +88,26 @@ class Gui(QMainWindow):
         _help_menu = _menu.addMenu("Help")  # Help menu
 
         # Add actions and connect them to appropriate slots:
-        _newtab_action = _file_menu.addAction("New Tab", QKeySequence("Ctrl+T"))
+        _newtab_action = _file_menu.addAction("New Tab", QKeySequence("Ctrl+T"), self._tabber.addTab)
 
         _file_menu.addSeparator()
-        _import_action = _file_menu.addAction("Import Schema", QKeySequence.StandardKey.Open)
-        _export_action = _file_menu.addAction("Export Schema", QKeySequence.StandardKey.Save)
+        _import_action = _file_menu.addAction("Import Schema", QKeySequence.StandardKey.Open, self._tabber.import_schema)
+        _export_action = _file_menu.addAction("Export Schema", QKeySequence.StandardKey.Save, self._tabber.export_schema)
 
         _file_menu.addSeparator()
-        _quit_action = _file_menu.addAction("Quit Application", QKeySequence.StandardKey.Quit)
+        _quit_action = _file_menu.addAction("Quit Application", QKeySequence.StandardKey.Quit, QApplication.instance().quit)
 
-        _newtab_action.triggered.connect(self._tabber.addTab)
-        _import_action.triggered.connect(self._tabber.import_schema)
-        _export_action.triggered.connect(self._tabber.export_schema)
-        _quit_action.triggered.connect(QApplication.instance().quit)
+    # Initialize keyboard shortcuts:
+    def _init_shortcuts(self):
+
+        # Navigation shortcuts:
+        shortcut_up    = QShortcut(QKeySequence.StandardKey.MoveToPreviousLine, self, self._navbar.previous)
+        shortcut_left  = QShortcut(QKeySequence.StandardKey.MoveToPreviousChar, self)
+        shortcut_down  = QShortcut(QKeySequence.StandardKey.MoveToNextLine, self, self._navbar.next)
+        shortcut_right = QShortcut(QKeySequence.StandardKey.MoveToNextChar, self)
+
+        shortcut_left .activated.connect(lambda: self._tabber.setCurrentIndex(self._tabber.currentIndex() - 1))
+        shortcut_right.activated.connect(lambda: self._tabber.setCurrentIndex(self._tabber.currentIndex() + 1))
 
     def load_project(self): self._tabber.import_schema()
 

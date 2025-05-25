@@ -164,18 +164,12 @@ class Canvas(QGraphicsScene):
         _node = self._subm.addAction(QIcon("rss/icons/node.png"), "Node", QKeySequence("Ctrl+N"), self.create_node)
         _tout = self._subm.addAction(
             QIcon("rss/icons/input.png"), "Terminal (Inp)", QKeySequence("Ctrl+["),
-            lambda: self.create_terminal(
-                EntityClass.OUT,
-                self._cpos
-            )
+            lambda: self.create_terminal(EntityClass.OUT,self._cpos)
         )  # Action to create a new output terminal
 
         _tinp = self._subm.addAction(
             QIcon("rss/icons/output.png"), "Terminal (Out)", QKeySequence("Ctrl+]"),
-            lambda: self.create_terminal(
-                EntityClass.INP,
-                self._cpos
-            )
+            lambda: self.create_terminal(EntityClass.INP,self._cpos)
         )  # Action to create a new output terminal
 
         # Import and export actions:
@@ -192,8 +186,13 @@ class Canvas(QGraphicsScene):
 
         # Actions for selecting and deleting items:
         self._menu.addSeparator()
-        _select = self._menu.addAction(QIcon("rss/icons/menu-select.png"), "Select All", QKeySequence.StandardKey.SelectAll)
-        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence.StandardKey.Delete, lambda: self.delete_items(set(self.selectedItems())))
+        _select = self._menu.addAction(
+            QIcon("rss/icons/menu-select.png"), "Select All", QKeySequence.StandardKey.SelectAll,
+            lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db)
+        )
+
+        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence.StandardKey.Delete,
+                                       lambda: self.delete_items(set(self.selectedItems())))
 
         # Group and Clear actions:
         self._menu.addSeparator()
@@ -679,14 +678,12 @@ class Canvas(QGraphicsScene):
             if  item in self.items() and state      # if they belong to the canvas and are visible/enabled
         ]
 
-    def delete_items(self, _items: dict):
+    def delete_items(self, _items: set | list):
         """
         Deletes items from the canvas using undoable batch-actions.
 
         Args:
             _items (set): Set of items (nodes and terminals) to delete.
-
-        Returns: None
         """
 
         # Create batch-commands:

@@ -6,7 +6,7 @@
 
 from PyQt6.QtGui     import QIcon, QActionGroup, QAction
 from PyQt6.QtCore    import Qt, QSize, pyqtSignal
-from PyQt6.QtWidgets import QWidget, QToolBar
+from PyQt6.QtWidgets import QWidget, QToolBar, QApplication
 
 class NavBar(QToolBar):
 
@@ -35,6 +35,14 @@ class NavBar(QToolBar):
         self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")     # Action for toggling the AI assistant on and off
         self._template_library = self.addAction(QIcon("rss/icons/components.png"), "Library")   # Action for opening the template library
 
+        # Save actions in a list for easy access:
+        self._actions = [
+            self._switch_to_canvas,
+            self._switch_to_sheets,
+            self._switch_to_script,
+            self._switch_to_optima,
+        ]
+
         # Make canvas, sheets, script, and config checkable:
         self._switch_to_canvas.setCheckable(True)
         self._switch_to_sheets.setCheckable(True)
@@ -44,7 +52,7 @@ class NavBar(QToolBar):
         self._template_library.setCheckable(True)
         self._switch_to_canvas.setChecked(True)
 
-        # Create action group and toggle exclusivity:
+        # Create an action group and toggle exclusivity:
         _action_group = QActionGroup(self)
         _action_group.addAction(self._switch_to_canvas)
         _action_group.addAction(self._switch_to_sheets)
@@ -60,3 +68,31 @@ class NavBar(QToolBar):
         self._switch_to_optima.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))
         self._toggle_assistant.triggered.connect(lambda: self.sig_show_widget.emit(self._toggle_assistant.text()))
 
+    # Activate the next action in the navbar:
+    def next(self):
+        """
+        Triggers the next action in the navbar.
+        """
+
+        for action in self._actions:
+            if action.isChecked():
+                _index = self._actions.index(action)
+                if _index == len(self._actions) - 1:  # Beep if already at the last action
+                    QApplication.beep()  # Beep if already at the first action
+                else:
+                    self._actions[_index + 1].trigger()
+                break
+
+    # Activate the previous action in the navbar:
+    def previous(self):
+        """
+        Triggers the previous action in the navbar.
+        """
+        for action in self._actions:
+            if action.isChecked():
+                _index = self._actions.index(action)
+                if  _index == 0:
+                    QApplication.beep()  # Beep if already at the first action
+                else:
+                    self._actions[_index - 1].trigger()
+                break

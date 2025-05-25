@@ -8,17 +8,18 @@ from tabs.optima.ampl import AMPLEngine
 from tabs.optima.objective import ObjectiveSetup
 from tabs.schema.canvas import Canvas
 
-
 class Optimizer(QWidget):
 
     # Signals:
     sig_modify_connectors = pyqtSignal(dict)
 
     # Initializer:
-    def __init__(self, canvas: Canvas, parent: QWidget = None):
+    def __init__(self,
+                 _canvas: Canvas,
+                 _parent: QWidget = None):
 
         # Initialize base-class:
-        super().__init__(parent)
+        super().__init__(_parent)
 
         # Dictionaries:
         self.var_dict   = dict()
@@ -26,7 +27,7 @@ class Optimizer(QWidget):
         self.entity_map = dict()
 
         # Store the canvas' reference:
-        self._canvas = canvas
+        self._canvas = _canvas
 
         # Editor style:
         style = ("QTextEdit {"
@@ -34,12 +35,6 @@ class Optimizer(QWidget):
                  "border-right: 1px solid white;"
                  "border-radius: 0px;"
                  "}")
-
-        # Labels:
-        self.__objective_setup = QLabel("OBJECTIVE SETUP", None)
-        self.__t_horizon_setup = QLabel("TIME HORIZON", None)
-        self.__objective_setup.setStyleSheet("QLabel {background: #cdcdcd;}")
-        self.__t_horizon_setup.setStyleSheet("QLabel {background: #cdcdcd;}")
 
         # Main-widgets:
         self._tabwid = QTabWidget(self)
@@ -60,39 +55,39 @@ class Optimizer(QWidget):
         self._tabwid.addTab(QWidget(), "Analysis")
 
         # Separators:
-        __hline_top = Separator(QFrame.Shape.HLine, None)
-        __hline_mid = Separator(QFrame.Shape.HLine, None)
-        __hline_bot = Separator(QFrame.Shape.HLine, None)
+        _hline_top = Separator(QFrame.Shape.HLine, None)
+        _hline_mid = Separator(QFrame.Shape.HLine, None)
+        _hline_bot = Separator(QFrame.Shape.HLine, None)
 
         # Buttons:
-        self.__gen = QPushButton("Generate Script")
-        self.__run = QPushButton("Optimize")
-        self.__run.setEnabled(False)
-        self.__gen.pressed.connect(self.generate)
-        self.__run.pressed.connect(self.run)
+        self._gen = QPushButton("Generate Script")
+        self._run = QPushButton("Optimize")
+        self._run.setEnabled(False)
+        self._gen.pressed.connect(self.generate)
+        self._run.pressed.connect(self.run)
 
         # Layout:
-        self.__main_layout = QGridLayout(self)
-        self.__main_layout.setContentsMargins(0, 0, 0, 0)
-        self.__main_layout.setSpacing(0)
+        _main_layout = QGridLayout(self)
+        _main_layout.setContentsMargins(0, 0, 0, 0)
+        _main_layout.setSpacing(0)
 
-        self.__main_layout.addWidget(self._setup , 0, 0, 3, 1)
-        self.__main_layout.addWidget(self._tabwid, 0, 1, 3, 1)
+        _main_layout.addWidget(self._setup , 0, 0, 3, 1)
+        _main_layout.addWidget(self._tabwid, 0, 1, 3, 1)
 
         # Sub-layout:
-        self.__setup_layout = QGridLayout(self._setup)
-        self.__setup_layout.setContentsMargins(8, 8, 8, 8)
-        self.__setup_layout.setSpacing(12)
+        _setup_layout = QGridLayout(self._setup)
+        _setup_layout.setContentsMargins(8, 8, 8, 8)
+        _setup_layout.setSpacing(12)
 
-        self.__setup_layout.addWidget(QLabel("OPTIMIZATION SETUP"), 0, 0, 1, 4)
-        self.__setup_layout.addWidget(self._obj, 2, 0, 1, 4)
-        self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 1, 0, 1, 4)
-        self.__setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 3, 0, 1, 4)
-        self.__setup_layout.addWidget(self._wstack, 4, 0, 1, 4)
-        self.__setup_layout.setRowStretch(5, 10)
+        _setup_layout.addWidget(QLabel("OPTIMIZATION SETUP"), 0, 0, 1, 4)
+        _setup_layout.addWidget(self._obj, 2, 0, 1, 4)
+        _setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 1, 0, 1, 4)
+        _setup_layout.addWidget(Separator(QFrame.Shape.HLine, None, "lightgray"), 3, 0, 1, 4)
+        _setup_layout.addWidget(self._wstack, 4, 0, 1, 4)
+        _setup_layout.setRowStretch(5, 10)
 
-        self.__setup_layout.addWidget(self.__gen, 5, 2)
-        self.__setup_layout.addWidget(self.__run, 5, 3)
+        _setup_layout.addWidget(self._gen, 5, 2)
+        _setup_layout.addWidget(self._run, 5, 3)
 
         # Signal-slot connections:
         self._editor.textChanged.connect(self.auto_enable)
@@ -282,7 +277,7 @@ class Optimizer(QWidget):
     def auto_enable(self):
 
         if bool(self._editor.toPlainText()):
-            self.__run.setEnabled(True)
+            self._run.setEnabled(True)
 
         else:
-            self.__run.setEnabled(False)
+            self._run.setEnabled(False)

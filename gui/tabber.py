@@ -67,7 +67,6 @@ class Tabber(QTabWidget):
         super().__init__(parent)
 
         # Customize behaviour:
-        self.setMovable(True)
         self.setTabsClosable(True)
         self.setTabShape(QTabWidget.TabShape.Rounded)
         self.tabCloseRequested.connect(self.removeTab)

@@ -39,7 +39,7 @@ class ObjectiveSetup(QFrame):
         __button_pareto     = QRadioButton("Pareto")
         __button_ampl     = QRadioButton("AMPL")
         __button_pymoo    = QRadioButton("Pymoo")
-        __button_platypus = QRadioButton("Platypus")
+        __button_platypus = QRadioButton("Casadi")
         __button_scalarized.setChecked(True)
         __button_ampl.setChecked(True)
 
