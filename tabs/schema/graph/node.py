@@ -3,7 +3,6 @@ from PyQt6.QtGui import (
     QIcon,
     QColor, 
 )
-
 from PyQt6.QtCore import (
     Qt,
     QRectF,
@@ -11,14 +10,12 @@ from PyQt6.QtCore import (
     QPointF,
     pyqtSignal
 )
-
 from PyQt6.QtWidgets import (
     QMenu, 
     QGraphicsItem, 
     QGraphicsObject, 
     QGraphicsLineItem
 )
-
 from actions import *
 from custom  import *
 from util    import *
@@ -27,29 +24,29 @@ from .anchor import Anchor
 from .handle import Handle
 
 class Node(QGraphicsObject):
+    """
+    """
 
     # Signals:
-    sig_exec_actions = pyqtSignal(AbstractAction)
-    sig_item_updated = pyqtSignal()
-    sig_item_removed = pyqtSignal()
-    sig_handle_clicked = pyqtSignal(Handle)
-    sig_handle_updated = pyqtSignal(Handle)
-    sig_handle_removed = pyqtSignal(Handle)
+    sig_exec_actions = pyqtSignal(AbstractAction)   # Emitted to execute actions and push them to the undo/redo stack.
+    sig_item_updated = pyqtSignal()         # Emitted when the node has been updated (e.g., renamed, resized, etc.).
+    sig_item_removed = pyqtSignal()         # Emitted when the user deletes the node (e.g., via context-menu).
+    sig_handle_clicked = pyqtSignal(Handle) # Emitted when a handle is clicked, signals the scene to begin a transient connection.
+    sig_handle_updated = pyqtSignal(Handle) # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
+    sig_handle_removed = pyqtSignal(Handle) # Emitted when the user deletes a handle (e.g., via context-menu).
 
-    # Default Attrib:
+    # Default Attributes:
     class Attr:
         def __init__(self):
-            self.rect  = QRectF(-100, -75, 200, 150)
-            self.auto  = dict()
-            self.steps = 0
-            self.delta = 50
+            self.rect  = QRectF(-100, -75, 200, 150)    # Default rectangle size of the node.
+            self.delta = 50                             # Default step-size for resizing the node.
 
     # Style:
     class Style:
         def __init__(self):
-            self.pen_border = QPen(Qt.GlobalColor.black, 2.0)
-            self.pen_select = QPen(QColor(0xf99c39), 2.0)
-            self.background = Qt.GlobalColor.white
+            self.pen_border = QPen(Qt.GlobalColor.black, 2.0)   # Default border pen for the node.
+            self.pen_select = QPen(QColor(0xf99c39), 2.0)       # Pen used when the node is selected.
+            self.background = Qt.GlobalColor.white              # Default background color of the node.
 
     # Initializer:
     def __init__(self, 
@@ -61,15 +58,14 @@ class Node(QGraphicsObject):
         """
         Instantiate a new _node with the given name, coordinates, and parent.
 
-        Args:
-            _name  (str)       : The name of the _node.
-            _spos  (QPointF)   : The position of the _node (in scene-coordinates).
-            _parent(QGraphicsItem): The parent item of the _node.
+        :param: _name  (str)            : The name of the node (displayed at the top in an editable text-box).
+        :param: _spos  (QPointF)        : The position of the node (in scene-coordinates).
+        :param: _parent(QGraphicsItem)  : The node's parent item (usually `None`).
         """
 
         # Validate argument(s):
-        if not isinstance(_name, str)       : raise TypeError("Expected argument of type `str`")
-        if not isinstance(_spos, QPointF)   : raise TypeError("Expected argument of type `QPoint`")
+        if not isinstance(_name, str):      raise TypeError("Expected argument of type `str`")
+        if not isinstance(_spos, QPointF):  raise TypeError("Expected argument of type `QPoint`")
 
         # Initialize super-class:
         super().__init__(_parent)
@@ -485,7 +481,7 @@ class Node(QGraphicsObject):
             Handle: Reference to the new handle.
         """
 
-        # Instantiate new handle:
+        # Instantiate a new handle:
         _handle = Handle(_eclass,
                          _coords,
                          self.create_huid(_eclass),
@@ -538,16 +534,15 @@ class Node(QGraphicsObject):
         """
         Triggered when an anchor is clicked.
 
-        Args:
-            _coords (QPointF): The click-position in anchor's coordinate-system.
+        :param: _coords (QPointF): The coordinates where the anchor was clicked, in scene-coordinates.
         """
 
         # Validate argument(s):
         _anchor = self.sender()
-        if not isinstance(_coords, QPointF) : raise TypeError("Expected argument of type `QPointF`")
-        if not isinstance(_anchor, Anchor)  : raise TypeError("Expected signal-emitter of type `Anchor`")
+        if not isinstance(_coords, QPointF): raise TypeError("Expected argument of type `QPointF`")
+        if not isinstance(_anchor, Anchor) : raise TypeError("Expected signal-emitter of type `Anchor`")
 
-        # Create handle at anchor's position:
+        # Create a new handle at the anchor's position:
         _eclass = _anchor.stream()                          # Get anchor's stream (EntityClass.INP or EntityClass.OUT)
         _coords = self.mapFromItem(_anchor, _coords)        # Map coordinate to _node's coordinate-system
         _handle = self.create_handle(_eclass, _coords)

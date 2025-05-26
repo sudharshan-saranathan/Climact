@@ -65,7 +65,7 @@ class EqnView(QListWidget):
         _delete = self._menu.addAction("Delete Equation(s)")
 
         # Connect actions to slots:
-        _insert.triggered.connect(self.insert_equations)
+        _insert.triggered.connect(self.get_equations_from_user)
         _delete.triggered.connect(self.delete_equations)
 
 
@@ -74,7 +74,7 @@ class EqnView(QListWidget):
         self._menu.exec(event.globalPos())
         event.accept()
 
-    def insert_equations(self):
+    def get_equations_from_user(self):
 
         # Abort if no _node has been set:
         if self._node() is None:
@@ -170,7 +170,7 @@ class EqnView(QListWidget):
     def fetch(self):
 
         # Clear all list items:
-        super().clear()             # Use super().clear() (not self.clear()) to avoid resetting _node-reference
+        super().clear()             # Use super().clear(), not self.clear() to avoid resetting node-reference
 
         # Confirm reference validity:
         if self._node() is None:

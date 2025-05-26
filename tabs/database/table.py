@@ -291,7 +291,7 @@ class Table(QTableWidget):
         # Save defined parameters:
         for row in range(self.rowCount()):
 
-            # Update the _node's variable(s):
+            # Update the node's variable(s):
             if row in self._hmap.keys():
 
                 variable = self._hmap[row]
@@ -307,7 +307,6 @@ class Table(QTableWidget):
                 if variable.connected and variable.conjugate:
 
                     conjugate = variable.conjugate()
-                    conjugate.symbol  = self.cell_data(row, 0)
                     conjugate.info    = self.cell_data(row, 1)
                     conjugate.units   = self.cell_data(row, 2)
                     conjugate.strid   = self.cell_data(row, 3)
@@ -316,7 +315,7 @@ class Table(QTableWidget):
                     conjugate.minimum = self.cell_data(row, 5)
                     conjugate.maximum = self.cell_data(row, 6)
 
-            # Update the _node's parameters:
+            # Update the node's parameters:
             else:
                 entity = Entity()
                 entity.eclass  = EntityClass.PAR

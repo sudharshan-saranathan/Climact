@@ -382,14 +382,10 @@ class Handle(QGraphicsObject, Entity):
         # Import Canvas:
         from tabs.schema.canvas import Canvas
 
-        # Get sender and canvas:
-        _action = self.sender()
-        _canvas = self.scene()
-
         # Validate signal-emitter:
         if (
-            not isinstance(self.sender(), StreamMenuAction) or 
-            not isinstance(_canvas, Canvas)
+            not isinstance(_action := self.sender(), StreamMenuAction) or
+            not isinstance(_canvas := self.scene() , Canvas)
         ): 
             return
 
