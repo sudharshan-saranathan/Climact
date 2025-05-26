@@ -25,6 +25,7 @@ class EqnView(QListWidget):
         self._symb = []
 
         # Customize behavior:
+        self.itemChanged.connect(self.on_eqn_modified)  # Connect item-changed signal to method
         self.setSelectionMode(QAbstractItemView.SelectionMode.ContiguousSelection)
 
         # Initialize menus:
@@ -134,9 +135,6 @@ class EqnView(QListWidget):
                 sym_eqn = set(re.findall(r'\b[a-zA-Z][a-zA-Z0-9_]*\b', equation))  # Equation symbols
                 sym_tot = self._symb
 
-                print(sym_eqn)
-                print(sym_tot)
-
                 # Insert equation:
                 self.insert_item(equation)
 
@@ -161,14 +159,14 @@ class EqnView(QListWidget):
                 error.exec()
             """
 
-    def insert_item(self, equation):
+    def insert_item(self, _equation: str):
 
-        item = QListWidgetItem(equation)
+        item = QListWidgetItem(_equation)
         item.setIcon(QIcon("rss/icons/trash.png"))
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
 
         self.addItem(item)
-        self._node()[EntityClass.EQN].append(equation)
+        self._node()[EntityClass.EQN].append(_equation)
 
     # Fetch and display _node's equations
     def fetch(self):
@@ -196,4 +194,18 @@ class EqnView(QListWidget):
         self._node = None
         self.setDisabled(True)
 
+    # Method triggered when the text in an item is edited:
+    def on_eqn_modified(self, item: QListWidgetItem):
 
+        # Debugging:
+        print(f"Equation modified: {item.text()}")
+
+        # Verify that the node is valid:
+        if not self._node():    return
+
+        # Clear existing equations in the node:
+        self._node()[EntityClass.EQN].clear()
+
+        # Iterate over all equations:
+        for row in range(self.count()):
+            self._node()[EntityClass.EQN].append(self.item(row).text())

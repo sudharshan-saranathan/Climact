@@ -35,21 +35,22 @@ class ObjectiveSetup(QFrame):
         self.__cost_j3 = QLabel("<font color='lightslategray'>Cost (J3)</font>")
 
         # Radio Buttons:
-        __button_scalarized = QRadioButton("Scalarized")
-        __button_pareto     = QRadioButton("Pareto")
-        __button_ampl     = QRadioButton("AMPL")
-        __button_pymoo    = QRadioButton("Pymoo")
-        __button_platypus = QRadioButton("Casadi")
-        __button_scalarized.setChecked(True)
-        __button_ampl.setChecked(True)
+        __button_scalar = QRadioButton("Scalarized")
+        __button_pareto = QRadioButton("Pareto")
+        __button_ampl   = QRadioButton("AMPL")
+        __button_pymoo  = QRadioButton("Pymoo")
+        __button_casadi = QRadioButton("Casadi")
+
+        __button_casadi.setChecked(True)
+        __button_scalar.setChecked(True)
 
         self.__group_1 = QButtonGroup(None)
         self.__group_2 = QButtonGroup(None)
-        self.__group_1.addButton(__button_scalarized)
+        self.__group_1.addButton(__button_scalar)
         self.__group_1.addButton(__button_pareto)
         self.__group_2.addButton(__button_ampl)
         self.__group_2.addButton(__button_pymoo)
-        self.__group_2.addButton(__button_platypus)
+        self.__group_2.addButton(__button_casadi)
 
         # Editor:
         self.__editor_1 = CostEditor(None)
@@ -73,12 +74,12 @@ class ObjectiveSetup(QFrame):
         __layout.setContentsMargins(0, 0, 0, 0)
 
         __layout.addWidget(self.__opttype, 0, 0)
-        __layout.addWidget(__button_scalarized, 0, 2)
+        __layout.addWidget(__button_scalar, 0, 2)
         __layout.addWidget(__button_pareto, 0, 3)
         __layout.addWidget(self.__library, 1, 0)
         __layout.addWidget(__button_ampl, 1, 2)
         __layout.addWidget(__button_pymoo, 1, 3)
-        __layout.addWidget(__button_platypus, 1, 4)
+        __layout.addWidget(__button_casadi, 1, 4)
         __layout.addWidget(self.__cost_j1 , 2, 0, Qt.AlignmentFlag.AlignLeft)
         __layout.addWidget(self.__cost_j2 , 3, 0, Qt.AlignmentFlag.AlignLeft)
         __layout.addWidget(self.__cost_j3 , 4, 0, Qt.AlignmentFlag.AlignLeft)
@@ -102,3 +103,11 @@ class ObjectiveSetup(QFrame):
         }
 
         return objectives
+
+    # Get checked opt-type:
+    def get_opt_type(self) -> str:
+        return self.__group_1.checkedButton().text()
+
+    # Get checked buttons:
+    def get_engine(self) -> str:
+        return self.__group_2.checkedButton().text()

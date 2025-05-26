@@ -259,8 +259,8 @@ class Connector(QGraphicsObject):
 
         # Define mid points:
         xm = (opos.x() + tpos.x()) /  2.0   # Midpoint x-coordinate
-        r1 = (tpos.y() - opos.y()) / 20.0   # Arc-radius in the y-direction
-        r2 = (tpos.x() - opos.x()) / 20.0   # Arc-radius in the x-direction
+        r1 = (tpos.y() - opos.y()) / 25.0   # Arc-radius in the y-direction
+        r2 = (tpos.x() - opos.x()) / 25.0   # Arc-radius in the x-direction
         r  = min([abs(r1), abs(r2)])        # Min arc-radius
 
         if opos.x() < tpos.x() and opos.y() < tpos.y():

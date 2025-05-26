@@ -4,7 +4,10 @@
 from casadi import SX, vertcat, Function
 
 # Function to create a CasADi model from symbolic variables and equations
-def create_model_CasADi(_symlist: list, _equations: list) -> Function:
+def CasADi_model(
+        _symlist:   set,
+        _equations: set
+):
     """
     Convert symbolic variables and equations to a CasADi function.
 
@@ -13,28 +16,7 @@ def create_model_CasADi(_symlist: list, _equations: list) -> Function:
     :return: A CasADi function representing the equations.
     """
 
-    # 1. Map symbolic names to CasADi SX variables:
-    casadi_dict = {name: SX.sym(name) for name in symbols}
+    # Validate input arguments:
+    if not isinstance(_symlist, set):   raise TypeError("Expected argument of type `set` for `_symlist`")
+    if not isinstance(_equations, set): raise TypeError("Expected argument of type `set` for `_equations`")
 
-    # 2. Convert equations into CasADi expressions:
-    casadi_eqs = []
-    for eq in equations:
-        # Convert your equation string or node representation into CasADi expressions.
-        # This part depends on your current data structure and parsing.
-        casadi_eq = parse_to_casadi(eq, casadi_vars)  # You need to implement this parser
-        casadi_eqs.append(casadi_eq)
-
-    # 3. Create constraints (assume all eqs are equality constraints here)
-    g = vertcat(*casadi_eqs)
-
-    # 4. Define objective function (again convert string/expr to CasADi)
-    f = parse_to_casadi(objective, casadi_vars)
-
-    # 5. Build NLP dict
-    nlp = {
-        "x": vertcat(*casadi_vars.values()),  # variables vector
-        "f": f,  # objective
-        "g": g  # constraints
-    }
-
-    return nlp, casadi_dict

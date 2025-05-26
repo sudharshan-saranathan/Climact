@@ -502,8 +502,8 @@ class Canvas(QGraphicsScene):
         # Get existing connector UIDs:
         id_set = {
             int(_connector.symbol.split('X')[1])
-            for _connector in self.conn_db
-            if self.conn_db[_connector]
+            for _connector, _state in self.conn_db.items()
+            if _state
         }
 
         # If `id_set` is empty, return "X0":
