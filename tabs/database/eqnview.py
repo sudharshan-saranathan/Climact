@@ -60,14 +60,9 @@ class EqnView(QListWidget):
         # Create a context menu:
         self._menu = QMenu(self)
 
-        # Actions:
-        _insert = self._menu.addAction("Insert Equation(s)")
-        _delete = self._menu.addAction("Delete Equation(s)")
-
-        # Connect actions to slots:
-        _insert.triggered.connect(self.get_equations_from_user)
-        _delete.triggered.connect(self.delete_equations)
-
+        # Initialize actions:
+        _insert = self._menu.addAction("Insert Equation(s)", self.get_equations_from_user)
+        _delete = self._menu.addAction("Delete Equation(s)", self.delete_equations)
 
     def contextMenuEvent(self, event):
         # Open menu at cursor position:
@@ -82,6 +77,7 @@ class EqnView(QListWidget):
 
         # Otherwise, open a text-editor:
         dialog = QDialog(None)
+        dialog.setModal(False)
         dialog.setFixedSize(600, 400)
 
         # Create a text editor:
@@ -107,7 +103,16 @@ class EqnView(QListWidget):
     def delete_equations(self):
 
         # Get selected items:
-        items = self.selectedItems()
+        equations = self.selectedItems()
+
+        # Delete selected items:
+        for equation in equations:
+            # Verify that the equation is in the node's equations:
+            if equation.text() not in self._node()[EntityClass.EQN]:
+                continue
+
+            self._node()[EntityClass.EQN].remove(equation.text())
+            self.takeItem(self.row(equation))
 
     def parse(self, equations):
 
@@ -117,7 +122,6 @@ class EqnView(QListWidget):
 
         # Validate equations:
         for equation in equations:
-
             equation = re.sub(r'([^\w\s.])', r' \1 ', equation)     # Add space around symbols
             equation = re.sub(r'\s+', ' ', equation).strip()        # Remove multiple spaces
 

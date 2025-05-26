@@ -274,11 +274,7 @@ class Canvas(QGraphicsScene):
         will re-compute and draw the connector's path as the cursor is dragged across the canvas. In the absence of 
         an active connection, the handler will forward the event to the super-class.
 
-        Args: 
-            event (QGraphicsSceneMouseEvent): Event instance, internally propagated and managed by Qt.
-
-        Returns: 
-            None
+        :param: event (QGraphicsSceneMouseEvent): Event instance, internally propagated and managed by Qt.
         """
 
         # Forward event to other handlers:
@@ -301,11 +297,7 @@ class Canvas(QGraphicsScene):
         connection between the origin and target handles. The method includes various checks to prevent logically
         invalid connections (such as from one _node or handle to itself).
         
-        Args:
-            event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
-
-        Returns: 
-            None
+        :param: event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
         """
     
         # If the transient-connector is inactive or the release event is not a left-click, forward event to super-class:

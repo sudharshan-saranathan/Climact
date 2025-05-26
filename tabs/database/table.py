@@ -61,13 +61,17 @@ class Table(QTableWidget):
     def _init_menu(self):
 
         self._menu = QMenu()
-        _equal = self._menu.addAction(QIcon("rss/icons/menu-equal.png"), "Assign", QKeySequence("Ctrl+Return"   ), self.assign)
-        _clear = self._menu.addAction(QIcon("rss/icons/menu-clear.png"), "Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
+        _equal  = self._menu.addAction(QIcon("rss/icons/menu-equal.png"), "Assign", QKeySequence("Ctrl+Return"   ), self.assign)
+        _clear  = self._menu.addAction(QIcon("rss/icons/menu-clear.png"), "Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
+        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence("Delete"), self.delete_row)
 
         _equal.setIconVisibleInMenu(True)
         _clear.setIconVisibleInMenu(True)
+        _delete.setIconVisibleInMenu(True)
+
         _equal.setShortcutVisibleInContextMenu(True)
         _clear.setShortcutVisibleInContextMenu(True)
+        _delete.setShortcutVisibleInContextMenu(True)
 
     # Context-menu event:
     def contextMenuEvent(self, event):

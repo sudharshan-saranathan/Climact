@@ -135,7 +135,6 @@ class Entity(Stream):
             raise TypeError("Expected str")
 
         # Set symbol:
-        print(f"Symbol set to: {_symbol}")
         self._prop["symbol"] = _symbol
 
     @property

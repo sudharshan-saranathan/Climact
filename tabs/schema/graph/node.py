@@ -464,6 +464,25 @@ class Node(QGraphicsObject):
 
         return _symbols
 
+    def replace(self, _oldsym: str, _newsym: str):
+        """
+        Replaces `_oldsym` with `_newsym` in the node's equations. This method is called when a symbol is renamed (e.g.,
+        when a parameter is renamed, or when a variable's symbols are changed due to being imported into a non-empty
+        canvas
+
+        :param: _oldsym (str): The old symbol to be replaced.
+        :param: _newsym (str): The new symbol to replace the old one with
+        """
+
+        # Validate argument(s):
+        if not isinstance(_oldsym, str): raise TypeError("Expected argument of type `str`")
+        if not isinstance(_newsym, str): raise TypeError("Expected argument of type `str`")
+
+        # Replace old symbol with new symbol in equations:
+        for i, equation in enumerate(self._data[EntityClass.EQN]):
+            if _oldsym in equation:
+                self._data[EntityClass.EQN][i] = equation.replace(_oldsym, _newsym)
+
     def create_handle(self,
                       _eclass: EntityClass,
                       _coords: QPointF,

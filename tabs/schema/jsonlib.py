@@ -250,6 +250,9 @@ class JsonLib:
         # Import canvas module (required for executing canvas operations):
         from tabs.schema.canvas import Canvas
 
+        # Create a symbol map to track how variable-symbols are changed during JSON-decoding:
+        _symmap = dict()
+
         # Initialize convenience-variables:
         root  = json.loads(_code)
         batch = BatchActions([])
@@ -313,7 +316,7 @@ class JsonLib:
                 _var.create_stream(_var.strid)
                 _var.sig_item_updated.emit(_var)    # Emit signal to notify application of changes
 
-                # Add variable to _node's database:
+                # Add the variable to the node's database, and modify the node's equations to use the variable's new symbol:
                 _node[eclass, _var] = EntityState.ACTIVE
 
                 # Add action to batch:
@@ -333,7 +336,7 @@ class JsonLib:
                 _node[EntityClass.PAR, _par] = EntityState.ACTIVE
 
             # Add equations(s):
-            if node_json.get("equations") or []: 
+            if node_json.get("equations") or []:
                 _node[EntityClass.EQN, None] = [
                     equation for equation in node_json.get("equations")
                 ]
