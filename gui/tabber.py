@@ -58,7 +58,7 @@ class TabBar(QTabBar):
 class Tabber(QTabWidget):
 
     # Global constants:
-    _MAX_TAB = 8
+    _MAX_TAB = 4
 
     # Initializer:
     def __init__(self, parent: QWidget | None):
@@ -67,7 +67,6 @@ class Tabber(QTabWidget):
         super().__init__(parent)
 
         # Customize behaviour:
-        self.setTabsClosable(True)
         self.setTabShape(QTabWidget.TabShape.Rounded)
         self.tabCloseRequested.connect(self.removeTab)
 
@@ -91,6 +90,13 @@ class Tabber(QTabWidget):
     @pyqtSlot(Viewer)
     @pyqtSlot(Viewer, str)
     def addTab(self, _viewer: Viewer | None = None, _label: str | None = None):
+        """
+        Re-implementation of QTabWidget.addTab() method. This method creates a new tab with a Viewer widget.
+
+        :param _viewer:
+        :param _label:
+        :return:
+        """
 
         # Max tab-count:
         if self.count() >= 8:
@@ -118,7 +124,6 @@ class Tabber(QTabWidget):
     # Slot to remove tab:
     @pyqtSlot(int)
     def removeTab(self, _index):
-
         # Get currently active `Viewer`:
         _viewer = self.widget(_index)
         _viewer.close()

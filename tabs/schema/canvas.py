@@ -15,7 +15,6 @@ from PyQt6.QtGui import (
     QAction,
     QTransform, QKeySequence
 )
-
 from PyQt6.QtCore import (
     Qt,
     QRectF,
@@ -24,8 +23,7 @@ from PyQt6.QtCore import (
     pyqtSlot,
     pyqtSignal,
     QtMsgType
-    )
-
+)
 from PyQt6.QtWidgets import (
     QMenu,
     QFileDialog,
@@ -33,7 +31,7 @@ from PyQt6.QtWidgets import (
     QApplication,
     QGraphicsScene,
     QGraphicsObject
-    )
+)
 
 from .graph   import *
 from .jsonlib import JsonLib
@@ -493,10 +491,9 @@ class Canvas(QGraphicsScene):
 
     def create_cuid(self):
         """
-        Returns a
+        Returns a unique ID for a new connector. The ID is of the form "X" followed by the smallest integer not already used
 
-        Returns:
-            str: Unique ID for a new connector.
+        :return: str: Unique ID for a new connector.
         """
 
         # Get existing connector UIDs:

@@ -11,7 +11,8 @@ from PyQt6.QtCore import (
     pyqtSignal
 )
 from PyQt6.QtWidgets import (
-    QMenu, 
+    QMenu,
+    QApplication,
     QGraphicsItem, 
     QGraphicsObject, 
     QGraphicsLineItem
@@ -437,7 +438,9 @@ class Node(QGraphicsObject):
         """
 
         # Set a minimum _node-height:
-        if delta < 0 and self._attr.rect.height() < 200: return
+        if delta < 0 and self._attr.rect.height() < 200:
+            QApplication.beep()
+            return
 
         # Resize _node, adjust contents:
         self._attr.rect.adjust(0, 0, 0, delta)
