@@ -5,6 +5,7 @@
 #-----------------------------------------------------------------------------------------------------------------------
 
 import logging
+from json import JSONDecodeError
 
 from PyQt6.QtGui import (
     QPainter,
@@ -29,14 +30,19 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
-from dataclasses    import dataclass
-
-from custom.dialog import Dialog
-from .canvas       import Canvas, SaveState
-from util          import *
+from custom.entity  import EntityClass
+from custom.message import Message
+from dataclasses   import dataclass
 from tabs.gemini   import widget
+from util          import *
 
+from .jsonlib import JsonLib
+from .canvas  import Canvas, SaveState
+
+# Class: Viewer
 class Viewer(QGraphicsView):
+    """
+    """
 
     # Signals:
     sig_has_changed = pyqtSignal(bool)
@@ -86,19 +92,19 @@ class Viewer(QGraphicsView):
 
         # Initialize Canvas (QGraphicsScene derivative)
         self.closed = False
-        self.state  = SaveState.UNSAVED
+        self.state  = SaveState.MODIFIED
         self.canvas = Canvas(QRectF(0, 0, x_bounds, y_bounds), self)
         self.setScene(self.canvas)
 
         self.canvas.sig_canvas_state.connect(self.update_state)
-        self.canvas.sig_schema_setup .connect(self.sig_json_loaded)
+        self.canvas.sig_schema_setup.connect(self.sig_json_loaded)
         logging.info(f"Canvas [UID = {self.canvas.uid}] initialized.")
 
         # Gemini AI assistant:
         self._gemini = widget.Gui(self.canvas)
         self._gemini.setEnabled(False)
         self._gemini.hide()
-        self._gemini.sig_json_available.connect(lambda: print("JSON available"))
+        self._gemini.sig_json_available.connect(self.execute_json)
         logging.info(f"Gemini AI-assistant initialized.")
 
         # Layout to manage widgets:
@@ -108,7 +114,10 @@ class Viewer(QGraphicsView):
         _layout.addWidget(self._gemini, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
         _layout.insertStretch(0, 10)
 
-        # Define shortcuts:
+        # Action shortcuts:
+        shortcut_ctrl_n = QShortcut(QKeySequence("Ctrl+N"), self)
+        shortcut_term_i = QShortcut(QKeySequence("Ctrl+["), self)
+        shortcut_term_o = QShortcut(QKeySequence("Ctrl+]"), self)
         shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self)
         shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
         shortcut_ctrl_c = QShortcut(QKeySequence.StandardKey.Copy, self)
@@ -116,20 +125,23 @@ class Viewer(QGraphicsView):
         shortcut_ctrl_r = QShortcut(QKeySequence.StandardKey.Redo, self)
         shortcut_delete = QShortcut(QKeySequence.StandardKey.Delete, self)
 
-        # Activate shortcuts:
+        # Connect action shortcuts:
+        shortcut_ctrl_n.activated.connect(self.canvas.create_node)
+        shortcut_term_i.activated.connect(lambda: self.canvas.create_terminal(EntityClass.OUT))
+        shortcut_term_o.activated.connect(lambda: self.canvas.create_terminal(EntityClass.INP))
         shortcut_ctrl_z.activated.connect(self.canvas.manager.undo)
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
-        shortcut_ctrl_c.activated.connect(self.canvas.copy_selection)
-        shortcut_ctrl_v.activated.connect(self.canvas.paste_selection)
-        shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.UNSAVED))
-        shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.UNSAVED))
+        shortcut_ctrl_c.activated.connect(self.canvas.store)
+        shortcut_ctrl_v.activated.connect(self.canvas.clone)
+        shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.MODIFIED))
+        shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.MODIFIED))
         shortcut_ctrl_a.activated.connect(lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db))
         shortcut_delete.activated.connect(lambda: self.canvas.delete_items(set(self.canvas.selectedItems())))
 
         logging.info(f"Viewer [UID = {self.objectName()}] initialized.")
 
     @property
-    def uid(self)   -> str:  return self.objectName()
+    def uid(self) -> str:  return self.objectName()
 
     @uid.setter
     def uid(self, value: str):   self.setObjectName(value if isinstance(value, str) else self.uid)
@@ -140,10 +152,23 @@ class Viewer(QGraphicsView):
         self._zoom.val *= factor
         self.scale(factor, factor)
 
-    # Toggles visibility of AI-assistant:
+    # Toggles visibility of the AI assistant:
     def toggle_assistant(self):
         self._gemini.setEnabled(not self._gemini.isEnabled())
         self._gemini.setVisible(not self._gemini.isVisible())
+
+    def execute_json(self, json_data: str):
+
+        if  json_data:
+
+            try: JsonLib.decode(json_data, self.canvas, True)
+            except (RuntimeError, JSONDecodeError) as exception:
+                Message.critical(None, "Error", f"Error decoding JSON: {exception}")
+                logging.critical(exception)
+                return
+
+            self.state = SaveState.MODIFIED
+            self.canvas.sig_canvas_state.emit(SaveState.MODIFIED)
 
     # Register the canvas' saved/unsaved state:
     def update_state(self, state: SaveState):   self.state = state
@@ -183,16 +208,19 @@ class Viewer(QGraphicsView):
     @pyqtSlot(QEvent)
     def closeEvent(self, event):
 
+        # Print save-state:
+        print(str(self.canvas.state))
+
         # Check if canvas has been modified:
-        if self.canvas.state == SaveState.UNSAVED:
+        if self.canvas.state == SaveState.MODIFIED:
 
             # Confirm quit:
-            _dialog = Dialog(QtMsgType.QtWarningMsg,
+            _dialog = Message(QtMsgType.QtWarningMsg,
                          "Do you want to save unsaved changes?",
-                         QMessageBox.StandardButton.Yes     |
-                         QMessageBox.StandardButton.No |
-                         QMessageBox.StandardButton.Cancel
-                         )
+                              QMessageBox.StandardButton.Yes |
+                              QMessageBox.StandardButton.No |
+                              QMessageBox.StandardButton.Cancel
+                              )
 
             # Execute dialog and get result:
             _dialog_code = _dialog.exec()

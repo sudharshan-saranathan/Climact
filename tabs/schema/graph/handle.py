@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (
     )
 
 from dataclasses    import dataclass
-from util           import random_id, load_svg
+from util import random_id, load_svg, random_hex, anti_color
 from custom         import *
 
 class Handle(QGraphicsObject, Entity):
@@ -59,11 +59,11 @@ class Handle(QGraphicsObject, Entity):
 
     # Initializer:
     def __init__(self,
-                 _symbol: str,
-                 _coords: QPointF,
                  _eclass: EntityClass,
-                 _parent: QGraphicsObject | None = None):
-
+                 _coords: QPointF,
+                 _symbol: str,
+                 _parent: QGraphicsObject | None = None
+                ):
         """
         Initialize a new handle with given entity-class, coordinates, and symbol.
 
@@ -94,6 +94,7 @@ class Handle(QGraphicsObject, Entity):
         self._styl = self.Style()
         self._huid = random_id(prefix='H')
 
+        self.contrast = False # Flag to determine whether handle's text-color should contrast its stream-color
         self.offset = _coords.toPoint().x()
         self.eclass = _eclass
         self.symbol = _symbol
@@ -157,20 +158,22 @@ class Handle(QGraphicsObject, Entity):
         delete_action.triggered.connect(lambda: self.sig_item_removed.emit(self))
 
         # Sub-menu customization:
-        prompt = QLineEdit()
-        prompt.setPlaceholderText("Enter Category")
+        widget = QLineEdit()
+        widget.setPlaceholderText("Enter Category")
+        widget.returnPressed.connect(lambda: self.create_stream(widget.text()))
 
-        action = QWidgetAction(self._subm)
-        action.setDefaultWidget(prompt)
+        self._prompt = QWidgetAction(self._subm)
+        self._prompt.setDefaultWidget(widget)
+        self._prompt.setObjectName("Prompt")
 
         # Add actions to sub-menu:
-        self._subm.addAction(action)
+        self._subm.addAction(self._prompt)
         self._subm.addSeparator()
 
     # Re-implemented methods -------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. boundingRect           Returns an artifically enlarged bounding rectangle.
+    # 1. boundingRect           Returns an artificially enlarged bounding rectangle.
     # 2. paint                  Handles the painting of the handle.
     # 3. itemChange             Emits the `sig_item_shifted` signal when the handle's scene-position changes, which is
     #                           captured by the connector.
@@ -218,12 +221,12 @@ class Handle(QGraphicsObject, Entity):
 
         # Initialize menu-actions:
         menu_actions = [
-            StreamMenuAction(stream, self._strid == stream.strid)
+            StreamMenuAction(stream, self.strid == stream.strid)
             for stream in self.scene().type_db
         ]
 
         # Sort menu-actions by label:
-        menu_actions.sort(key=lambda x: x.label())
+        menu_actions.sort(key=lambda x: x.label)
             
         # Add streams dynamically to sub-menu:
         for action in menu_actions:
@@ -296,6 +299,20 @@ class Handle(QGraphicsObject, Entity):
     # 6. set_editable           Make the handle's label temporarily editable.
     # ------------------------------------------------------------------------------------------------------------------
 
+    def clone_into(self, _copied):
+
+        # Call super-class implementation:
+        super().clone_into(_copied)
+
+        # Set additional attribute(s):
+        _copied.contrast = self.contrast
+        _copied.offset   = self.offset
+
+        # Rename, set position, then emit signal:
+        _copied.rename(self.label)
+        _copied.setPos(self.pos())
+        _copied.sig_item_updated.emit(_copied)
+
     def unpair(self):
         """
         Unpair this handle from its conjugate.
@@ -321,6 +338,13 @@ class Handle(QGraphicsObject, Entity):
 
         self._prop["label"] = _label
         self._label.setPlainText(self.label)
+
+        if (
+            self.conjugate and
+            self.conjugate() and
+            self.eclass == EntityClass.OUT
+        ):
+            self.conjugate().rename(self.label)
 
     def lock(self, conjugate, connector):
 
@@ -358,19 +382,15 @@ class Handle(QGraphicsObject, Entity):
         # Import Canvas:
         from tabs.schema.canvas import Canvas
 
-        # Get sender and canvas:
-        _action = self.sender()
-        _canvas = self.scene()
-
         # Validate signal-emitter:
         if (
-            not isinstance(self.sender(), StreamMenuAction) or 
-            not isinstance(_canvas, Canvas)
+            not isinstance(_action := self.sender(), StreamMenuAction) or
+            not isinstance(_canvas := self.scene() , Canvas)
         ): 
             return
 
         # Get stream-id:
-        _stream = _action.label()
+        _stream = _action.label
         _stream = _canvas.find_stream(_stream)
 
         # Set stream:
@@ -387,6 +407,9 @@ class Handle(QGraphicsObject, Entity):
         # Set stream:
         self.strid = _stream.strid
         self.color = _stream.color
+
+        # Change text-color, only if the `contrast` flag is set:
+        if self.contrast:   self._label.setDefaultTextColor(anti_color(self.color))
 
         # If handle is paired, update conjugate and connector:
         if  self.connected and self.eclass == EntityClass.OUT:
@@ -407,6 +430,23 @@ class Handle(QGraphicsObject, Entity):
 
     def set_decision(self, _flag: bool):    
         self._tags.setVisible(_flag)
+
+    def create_stream(self, _strid: str):
+
+        # Import canvas module:
+        from tabs.schema import Canvas
+
+        # Define convenience variable:
+        _canvas = self.scene()
+
+        # Fetch stream:
+        _stream = _canvas.find_stream(_strid, True)         # This method will also add the stream to the database
+ 
+        # Set stream:
+        self.set_stream(_stream)
+
+        # If the menu is open, update the sub-menu:
+        if  self._menu.isVisible(): self._menu.close()
 
     @property
     def uid(self):  return self._huid

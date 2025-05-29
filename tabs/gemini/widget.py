@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget
 )
 
+from custom import Message
 from tabs.schema.jsonlib import JsonLib
 from tabs.gemini.gemini  import Gemini
 from tabs.gemini.thread  import Thread
@@ -58,12 +59,12 @@ class Gui(QFrame):
         self._prompt.setFixedHeight(80)
         self._prompt.setPlaceholderText("Type your query here!")
 
-        # Customize appearance of text editors:
+        # Customize the appearance of text editors:
         self._window.setStyleSheet("color: black; background:transparent; border: none;")
         self._prompt.setStyleSheet("color: white; background:#44506C; border: none; border-radius: 7px;")
-        self._prompt.setCursorWidth(8)
+        self._prompt.setCursorWidth(2)
 
-        # Install shortcut on the prompt:
+        # Install a shortcut on the prompt:
         shortcut = QShortcut(QKeySequence("Ctrl+Return"), self._prompt)
         shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         shortcut.activated.connect(self.return_pressed)
@@ -88,12 +89,11 @@ class Gui(QFrame):
 
     def return_pressed(self):
 
-        # Null-check:
-        if not bool(self._prompt.toPlainText()):
-            return
+        # Return if the prompt is empty:
+        if not bool(self._prompt.toPlainText()): return
 
         # First, try to encode the canvas as JSON:
-        _json = JsonLib.encode_json(self._canvas)
+        _json = JsonLib.encode(self._canvas)
 
         thread = Thread(self.gemini,
                         self._prompt.toPlainText(),
@@ -132,7 +132,7 @@ class Gui(QFrame):
                                    "}")
 
         # Send the JSON code-block through the `sig_json_available` signal:
-        if json_block is not None:
+        if  json_block is not None:
             self.sig_json_available.emit(json_block)
 
     def handle_error(self, error_msg: str):
@@ -145,5 +145,13 @@ class Gui(QFrame):
                                    "background: green;"
                                    "}")
 
-    def display_message(self, string: str):
-        self._window.setPlainText(string)
+    def display_message(self, _response: str):
+
+        # Validate argument(s):
+        if isinstance(_response, str):  self._window.setPlainText(_response)
+        else:
+
+            # Display error-message:
+            Message.critical(None,
+                            "Climact: Error",
+                            f"Expected a string-response, but got: {type(_response)}")

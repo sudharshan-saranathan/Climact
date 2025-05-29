@@ -45,16 +45,12 @@ class Climact(QApplication):
             format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d - %(funcName)s()] %(message)s'
         )
 
-        # Print font families:
-        for family in QFontDatabase.families():
-            print(family)
-
         # Initialize stylesheet, set font:
         self.setFont(QFont("Trebuchet MS", self.Constants.FONT_SIZE))
         self.setStyleSheet(read_qss (self.Constants.QSS_SHEET))
         logging.info(f"Stylesheet: {self.Constants.QSS_SHEET}")
 
-        # Open splash-screen and show project options:
+        # Open the splash-screen and show project options:
         self._window  = Gui()
         self._startup = StartupWindow()
         self._result  = self._startup.exec()

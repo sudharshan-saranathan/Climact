@@ -20,11 +20,12 @@ class EqnView(QListWidget):
         # Initialize super-class:
         super().__init__(_parent)
 
-        # Reference to the node being updated, initialize with `None`:
+        # Reference to the _node being updated, initialize with `None`:
         self._node = None
         self._symb = []
 
         # Customize behavior:
+        self.itemChanged.connect(self.on_eqn_modified)  # Connect item-changed signal to method
         self.setSelectionMode(QAbstractItemView.SelectionMode.ContiguousSelection)
 
         # Initialize menus:
@@ -60,25 +61,24 @@ class EqnView(QListWidget):
         # Create a context menu:
         self._menu = QMenu(self)
 
-        # Actions:
-        _insert = self._menu.addAction("Insert Equations")
-        _insert.triggered.connect(self.open_editor)
-
-        _modify = self._menu.addAction("Modify Equations")
+        # Initialize actions:
+        _insert = self._menu.addAction("Insert Equation(s)", self.get_equations_from_user)
+        _delete = self._menu.addAction("Delete Equation(s)", self.delete_equations)
 
     def contextMenuEvent(self, event):
         # Open menu at cursor position:
         self._menu.exec(event.globalPos())
         event.accept()
 
-    def open_editor(self):
+    def get_equations_from_user(self):
 
-        # Abort if no node has been set:
+        # Abort if no _node has been set:
         if self._node() is None:
             return
 
         # Otherwise, open a text-editor:
         dialog = QDialog(None)
+        dialog.setModal(False)
         dialog.setFixedSize(600, 400)
 
         # Create a text editor:
@@ -101,15 +101,28 @@ class EqnView(QListWidget):
             equations = editor.toPlainText().split('\n')
             self.parse(equations)
 
+    def delete_equations(self):
+
+        # Get selected items:
+        equations = self.selectedItems()
+
+        # Delete selected items:
+        for equation in equations:
+            # Verify that the equation is in the node's equations:
+            if equation.text() not in self._node()[EntityClass.EQN]:
+                continue
+
+            self._node()[EntityClass.EQN].remove(equation.text())
+            self.takeItem(self.row(equation))
+
     def parse(self, equations):
 
-        # Abort if no node has been set:
+        # Abort if no _node has been set:
         if self._node() is None:
             return
 
         # Validate equations:
         for equation in equations:
-
             equation = re.sub(r'([^\w\s.])', r' \1 ', equation)     # Add space around symbols
             equation = re.sub(r'\s+', ' ', equation).strip()        # Remove multiple spaces
 
@@ -122,9 +135,6 @@ class EqnView(QListWidget):
                 sym_eqn = set(re.findall(r'\b[a-zA-Z][a-zA-Z0-9_]*\b', equation))  # Equation symbols
                 sym_tot = self._symb
 
-                print(sym_eqn)
-                print(sym_tot)
-
                 # Insert equation:
                 self.insert_item(equation)
 
@@ -134,7 +144,7 @@ class EqnView(QListWidget):
 
                 else:
                     # Display error message:
-                    warning = Dialog(QtMsgType.QtCriticalMsg,
+                    warning = Message(QtMsgType.QtCriticalMsg,
                                      f"Unrecognized variable(s):\n{str(', ').join(sym_eqns - sym_node)}",
                                      QMessageBox.StandardButton.Ok)
 
@@ -142,27 +152,27 @@ class EqnView(QListWidget):
 
             else:
                 # Display error message:
-                error = Dialog(QtMsgType.QtCriticalMsg,
+                error = Message(QtMsgType.QtCriticalMsg,
                                f"Equation must have exactly one '='",
                                QMessageBox.StandardButton.Ok)
 
                 error.exec()
             """
 
-    def insert_item(self, equation):
+    def insert_item(self, _equation: str):
 
-        item = QListWidgetItem(equation)
+        item = QListWidgetItem(_equation)
         item.setIcon(QIcon("rss/icons/trash.png"))
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
 
         self.addItem(item)
-        self._node()[EntityClass.EQN].append(equation)
+        self._node()[EntityClass.EQN].append(_equation)
 
-    # Fetch and display node's equations
+    # Fetch and display _node's equations
     def fetch(self):
 
         # Clear all list items:
-        super().clear()             # Use super().clear() (not self.clear()) to avoid resetting node-reference
+        super().clear()             # Use super().clear(), not self.clear() to avoid resetting node-reference
 
         # Confirm reference validity:
         if self._node() is None:
@@ -184,4 +194,18 @@ class EqnView(QListWidget):
         self._node = None
         self.setDisabled(True)
 
+    # Method triggered when the text in an item is edited:
+    def on_eqn_modified(self, item: QListWidgetItem):
 
+        # Debugging:
+        print(f"Equation modified: {item.text()}")
+
+        # Verify that the node is valid:
+        if not self._node():    return
+
+        # Clear existing equations in the node:
+        self._node()[EntityClass.EQN].clear()
+
+        # Iterate over all equations:
+        for row in range(self.count()):
+            self._node()[EntityClass.EQN].append(self.item(row).text())

@@ -77,7 +77,7 @@ QTextEdit:focus {
 QMenu {
     font                    : 13pt "Trebuchet MS";
     border                  : 1px solid black;
-    padding                 : 4px 4px 4px 4px;
+    padding                 : 4px;
     color                   : black;
     background              : white;
     border-radius           : 8px;
@@ -90,7 +90,7 @@ QMenu::right-arrow {
 }
 
 QMenu::item {
-    padding                 : 4px 4px 4px 4px;
+    padding                 : 4px;
     color                   : black;
     min-width               : 100px;
     background-color        : white;
@@ -204,6 +204,7 @@ QTabWidget::tab-bar {
 
 QTabWidget::pane {
     border-top   : 1px solid black;
+    border-left  : 1px solid black;
 }
 
 QTabBar::tab {
@@ -276,9 +277,7 @@ QTabBar::tab:!selected:hover {
 */
 
 QToolBar {
-    border                  : none;
-    padding                 : 2px;
-    background              : lightslategray;
+    background      : #B6C1CE;
 }
 
 QToolBar QToolButton, QToolButton {
@@ -291,7 +290,7 @@ QToolBar QToolButton, QToolButton {
 QToolBar QToolButton:checked, QToolButton:checked {
     border          : none;
     border-radius   : 8px;
-    background      : #c6dee7;
+    background      : white;
 }
 
 QToolBar QToolButton:pressed, QToolButton:pressed {
@@ -300,7 +299,7 @@ QToolBar QToolButton:pressed, QToolButton:pressed {
 }
 
 QToolBar QToolButton:!checked:hover, QToolButton:!checked:hover {
-    background      : #7CA3CB;
+    background      : white;
 }
 
 QCheckBox {

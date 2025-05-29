@@ -1,13 +1,20 @@
 #-----------------------------------------------------------------------------------------------------------------------
-# Author    : Sudharshan Saranathan
-# GitHub    : https://github.com/sudharshan-saranathan/climact
-# Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
+# Author: Sudharshan Saranathan
+# GitHub: https://github.com/sudharshan-saranathan/climact
+# Module(s) : PyQt6 (pip install PyQt6),
+#             google-genai (pip install google-generative-ai)
 #-----------------------------------------------------------------------------------------------------------------------
 import logging
 import weakref
-from pathlib import Path
 
-from PyQt6.QtGui  import QColor, QTransform
+from dataclasses import dataclass
+from PyQt6.QtGui import (
+    QIcon,
+    QBrush,
+    QColor,
+    QAction,
+    QTransform, QKeySequence
+)
 from PyQt6.QtCore import (
     Qt,
     QRectF,
@@ -16,47 +23,73 @@ from PyQt6.QtCore import (
     pyqtSlot,
     pyqtSignal,
     QtMsgType
-    )
-
+)
 from PyQt6.QtWidgets import (
-    QMenu, 
-    QFileDialog, 
+    QMenu,
+    QFileDialog,
     QMessageBox, 
     QApplication,
     QGraphicsScene,
     QGraphicsObject
-    )
+)
 
-from dataclasses import dataclass
 from .graph   import *
 from .jsonlib import JsonLib
 
-from util    import random_id
+from util    import random_id, random_hex
 from enum    import Enum
 from custom  import *
 from actions import *
 
+# Enum for SaveState:
 class SaveState(Enum):
-    SAVED = 0
-    UNSAVED = 1
+    EXPORTED = 0
+    MODIFIED = 1
 
 # Class Canvas - Subclass of QGraphicsScene, manages graphical items:
 class Canvas(QGraphicsScene):
+    """
+    Manage graphical items, connections, and user interactions within a 2D scene.
+
+    The Canvas class is a central component for creating and manipulating visual
+    representations of data flows, schematics, or diagrams. It handles the
+    creation, deletion, and interaction of nodes, terminals (input/output points),
+    and connectors. It also manages the overall state of the canvas, including
+    saving and loading schemas from JSON files, and supports undo/redo functionality
+    through an actions-manager.
+
+    Key functionalities include:
+    - Creating and managing nodes, terminals, and connectors.
+    - Handling user input events such as mouse clicks, moves, and context menu requests.
+    - Implementing a transient connector for interactively drawing connections.
+    - Supporting copy, paste, and deletion of items.
+    - Importing and exporting canvas schematics in JSON format.
+    - Managing the save state of the canvas (saved/unsaved).
+    - Emitting signals for various canvas events (item creation/removal, state changes).
+
+    Attributes:
+        actions (BatchActions): Manages batch operations for undo/redo.
+        Manager (ActionsManager): Manages the undo/redo stack.
+        Term_db (dict): Registry of terminals on the canvas.
+        Node_db (dict): Registry of nodes on the canvas.
+        Conn_db (dict): Registry of connectors on the canvas.
+        Type_db (set): Set of defined stream types (e.g., Mass, Energy).
+    """
 
     # Signals:
     sig_item_created = pyqtSignal()             # Emitted when a new item is created.
     sig_item_removed = pyqtSignal()             # Emitted when an item is removed.
     sig_canvas_reset = pyqtSignal()             # Emitted when the canvas is reset.
     sig_canvas_state = pyqtSignal(SaveState)    # Emitted when the canvas's state changes.
-    sig_schema_setup  = pyqtSignal(str)          # Emitted when a JSON-schematic is loaded.
+    sig_schema_setup = pyqtSignal(str)          # Emitted when a JSON schematic is loaded.
 
     # Placeholder-connector:
     class Transient:
         def __init__(self):
-            self.active = False                 # Set to True when a connection is being drawn by the user, False otherwise.
+            self.active = False                 # Set to True when the user is drawing a connection, False otherwise.
             self.origin = None                  # Reference pointer to the connector's origin (tabs/schema/graph/handle.py).
             self.target = None                  # Reference pointer to the connector's target (tabs/schema/graph/handle.py).
-            self.connector = Connector("")      # Connector object (tabs/schema/graph/connector.py).
+            self.connector = Connector(str())   # Connector object (tabs/schema/graph/connector.py).
 
     # Global registry:
     @dataclass
@@ -65,17 +98,20 @@ class Canvas(QGraphicsScene):
 
     # CANVAS (Initializers) --------------------------------------------------------------------------------------------
     # Instance initializer:
-    def __init__(self, bounds: QRectF, parent: QObject | None = None):
+    def __init__(self,
+                 _bounds: QRectF,
+                 _parent: QObject | None = None
+                 ):
         """
         Initialize the canvas with a given rectangular boundary and optional parent
 
         Parameters:
-            rect (QRectF): The initial dimensions of the scene
-            parent (QObject, optional): Optional parent QObject (default: None)
+            _bounds (QRectF): The initial dimensions of the scene
+            _parent (QObject, optional): Optional parent QObject (default: None)
         """
 
         # Initialize super-class:
-        super().__init__(bounds, parent)
+        super().__init__(_bounds, _parent)
 
         # Initialize actions-manager:
         self.actions = BatchActions([])
@@ -83,23 +119,24 @@ class Canvas(QGraphicsScene):
 
         # Convenience variables:
         self._ntot = 0
-        self._rect = bounds
+        self._rect = _bounds
         self._cpos = QPointF()
         self._conn = Canvas.Transient()
+        self.state = SaveState.MODIFIED
 
-        # Add transient-connector to scene:
+        # Add the transient-connector to the scene:
         self.addItem(self._conn.connector)
 
         # Customize attribute(s):
-        self.setSceneRect(bounds)
+        self.setSceneRect(self._rect)
         self.setBackgroundBrush(QColor(0xefefef))
         self.setObjectName(random_id(length=4, prefix='S'))
 
         # Initialize registries:
         self.term_db = dict()  # Maps each terminal to a bool indicating whether it's currently visible/enabled.
-        self.node_db = dict()  # Maps each node to a bool indicating whether it's currently visible/enabled.
+        self.node_db = dict()  # Maps each _node to a bool indicating whether it's currently visible/enabled.
         self.conn_db = dict()  # Maps each connector to a bool indicating whether it's currently visible/enabled.
-        self.type_db = set()   # List of defined stream-types (e.g. Mass, Energy, Electricity, etc.)
+        self.type_db = set()   # List of defined stream-types (e.g., Mass, Energy, Electricity, etc.)
 
         # Add default streams:
         self.type_db.add(Stream("Default", Qt.GlobalColor.darkGray))   # Default
@@ -113,51 +150,96 @@ class Canvas(QGraphicsScene):
     # Context-menu initializer:
     def _init_menu(self):
         """
-        Initializes the context menu with node creation, import/export, and group/clear actions.
-
-        Parameters: None
-        Returns: None
+        Initializes the canvas's context menu. Actions in the menu include _node- and terminal-creation, import and
+        export from/to JSON files, and group/clear operations. This method is called once by the class's initializer.
         """
 
         # Create menu:
-        self._menu = QMenu()
-        self._subm = self._menu.addMenu("Create Object")
+        self._menu = QMenu()                                # Main context-menu.
+        self._subm = self._menu.addMenu("Create Objects")   # Submenu for creating items.
 
-        # Submenu for creating node_items:
-        _node = self._subm.addAction("Node")
-        _tout = self._subm.addAction("Terminal (Out)")
-        _tinp = self._subm.addAction("Terminal (Inp)")
+        # Submenu for creating scene-items:
+        _node = self._subm.addAction(QIcon("rss/icons/node.png"), "Node", QKeySequence("Ctrl+N"), self.create_node)
+        _tout = self._subm.addAction(
+            QIcon("rss/icons/input.png"), "Terminal (Inp)", QKeySequence("Ctrl+["),
+            lambda: self.create_terminal(EntityClass.OUT,self._cpos)
+        )  # Action to create a new output terminal
+
+        _tinp = self._subm.addAction(
+            QIcon("rss/icons/output.png"), "Terminal (Out)", QKeySequence("Ctrl+]"),
+            lambda: self.create_terminal(EntityClass.INP,self._cpos)
+        )  # Action to create a new output terminal
 
         # Import and export actions:
         self._menu.addSeparator()
-        _load = self._menu.addAction("Import Schema")
-        _save = self._menu.addAction("Export Schema")
+        _load = self._menu.addAction(QIcon("rss/icons/menu-open.svg")  , "Import Schema", QKeySequence.StandardKey.Open, self.import_schema)
+        _save = self._menu.addAction(QIcon("rss/icons/menu-floppy.svg"), "Export Schema")
+
+        # Actions for cloning and pasting items:
+        self._menu.addSeparator()
+        _undo  = self._menu.addAction(QIcon("rss/icons/menu-undo.png"), "Undo", QKeySequence.StandardKey.Undo, self.manager.undo)
+        _redo  = self._menu.addAction(QIcon("rss/icons/menu-redo.png"), "Redo", QKeySequence.StandardKey.Redo, self.manager.redo)
+        _clone = self._menu.addAction(QIcon("rss/icons/menu-clone.svg"), "Clone", QKeySequence.StandardKey.Copy , self.store)
+        _paste = self._menu.addAction(QIcon("rss/icons/menu-paste.svg"), "Paste", QKeySequence.StandardKey.Paste, self.clone)
+
+        # Actions for selecting and deleting items:
+        self._menu.addSeparator()
+        _select = self._menu.addAction(
+            QIcon("rss/icons/menu-select.png"), "Select All", QKeySequence.StandardKey.SelectAll,
+            lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db)
+        )
+
+        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence.StandardKey.Delete,
+                                       lambda: self.delete_items(set(self.selectedItems())))
 
         # Group and Clear actions:
         self._menu.addSeparator()
-        _group = self._menu.addAction("Group Items")
-        _clear = self._menu.addAction("Clear Scene")
+        _group = self._menu.addAction(QIcon("rss/icons/menu-group.svg"), "Group Items", QKeySequence("Ctrl+G"))
+        _clear = self._menu.addAction(QIcon("rss/icons/menu-erase.svg"), "Clear Scene", QKeySequence("Ctrl+Delete"), self.clear)
+        _exit = self._menu.addAction(QIcon("rss/icons/menu-power.svg"), "Quit" , QKeySequence.StandardKey.Quit,  QApplication.quit)
 
-        self._menu.addSeparator()
-        _exit = self._menu.addAction("Quit Application")
+        # Show icons:
+        _node.setIconVisibleInMenu(True)
+        _load.setIconVisibleInMenu(True)
+        _save.setIconVisibleInMenu(True)
+        _undo.setIconVisibleInMenu(True)
+        _redo.setIconVisibleInMenu(True)
+        _exit.setIconVisibleInMenu(True)
+        _tout.setIconVisibleInMenu(True)
+        _tinp.setIconVisibleInMenu(True)
+        _clone.setIconVisibleInMenu(True)
+        _paste.setIconVisibleInMenu(True)
+        _select.setIconVisibleInMenu(True)
+        _delete.setIconVisibleInMenu(True)
 
-        # Connect actions to slots:
-        _node.triggered.connect(lambda: self.create_node("Node"))
-        _load.triggered.connect(lambda: self.import_schema())
-        _save.triggered.connect(lambda: self.export_schema())
-        _tinp.triggered.connect(lambda: self.create_terminal(EntityClass.INP, self._cpos))
-        _tout.triggered.connect(lambda: self.create_terminal(EntityClass.OUT, self._cpos))
-        _exit.triggered.connect(QApplication.quit)
+        # Make shortcuts visible:
+        _node.setShortcutVisibleInContextMenu(True)
+        _tout.setShortcutVisibleInContextMenu(True)
+        _tinp.setShortcutVisibleInContextMenu(True)
+        _load.setShortcutVisibleInContextMenu(True)
+        _save.setShortcutVisibleInContextMenu(True)
+        _undo.setShortcutVisibleInContextMenu(True)
+        _redo.setShortcutVisibleInContextMenu(True)
 
-        # Additional actions:
-        _clear.triggered.connect(self.clear)
+        _select.setShortcutVisibleInContextMenu(True)
+        _delete.setShortcutVisibleInContextMenu(True)
+
+        _clone.setShortcutVisibleInContextMenu(True)
+        _paste.setShortcutVisibleInContextMenu(True)
+        _exit .setShortcutVisibleInContextMenu(True)
+
+        _group.setShortcutVisibleInContextMenu(True)
+        _clear.setShortcutVisibleInContextMenu(True)
+
+        _group.setIconVisibleInMenu(True)
+        _clear.setIconVisibleInMenu(True)
 
     # Event-Handlers ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
     # 1. contextMenuEvent       Handles context-menu events (triggered when the user right-clicks on the canvas).
     # 2. mouseMoveEvent         If a connection is active, this event will continuously update the connector's path.
-    # 3. mouseReleaseEvent      If a connection is active and the mouse-button was released at a target node's anchor, 
+    # 3. mouseReleaseEvent      If a connection is active and the mouse-button was released at a target _node's anchor,
     #                           this event will create a new handle and establish a connection between the origin and 
     #                           target.
     # ------------------------------------------------------------------------------------------------------------------
@@ -165,12 +247,13 @@ class Canvas(QGraphicsScene):
     # Context-menu event handler:
     def contextMenuEvent(self, event):
         """
-        Handle context-menu events, triggered by right-clicks.
+        Opens the canvas's context-menu when the user right-clicks on the canvas.
 
-        Parameters:
-            event (QGraphicsSceneContextMenuEvent): Event instance, internally propagated by Qt.
+        Args: 
+            event (QGraphicsSceneContextMenuEvent): Event instance, internally propagated and managed by Qt.
 
-        Returns: None
+        Returns: 
+        None
         """
 
         # Call super-class implementation first:
@@ -178,43 +261,44 @@ class Canvas(QGraphicsScene):
         if event.isAccepted() or self._menu is None:    return
 
         # 1. Store scene-position (do not remove).
-        # 2. Open menu at cursor position:
+        # 2. Open the menu at the cursor position:
         self._cpos = event.scenePos()
         self._menu.exec(event.screenPos())
         event.accept()
 
     def mouseMoveEvent(self, event):
         """
-        Handle mouse-move events. When a connection is active, this handler will continuously update the connector's path
-        as the cursor is dragged across the scene.
+        Re-implementation of QGraphicsScene.mouseMoveEvent(). When an active connection is being drawn, this handler
+        will re-compute and draw the connector's path as the cursor is dragged across the canvas. In the absence of 
+        an active connection, the handler will forward the event to the super-class.
 
-        Parameters:
-            event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
-
-        Returns: None
+        :param: event (QGraphicsSceneMouseEvent): Event instance, internally propagated and managed by Qt.
         """
 
         # Forward event to other handlers:
         super().mouseMoveEvent(event)
 
-        # If transient-connector is active, update its path:
+        # If the transient-connector is active, update its path:
         if  self._conn.active:
             self._conn.connector.draw(self._conn.origin().scenePos(), 
                                       event.scenePos(), 
                                       PathGeometry.BEZIER
                                       )
 
+        # Store the cursor position in scene-coordinates:
+        self._cpos = event.scenePos()  # Update the cursor position in scene-coordinates.
+
     def mouseReleaseEvent(self, event):
         """
-        Handle mouse-release events.
-
-        Parameters:
-            event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
-
-        Returns: None
+        Re-implementation of QGraphicsScene.mouseReleaseEvent(). If a connection was being drawn when this event is 
+        triggered, and if certain conditions are met, this method will create a new target-handle and establish a 
+        connection between the origin and target handles. The method includes various checks to prevent logically
+        invalid connections (such as from one _node or handle to itself).
+        
+        :param: event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
         """
     
-        # If transient-connector is inactive, or the release event is not a left-click, forward event to super-class:
+        # If the transient-connector is inactive or the release event is not a left-click, forward event to super-class:
         if (
             not self._conn.active or 
             event.button() != Qt.MouseButton.LeftButton
@@ -225,15 +309,15 @@ class Canvas(QGraphicsScene):
 
         # Define convenience variables:
         _tpos = event.scenePos()                    # Release-position in scene-coordinates.
-        _node = self._conn.origin().parentItem()    # Origin handle's parent item (could be a node or a terminal).
+        _node = self._conn.origin().parentItem()    # Origin handle's parent item (could be a _node or a terminal).
 
-        # Find item below the cursor:
+        # Find the QGraphicsObject at the cursor's click-position:
         _item = self.itemAt(event.scenePos(), QTransform())
 
         # If the item below the cursor is an anchor, create a new handle at the target anchor:
         if isinstance(_item, Anchor):
 
-            # Verify that the target anchor's parent node is different from the origin handle's parent node:
+            # Verify that the target anchor's parent _node is different from the origin handle's parent _node:
             if (
                 _node == _item.parentItem() or
                 _item.stream() == self._conn.origin().eclass
@@ -263,7 +347,7 @@ class Canvas(QGraphicsScene):
             super().mouseReleaseEvent(event)
             return
 
-        # Create new connection between origin and target, and add it to the canvas:
+        # Create a new connection between the origin and target and add it to the canvas:
         _connector = Connector(self.create_cuid(), _origin, _target)
         self.conn_db[_connector] = True
         self.addItem(_connector)
@@ -272,7 +356,7 @@ class Canvas(QGraphicsScene):
         self.manager.do(ConnectHandleAction(self, _connector))
 
         # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
         # Reset transient-connector:
         self.reset_transient()
@@ -283,119 +367,146 @@ class Canvas(QGraphicsScene):
     # Custom Methods ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. create_terminal        Creates a new source or sink terminal with a single connection point.
-    # 2. create_node            Creates a new node with a single connection point.
-    # 3. create_cuid            Creates a unique ID for a new connector.
-    # 4. import_schema          Reads a JSON-schematic and populates the canvas with the schematic's contents.
-    # 5. export_schema          Saves the canvas's contents as a JSON-schematic.
+    # 01. create_node           Creates a new _node with a single connection point.
+    # 02. connect_node_signals  Connects the _node's signals to appropriate slots for state management.
+    # 03. create_terminal       Creates a new terminal (input or output) at a specified position.
+    # 04. create_cuid           Creates a unique ID for a new connector.
+    # 05. create_nuid           Creates a unique ID for a new _node.
+    # 06. store                 Adds selected items to the clipboard.
+    # 07. clone                 Clones the clipboard's contents and adds them to the canvas.
+    # 08. paste_item            Pastes a _node or terminal item onto the canvas.
+    # 09. select_items          Selects items in the canvas based on a dictionary of items.
+    # 10. delete_items          Deletes items from the canvas using undoable batch-actions.
+    # 11. symbols               Return a list of symbols from the canvas's _nodes and connectors.
+    # 12. import_schema         Reads a JSON schematic and populates the canvas with the schematic's contents.
+    # 13. export_schema         Saves the canvas's contents as a JSON schematic.
+    # 14. begin_transient       Begins a transient connection by setting the origin handle and activating the connector.
     # ------------------------------------------------------------------------------------------------------------------
 
-    def create_terminal(self,
-                      _eclass : EntityClass,  # EntityClass (INP or OUT), see custom/entity.py.
-                      _coords : QPointF,       # Position of the terminal (in scene-coordinates).
-                      _flag   : bool = True    # Should the action be pushed to the undo-stack?
-                      ):             
-
-
-        """
-        Create a new terminal with a single connection point.
-
-        Parameters:
-            _eclass (EntityClass): EntityClass (INP or OUT), see custom/entity.py.
-            _coords (QPointF): Scene-position of the terminal.
-            _flag (bool, optional): Whether to push this action to the undo-stack (default: True).
-
-        Returns: None
-        """
-
-        # Validate argument(s):
-        if not isinstance(_flag, bool): return
-       
-        # Validate _class:
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]:
-            raise ValueError("Invalid entity class")
-        
-        # Debugging:
-        logging.info(f"Creating new terminal at {_coords}")
-
-        # Create new terminal and position it:
-        _terminal = StreamTerminal(_eclass, None)
-        _terminal.setPos(_coords)
-        _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
-        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
-        _terminal.sig_item_removed.connect(self.on_item_removed)
-
-        # Add item to canvas:
-        self.term_db[_terminal] = True
-        self.addItem(_terminal)
-
-        # If flag is set, create and forward action to stack-manager:
-        if _flag: self.manager.do(CreateStreamAction(self, _terminal))
-
-        # Set state-variable:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
-
-        # Return terminal:
-        return _terminal
-
+    # Create a new node and add it to the scene:
     def create_node(self, 
                    _name: str = "Node", 
                    _cpos: QPointF | None = None,
                    _push: bool = True
                    ):
         """
-        Create a new node at the specified scene-position
+        Create a new _node and add it to the scene.
 
         Args:
-            _name (str, optional): The name of the node (default: "Node").
-            _cpos (QPointF, optional): The position of the node (in scene-coordinates).
+            _name (str, optional): The name of the _node (default: "Node").
+            _cpos (QPointF, optional): The position of the _node (in scene-coordinates).
             _push (bool): Flag that determines whether the action will be pushed to the stack.
 
         Returns: 
-            Node: The newly created node.
+            Node: The newly created _node.
         """
 
-        # Set coordinate(s):
-        _cpos = self._cpos if _cpos is None else _cpos
+        # If the input coordinate is `None`, use the context menu's last-displayed position:
+        if _cpos is None:   _cpos = self._cpos
+        print(self._cpos)
 
-        # Create new node and position it:
-        _node = Node(_name, _cpos, None)
-        _node.uid = self.create_nuid()
+        # Create a new _node and assign a unique-identifier:
+        _node = Node(
+            _name,
+            _cpos,
+            None,
+            uid = self.create_nuid()
+        )
 
-        # Connect node's signal(s) to appropriate slots:
-        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
-        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+        # Add the created node to the database, and to the QGraphicsScene:
+        self.node_db[_node] = True
+        self.addItem(_node)
+
+        # Push to undo stack (if required):
+        if _push:   self.manager.do(CreateNodeAction(self, _node))
+
+        # Notify application of state-change:
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
+
+        # Return reference to newly created _node:
+        return _node
+
+    def connect_node_signals(self, _node: Node):
+
+        # Type-check:
+        if not isinstance(_node, Node): raise TypeError(f"Argument `_node` must be of type `Node`")
+
+        # Connect the _node's signals to appropriate slots:
+        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
         _node.sig_exec_actions.connect(self.manager.do)
         _node.sig_item_removed.connect(self.on_item_removed)
         _node.sig_handle_clicked.connect(self.begin_transient)
 
-        # Add node to database and canvas:
-        self.node_db[_node] = True
-        self.addItem(_node)
+    def create_terminal(self,
+                        _eclass: EntityClass,       # EntityClass (INP or OUT), see custom/entity.py.
+                        _coords: QPointF = None,    # Position of the terminal (in scene-coordinates).
+                        _flag  : bool = True        # Should the action be pushed to the undo-stack?
+                        ):
+        """
+        Create a new terminal and add it to the scene.
 
-        # Push action to undo-stack:
-        if _push:   self.manager.do(CreateNodeAction(self, _node))
+        Args:
+            _eclass (EntityClass): EntityClass (INP or OUT), see custom/entity.py.
+            _coords (QPointF): Scene-position of the terminal.
+            _flag (bool, optional): Whether to push this action to the undo-stack (default: True).
 
-        # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        Returns:
+            _terminal (StreamTerminal): Reference to the newly created terminal
+        """
+        # Type-check input args:
+        if  not isinstance(_flag, bool):
+            logging.info(f"Invalid arg-type: {type(_flag)}")
+            return None
 
-        # Return reference to newly created node:
-        return _node
+        if  _eclass not in [EntityClass.INP, EntityClass.OUT]:
+            logging.info(f"Invalid arg-type: {type(_eclass)}")
+            return None
+
+        # If the input coordinate is `None`, use the cursor position:
+        if _coords is None:   _coords = self._cpos
+
+        # Debugging:
+        logging.info(f"Creating new terminal at {_coords}")
+
+        # Create a new terminal and position it:
+        _terminal = StreamTerminal(_eclass, None)
+        _terminal.setPos(_coords)
+        _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
+        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
+        _terminal.sig_item_removed.connect(self.on_item_removed)
+
+        # Add item to canvas:
+        self.term_db[_terminal] = True
+        self.addItem(_terminal)
+
+        # If the flag is set, create the corresponding action and push it to the undo-stack:
+        if _flag: self.manager.do(CreateStreamAction(self, _terminal))
+
+        # Set state-variable:
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
+
+        # Return terminal:
+        return _terminal
 
     def create_cuid(self):
         """
-        Create a unique ID for a new connector.
+        Returns a unique ID for a new connector. The ID is of the form "X" followed by the smallest integer not already used
 
-        Parameters: None
-        Returns: 
-            str: Unique ID for a new connector.
+        :return: str: Unique ID for a new connector.
         """
+
+        id_set = set()
+        for _connector, _state in self.conn_db.items():
+            if _state:
+                # Extract the integer part from the connector's symbol (e.g., "X3" -> 3):
+                id_set.add(int(_connector.symbol.split('X')[1]))
 
         # Get existing connector UIDs:
         id_set = {
-            int(connector.symbol.split('X')[1])
-            for connector in self.conn_db
-            if self.conn_db[connector]
+            int(_connector.symbol.split('X')[1])
+            for _connector, _state in self.conn_db.items()
+            if _state
         }
 
         # If `id_set` is empty, return "X0":
@@ -410,7 +521,7 @@ class Canvas(QGraphicsScene):
 
     def create_nuid(self):
         """
-        Create a unique ID for a new node.
+        Create a unique ID for a new _node.
         """
 
         id_set = {
@@ -429,72 +540,89 @@ class Canvas(QGraphicsScene):
         # Return UID (prefix + smallest integer not in `id_set`):
         return "N" + str(min(reusable)).zfill(4)
 
-    def copy_selection(self):
+    def store(self):
         """
-        Copy the currently selected item(s) to the clipboard.
+        Add selected items to the clipboard.
 
-        Parameters: None
-        Returns: None
+        Returns:
+            None
         """
 
-        # Copy selected items to clipboard:
-        Canvas.Registry.clipboard = self.selectedItems()
+        # If items have been selected:
+        if  self.selectedItems():
+            self.Registry.clipboard = self.selectedItems()  # Store reference(s)
 
-        # Debugging:
-        logging.info("Selected items copied to clipboard")
+        # Otherwise, beep (uses the default notification
+        else: QApplication.beep()
 
-    def paste_selection(self):
+    def clone(self):
         """
-        Paste the clipboard's contents onto the canvas.
+        Clone the clipboard's contents and add them to the canvas.
 
-        Parameters: None
-        Returns: None
+        Returns:
+            None
         """
         # Create batch-commands:
         batch = BatchActions([])
 
         # Duplicate items:
         for item in Canvas.Registry.clipboard:
-            
-            # Duplicate item (node or terminal):
-            _copy = item.duplicate(self)
 
-            # Add to batch-action:
-            if      isinstance(item, Node)          : batch.add_to_batch(CreateNodeAction(self, _copy))
-            elif    isinstance(item, StreamTerminal): batch.add_to_batch(CreateStreamAction(self, _copy))
+            # If the item is a node...:
+            if  isinstance(item, Node):
 
-            # Add copy to node-database so that `create_nuid()` returns a unique ID:
-            if   isinstance(item, Node)          : self.node_db[_copy] = True
-            elif isinstance(item, StreamTerminal): self.term_db[_copy] = True
+                # Instantiate clone
+                item_clone = item.clone(set_uid = self.create_nuid())
+
+                # Add to canvas:
+                self.node_db[item_clone] = True
+                self.addItem(item_clone)
+
+                # Add to batch-operations:
+                batch.add_to_batch(CreateNodeAction(self, item_clone))
+
+            # If the item is a terminal...:
+            elif isinstance(item, StreamTerminal):
+
+                # Instantiate clone
+                item_clone = item.clone()
+
+                # Add to canvas:
+                self.term_db[item_clone] = True
+                self.addItem(item_clone)
+
+                # Add to batch operations:
+                batch.add_to_batch(CreateStreamAction(self, item_clone))
 
         # Re-establish connections:
         while Handle.cmap:
 
             try:
-                # `handle` and `conjugate` belong to the copied nodes. `origin` and `target` are their mirrors in the
+                # `_handle` and `conjugate` belong to the copied nodes. `origin` and `target` are their mirrors in the
                 # copied nodes that must now be connected:
-                handle   , origin = Handle.cmap.popitem()
-                conjugate, target = handle.conjugate(), Handle.cmap[handle.conjugate()]     # Throws exception if `handle` is not connected
+                _handle   , origin = Handle.cmap.popitem()
+                _conjugate, target = _handle.conjugate(), Handle.cmap[_handle.conjugate()]          # Throws exception if `_handle` is not connected
 
-                # If exception is not thrown, both origin and target are valid, connected handles:
-                Handle.cmap.pop(conjugate)  # Remove the key corresponding to handle's conjugate
+                # If an exception is not thrown, both origin and target are valid, connected handles:
+                Handle.cmap.pop(_conjugate)  # Remove the key corresponding to _handle's conjugate
 
-                # Create connector and add it to batch:
-                connector = Connector(self.create_cuid(), origin, target)
-                connector.sig_item_removed.connect(self.on_item_removed)
+                # Create a new connector between the origin and target handles:
+                # Then add it to the database and to the QGraphicsScene:
+                _connector = Connector(self.create_cuid(), origin, target)
+                _connector.sig_item_removed.connect(self.on_item_removed)
 
-                # Add connector to canvas:
-                self.conn_db[connector] = True
-                self.addItem(connector)
+                # Add _connector to canvas:
+                self.conn_db[_connector] = True
+                self.addItem(_connector)
 
-                # Add connector-creation to batch:
-                batch.add_to_batch(ConnectHandleAction(self, connector))
+                # Add _connector-creation to batch:
+                batch.add_to_batch(ConnectHandleAction(self, _connector))
 
             except KeyError as key_error:       # Thrown by `Handle.cmap`
                 logging.error(f"KeyError: {key_error}")
                 pass
 
-            except TypeError as type_error:     # Thrown by `handle`
+            except TypeError as type_error:     # Thrown by `_handle`
                 logging.error(f"TypeError: {type_error}")
                 pass
 
@@ -506,61 +634,58 @@ class Canvas(QGraphicsScene):
                   _stack: bool = False      # Should the action be pushed to the undo-stack?
                   ):
         """
-        Paste an item onto the canvas.
+        Paste a _node or a terminal item onto the canvas.
 
-        Parameters:
+        Args:
             _item (QGraphicsObject): The item to be pasted.
             _stack (bool):
         """
 
-        # Find type of item:
+        # Find the item's type:
         if isinstance(_item, Node):
-            _item.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
-            _item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED), Qt.ConnectionType.UniqueConnection)
-            _item.sig_exec_actions.connect(self.manager.do, Qt.ConnectionType.UniqueConnection)
-            _item.sig_item_removed.connect(self.on_item_removed, Qt.ConnectionType.UniqueConnection)
-            _item.sig_handle_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
             _item.uid = self.create_nuid()
+            _item.sig_item_removed.connect(self.on_item_removed)
+            _item.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            _item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            _item.sig_exec_actions.connect(self.manager.do)
+            _item.sig_handle_clicked.connect(self.begin_transient)
+            self.node_db[_item] = True
 
         elif isinstance(_item, StreamTerminal):
-            self.term_db[_item] = True
             _item.socket.sig_item_clicked.connect(self.begin_transient)
-            _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.UNSAVED))
+            _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
             _item.sig_item_removed.connect(self.on_item_removed)
+            self.term_db[_item] = True
 
         # Add item to canvas:
         self.addItem(_item)
 
-        # If `_stack` is True, create and forward action to stack-manager:
+        # If `_stack` is True, create the corresponding action and forward it to the stack-manager:
         if _stack:
             # TODO: Push action to undo-stack
             pass
 
         # Notify application of state-change:
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
-    def select_items(self, _items_dict: dict):
+    def select_items(self, _items_dict: dict = None):
         """
-        Select the items in the set.
+        Select items in the canvas:
         """
 
         [
-            item.setSelected(True)
-            for item, state in _items_dict.items()
-            if state
+            item.setSelected(True)                  # Select all items
+            for item, state in _items_dict.items()  # in the dictionary
+            if  item in self.items() and state      # if they belong to the canvas and are visible/enabled
         ]
 
-    def delete_items(self, _items: dict):
+    def delete_items(self, _items: set | list):
         """
         Deletes items from the canvas using undoable batch-actions.
 
-        Parameters:
-            _items (set): Set of items (nodes & terminals) to delete.
-
-        Returns: None
+        Args:
+            _items (set): Set of items (nodes and terminals) to delete.
         """
-
-        print(f"Deleting: {_items}")
 
         # Create batch-commands:
         batch = BatchActions([])
@@ -568,7 +693,7 @@ class Canvas(QGraphicsScene):
         # Delete items in the dictionary:
         for item in _items:
 
-            if isinstance(item, Node) and self.node_db[item]:
+            if  isinstance(item, Node) and self.node_db[item]:
                 batch.add_to_batch(RemoveNodeAction(self, item))
 
             elif isinstance(item, StreamTerminal) and self.term_db[item]:
@@ -588,80 +713,90 @@ class Canvas(QGraphicsScene):
             if _state:
                 _symbols.append(_conn.symbol)
 
-    @pyqtSlot(str)  # Method to import a JSON-schematic
+    # Method to import a JSON schematic:
+    @pyqtSlot()
+    @pyqtSlot(str)
     def import_schema(self, _file: str | None = None):
         """
-        Import a JSON-schematic from a file.
+        Import a JSON schematic and populate the canvas with its contents.
 
-        Parameters:
-            _file (str, optional): The path to the JSON-file to be imported.
-
-        Returns: None
+        :param: _file (str, optional): The path to the JSON file to be imported.
         """
 
         # Debugging:
         logging.info("Opening JSON file")
 
-        # Get file-path if it hasn't been provided:
+        # Get the file path if it hasn't been provided:
         if not isinstance(_file, str):
             
             _file, _code = QFileDialog.getOpenFileName(None, "Select JSON file", "./", "JSON files (*.json)")
             if not _code: 
                 logging.info("Open operation cancelled!")
-                return
+                return None
 
-        # Open file:
+        # Open the file:
         with open(_file, "r+") as _json_str:
             _code = _json_str.read()
             
         # Decode JSON-string:
-        _json = JsonLib.decode_json(_code, self, _group_actions=True)
+        _json = JsonLib.decode(_code, self, True)
 
         # Notify application of state-change:
-        # self.sig_json_loaded.emit (Path(_file).name )
-        self.sig_canvas_state.emit(SaveState.UNSAVED)
+        self.sig_schema_setup.emit(_file)
+        self.sig_canvas_state.emit(SaveState.MODIFIED)
 
-    @pyqtSlot(str)  # Method to export a JSON-schematic 
-    def export_schema(self, _export_name: str | None = None):
+        # Return the file-path:
+        return _file
+
+    # Method to encode the schematic to a JSON string and save it to a file:
+    @pyqtSlot()
+    @pyqtSlot(str)
+    def export_schema(self, _name: str = str()):
         """
-        Export the canvas's contents (schematic) as a JSON-file.
+        Export the canvas's contents (schematic) as a JSON file.
 
-        Args:
-            _export_name (str): The name of the file to export the schematic to.
-
-        Returns: None
+        :param: _name (str): The name of the file to export the schematic to.
         """
 
-        # Try-block:
+        # Get a new filename if `_export_name` is empty:
+        _name, _ = QFileDialog.getSaveFileName(None,
+                                               "Select save-file",
+                                               ".", "JSON (*.json)"
+                                               ) \
+                   if   _name == str() or not isinstance(_name, str) \
+                   else _name, True
+
         try:
-            
-            # Encode canvas' contents to JSON-string, then write to file:
-            _json_str = JsonLib.encode_json(self)
-            with open(_export_name, "w+") as _file:
-                _file.write(_json_str)
+            _json = JsonLib.encode(self)
+            _file = open(_name, "w+")
+            _file.write(_json)
 
             # Notify application of state-change:
-            self.sig_canvas_state.emit(SaveState.SAVED)
+            self.state = SaveState.EXPORTED
+            self.sig_canvas_state.emit(self.state)
 
-        # Exception chain:
+            # Return the file name to indicate success:
+            return _name
+
         except Exception as exception:
-            
-            # Instantiate error-dialog:
-            _error_dialog = Dialog(QtMsgType.QtCriticalMsg, exception, QMessageBox.StandardButton.Ok)
-            _error_dialog.exec()
-            
-            logging.error(f"Error encoding JSON: {exception}")
-            return
+
+            Message.warning(None,
+                            "Climact: Save Failed",
+                            f"Error saving to file. Please check log file for details.")
+
+            logging.info(f"Exception caught: {exception}")  # Output to the log file
+            return None
 
     @pyqtSlot(Handle)
     def begin_transient(self, _handle: Handle):
         """
         Activate the transient-connector.
 
-        Parameters:
+        Args:
             _handle (Handle): Emitter of the signal (tabs/schema/graph/handle.py).
 
-        Returns: None
+        Returns: 
+            None
         """
 
         # Abort-conditions:
@@ -679,10 +814,7 @@ class Canvas(QGraphicsScene):
     @pyqtSlot()
     def reset_transient(self):
         """
-        Reset transient-connector's path, clear reference(s) to origin and target
-
-        Parameters: None
-        Returns: None
+        Reset the transient-connector, clear reference(s) to origin and target
         """
 
         # Reset transient-attributes:
@@ -693,7 +825,9 @@ class Canvas(QGraphicsScene):
 
     def on_item_removed(self):
         """
-        Slot triggered when an emits a 'sig_item_removed' signal. Deletes the node.
+        This slot is triggered when the signal-emitter (QGraphicsObject) is deleted by the user. This method, however,
+        hides the object and pushes an undoable action to the stack so that the object can be restored later using
+        the undo/redo functionality.
         """
 
         # Get signal-emitter:
@@ -706,18 +840,28 @@ class Canvas(QGraphicsScene):
         ):
             self.delete_items({item: True})  # Delete item
     
-    def find_stream(self, _stream: str):
+    def find_stream(self, _strid: str, _create: bool = True):
         """
-        Find a stream by its name.
+        Find a stream by its name. If the stream does not exist, create it (optional)
 
         Args:
-            _stream (str): The name of the stream to find.
+            _strid (str): The name of the stream to find.
+            _create (bool): If True, create the stream if it does not exist.
 
         Returns:
             Stream: The stream with the given name (see custom/stream.py).
         """
 
-        return next((stream for stream in self.type_db if stream.strid == _stream), None) 
+        # Search database:
+        _stream= next((stream for stream in self.type_db if stream.strid == _strid), None)
+
+        # If the stream does not exist and `_create` is True, create it:
+        if  _stream is None and _create:
+            _stream = Stream(_strid, QColor(random_hex()))
+            self.type_db.add(_stream)
+
+        # Return stream:
+        return _stream
 
     def find_node(self, _uid: str):
 
@@ -730,29 +874,26 @@ class Canvas(QGraphicsScene):
     def clear(self):
         """
         Clears the canvas after user confirmation. This action cannot be undone.
-        
-        Parameters: None
-        Returns: None
+
+        Returns:
+            None
         """
 
         # Abort-conditions:
         if  len(self.items()) <= 1: # Less than 1 because the transient-connector must be discounted
-            message = Dialog(QtMsgType.QtInfoMsg, "No items in the scene!")
-            message.exec()
+            Message.information(None, "Info", "No items on the scene!")
             return
 
         # Initialize confirmation-dialog:
-        dialog = Dialog(QtMsgType.QtWarningMsg,
-                        "This action cannot be undone. Are you sure?",
-                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
-                        )
+        message = Message(QtMsgType.QtWarningMsg,
+                          "This action cannot be undone. Are you sure?",
+                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
+                         )
 
-        # If user confirms, delete nodes and streams:
-        if dialog.exec() == QMessageBox.StandardButton.Yes:
-
-            # Delete nodes and terminals:
-            self.delete_items(self.node_db)
-            self.delete_items(self.term_db)
+        # If the user confirms, delete nodes and streams:
+        if message.exec() == QMessageBox.StandardButton.Yes:
+            self.delete_items(self.node_db) # Delete nodes
+            self.delete_items(self.term_db) # Delete terminals
 
             # Safe-delete undo and redo stacks:
             self.manager.wipe_stack()
@@ -772,10 +913,3 @@ class Canvas(QGraphicsScene):
     # Unique ID setter:
     @uid.setter
     def uid(self, value: str):   self.setObjectName(value if isinstance(value, str) else self.uid)
-
-    @property
-    def state(self) -> SaveState:
-        """
-        Get the state of the canvas.
-        """
-        return SaveState.UNSAVED

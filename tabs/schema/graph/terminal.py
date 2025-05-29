@@ -101,14 +101,14 @@ class StreamTerminal(QGraphicsObject):
 
         # Create handle and position it:
         self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
-        self.socket = Handle("Resource", self.offset, _eclass, self)
+        self.socket = Handle(_eclass, self.offset, "Resource", self)
+        self.socket.contrast = True
         self.socket.sig_item_updated.connect(self.on_socket_updated)
 
         # Initialize context-menu:
         self._menu = QMenu()
         _delete = self._menu.addAction("Delete")
         _delete.triggered.connect(self.sig_item_removed.emit)
-
 
     # Re-implemented methods -------------------------------------------------------------------------------------------
     # Name                      Description
@@ -142,10 +142,27 @@ class StreamTerminal(QGraphicsObject):
         painter.setBrush(self._style.background)
         painter.drawRoundedRect(self._attr.rect, 12, 10)
 
+    # Re-implementation
+    def itemChange(self, change, value):
+        """
+        Reimplementation of QGraphicsObject.itemChange()
+        """
+
+        # Import SaveState from canvas-module:
+        from tabs.schema import SaveState
+
+        # If terminal was added to a scene:
+        if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
+            self.socket.sig_item_clicked.connect(value.begin_transient)
+            self.socket.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
+            self.sig_item_removed.connect(value.on_item_removed)
+
+        return value
+
     # Event-handlers ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. contextMenuEvent       Displays the node's context menu.
+    # 1. contextMenuEvent       Displays the _node's context menu.
     # 2. hoverEnterEvent        Sets the cursor to an arrow when hovering over the terminal.
     # 3. hoverLeaveEvent        Unsets the cursor when leaving the terminal.
     # ------------------------------------------------------------------------------------------------------------------
@@ -188,40 +205,33 @@ class StreamTerminal(QGraphicsObject):
     # Custom methods ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. duplicate                Duplicates the terminal.
+    # 1. clone                  Duplicates the terminal.
     # ------------------------------------------------------------------------------------------------------------------
 
-    def duplicate(self, _canvas):
+    def clone(self, **kwargs):
         """
         Duplicates the terminal.
 
         Parameters:
-            _canvas (QGraphicsScene): The canvas to duplicate the terminal onto.
+            kwargs (dict): Set of keyword arguments
 
         Returns: 
             StreamTerminal: A new terminal with the same properties as the original terminal.
         """
 
-        _terminal = StreamTerminal(self.socket.eclass, None)
+        _terminal = StreamTerminal(self._eclass, None)
         _terminal.setPos(self.scenePos() + QPointF(25, 25))
+        _terminal.setSelected(True)
 
         # Create hash-map entry:
         Handle.cmap[self.socket] = _terminal.socket
 
-        # Copy properties:
-        _terminal.socket.label   = self.socket.label
-        _terminal.socket.units   = self.socket.units
-        _terminal.socket.value   = self.socket.value
-        _terminal.socket.sigma   = self.socket.sigma
-        _terminal.socket.strid   = self.socket.strid
-        _terminal.socket.color   = self.socket.color
-        _terminal.socket.minimum = self.socket.minimum
-        _terminal.socket.maximum = self.socket.maximum
+        # Copy attribute(s):
+        self.socket.clone_into(_terminal.socket)
+        self.setSelected(False)
 
-        # Import Canvas:
-        from tabs.schema.canvas import Canvas
-        if isinstance(_canvas, Canvas):
-            _canvas.paste_item(_terminal)
+        # Emit the handle's signal to propagate it to the terminal:
+        _terminal.socket.sig_item_updated.emit(_terminal.socket)
 
         # Return reference:
         return _terminal

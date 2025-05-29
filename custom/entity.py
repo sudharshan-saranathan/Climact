@@ -32,13 +32,28 @@ class Entity(Stream):
             "info"      : str(),
             "label"     : str(),
             "units"     : str(),
-            "eclass"    : str(),
+            "eclass"    : None,
             "symbol"    : str(),
             "value"     : str(),
             "sigma"     : str(),
             "minimum"   : str(),
             "maximum"   : str()
         })
+
+    # Clone this entity and return a reference:
+    def clone_into(self, _copied):
+
+        # Copy this entity's attribute(s):
+        _copied.symbol  = self.symbol
+        _copied.eclass  = self.eclass
+        _copied.info    = self.info
+        _copied.units   = self.units
+        _copied.strid   = self.strid
+        _copied.color   = self.color
+        _copied.value   = self.value
+        _copied.sigma   = self.sigma
+        _copied.minimum = self.minimum
+        _copied.maximum = self.maximum
 
     # uid (datatype = str): Unique resource-identifier
     @property
@@ -62,7 +77,7 @@ class Entity(Stream):
     def info(self, _info: str):
 
         # Validate input-type:
-        if not isinstance(_info, str):
+        if  not isinstance(_info, str):
             raise TypeError("Expected str")
 
         # Set UID:
@@ -75,7 +90,7 @@ class Entity(Stream):
     def label(self, _label: str):
 
         # Validate input-type:
-        if not isinstance(_label, str):
+        if  not isinstance(_label, str):
             raise TypeError("Expected str")
 
         # Set label:
@@ -88,24 +103,26 @@ class Entity(Stream):
     def units(self, _units: str):
 
         # Validate input-type:
-        if not isinstance(_units, str):
+        if  not isinstance(_units, str):
             raise TypeError("Expected str")
 
         # Set units:
         self._prop["units"] = _units
 
     @property
-    def eclass(self) -> str: return self._prop["eclass"]
+    def eclass(self) -> EntityClass | None:
+        _name = self._prop["eclass"]
+        return EntityClass[_name] if _name else None
 
     @eclass.setter
-    def eclass(self, _eclass: str):
+    def eclass(self, _eclass: EntityClass):
 
         # Validate input-type:
-        if not isinstance(_eclass, EntityClass):
+        if  not isinstance(_eclass, EntityClass):
             raise TypeError("Expected argument of type `EntityClass`")
 
         # Set eclass:
-        self._prop["eclass"] = _eclass
+        self._prop["eclass"] = _eclass.name
         
     @property
     def symbol(self) -> str: return self._prop["symbol"]

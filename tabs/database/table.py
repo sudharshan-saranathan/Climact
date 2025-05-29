@@ -1,10 +1,10 @@
 import weakref
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QtMsgType
-from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QAction
+from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QColor
 from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox
 
-from custom.dialog import Dialog
+from custom.message import Message
 from custom.entity import Entity, EntityClass, EntityState
 from tabs.schema.graph import Node, Handle
 
@@ -22,12 +22,11 @@ class Table(QTableWidget):
         # References and temporary objects:
         self._node = None
         self._hmap = dict()     # Handle reference, needed to push user-modifications to handle's data
-        self._pmap = dict()     # Params reference, needed to push user-modifications to params'  data
+        self._pmap = dict()     # Params reference, needed to push user-modifications to param's  data
         self._cmap = dict()     # Row reference, needed during copy-paste operations
         self._unsaved = False
 
         # Set headers:
-        self.setCornerButtonEnabled(False)
         self.verticalHeader().setFixedWidth(24)
         self.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -62,11 +61,17 @@ class Table(QTableWidget):
     def _init_menu(self):
 
         self._menu = QMenu()
-        self._menu.addAction("Assign", QKeySequence("Ctrl+Return"   ), self.assign)
-        self._menu.addAction("Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
+        _equal  = self._menu.addAction(QIcon("rss/icons/menu-equal.png"), "Assign", QKeySequence("Ctrl+Return"   ), self.assign)
+        _clear  = self._menu.addAction(QIcon("rss/icons/menu-clear.png"), "Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
+        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence("Delete"), self.delete_row)
 
-        self._menu.addSeparator()
-        self._menu.addAction("Delete", QKeySequence("Delete"), self.delete_row)
+        _equal.setIconVisibleInMenu(True)
+        _clear.setIconVisibleInMenu(True)
+        _delete.setIconVisibleInMenu(True)
+
+        _equal.setShortcutVisibleInContextMenu(True)
+        _clear.setShortcutVisibleInContextMenu(True)
+        _delete.setShortcutVisibleInContextMenu(True)
 
     # Context-menu event:
     def contextMenuEvent(self, event):
@@ -83,25 +88,35 @@ class Table(QTableWidget):
         symb_item = QTableWidgetItem(QIcon("rss/icons/variable.png"), handle.symbol)
         symb_item.setFlags(symb_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         symb_item.setData(Qt.ItemDataRole.UserRole, "Variable")
+        symb_item.setData(
+            Qt.ItemDataRole.BackgroundRole,
+            QColor(0x9AADBF) if handle.eclass == EntityClass.INP else QColor(0xFFA85C)
+        )
 
-        name_item = QTableWidgetItem(handle.info)
-        unit_item = QTableWidgetItem(handle.units)
-        unit_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_item = QTableWidgetItem(handle.info)                   # Name column
+        unit_item = QTableWidgetItem(handle.units)                  # Unit column
+        unit_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)    # Center-align units
 
-        type_item = QTableWidgetItem(handle.strid)
-        type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        type_item = QTableWidgetItem(handle.strid)                  # String-ID column
+        type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)    # Center-align string-ID
 
-        value_item = QTableWidgetItem(str(handle.value))
-        value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        value_item = QTableWidgetItem(str(handle.value))            # Value column
+        value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)   # Center-align value
 
-        sigma_item = QTableWidgetItem(str(handle.sigma))
-        sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        sigma_item = QTableWidgetItem(str(handle.sigma))            # Sigma column
+        sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)   # Center-align sigma
 
         lower_item = QTableWidgetItem(str(handle.minimum))
         lower_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         upper_item = QTableWidgetItem(str(handle.maximum))
         upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        inter_item = QTableWidgetItem()
+        inter_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        auto_item = QTableWidgetItem()
+        auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
 
         # Install cells:
         self.setItem(row, 0, symb_item)
@@ -112,6 +127,8 @@ class Table(QTableWidget):
         self.setItem(row, 7, sigma_item)
         self.setItem(row, 5, lower_item)
         self.setItem(row, 6, upper_item)
+        self.setItem(row, 8, inter_item)
+        self.setItem(row, 9, auto_item)
 
         # Store in hash-map:
         self._hmap[row] = handle
@@ -151,7 +168,6 @@ class Table(QTableWidget):
 
         auto_item = QTableWidgetItem()
         auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        auto_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.setItem(row, 0, symb_item)
         self.setItem(row, 1, name_item)
@@ -171,15 +187,17 @@ class Table(QTableWidget):
     # Delete selected rows:
     def delete_row(self):
 
-        # Get unique rows:
+        # Get all selected rows:
         rows = set([item.row() for item in self.selectedItems()])
 
-        # Sort in reverse order for `removeRow()` to work properly:
+        # Sort in reverse order for `removeRow()` to work correctly:
         for row in sorted(rows, reverse=True):
+
             is_selected = True
             for column in range(self.columnCount()):
-                print(row, column)
-                is_selected &= self.item(row, column).isSelected()
+                item = self.item(row, column)
+                if item:
+                    is_selected &= item.isSelected()
 
             # Remove row if it is selected:
             if is_selected: self.removeRow(row)
@@ -188,7 +206,7 @@ class Table(QTableWidget):
         self._unsaved = True
         self.sig_table_modified.emit(self._node(), self._unsaved)
 
-    # Fetch and display node-data:
+    # Fetch and display _node-data:
     def fetch(self, node: Node):
 
         # Remove all rows, reset temporary objects:
@@ -196,20 +214,20 @@ class Table(QTableWidget):
 
         # Store weak-reference and block signals:
         self._node = weakref.ref(node)
-        self.blockSignals(True)             # Block signal (self.cellChanged()) from triggering slots when fetching node data
+        self.blockSignals(True)             # Block signal (self.cellChanged()) from triggering slots when fetching _node data
 
-        # Abort if the node is None:
+        # Abort if the _node is None:
         if self._node() is None:
             return
 
-        # Display the node's variables:
+        # Display the _node's variables:
         for variable, state in node[EntityClass.VAR].items():
-            if state == EntityState.ACTIVE:
+            if state == EntityState.ACTIVE or state:
                 self.add_stream(variable)
 
-        # Display the node's parameters:
+        # Display the _node's parameters:
         for parameter, state in node[EntityClass.PAR].items():
-            if state == EntityState.ACTIVE:
+            if state == EntityState.ACTIVE or state:
                 self.add_params(parameter)
 
         # Unblock signals:
@@ -234,7 +252,7 @@ class Table(QTableWidget):
 
         # Abort if the entered value is not a string, float, or int:
         if not isinstance(value, str | float | int):
-            _error = Dialog(QtMsgType.QtCriticalMsg, "The entered value must be of type `str`, `float`, or `int`", QMessageBox.StandardButton.Ok)
+            _error = Message(QtMsgType.QtCriticalMsg, "The entered value must be of type `str`, `float`, or `int`", QMessageBox.StandardButton.Ok)
             _error.exec()
             return
 
@@ -268,10 +286,10 @@ class Table(QTableWidget):
 
     def commit(self):
 
-        # Abort if no node has been set:
+        # Abort if no _node has been set:
         if self._node() is None: return
 
-        # Clear the node's parameters and equations:
+        # Clear the _node's parameters and equations:
         self._node()[EntityClass.PAR].clear()
 
         # Save defined parameters:
@@ -293,7 +311,6 @@ class Table(QTableWidget):
                 if variable.connected and variable.conjugate:
 
                     conjugate = variable.conjugate()
-                    conjugate.symbol  = self.cell_data(row, 0)
                     conjugate.info    = self.cell_data(row, 1)
                     conjugate.units   = self.cell_data(row, 2)
                     conjugate.strid   = self.cell_data(row, 3)

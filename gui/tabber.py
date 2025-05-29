@@ -1,195 +1,229 @@
-import logging
+#-----------------------------------------------------------------------------------------------------------------------
+# Author    : Sudharshan Saranathan
+# GitHub    : https://github.com/sudharshan-saranathan/climact.git
+# File      : tabber.py
+# Created   : 2025-05-26
+# Purpose   : Custom QTabWidget for managing multiple QGraphicsView tabs in the Climact application.
+#-----------------------------------------------------------------------------------------------------------------------
 
-from PyQt6.QtCore import (
-    Qt, 
-    QtMsgType, 
-    pyqtSignal,
-    pyqtSlot
+# QtAwesome (pip install qtawesome):
+import qtawesome as qta
+
+# PyQt6.QtGui module:
+from PyQt6.QtGui import (
+    QShortcut,
+    QKeySequence
 )
 
+# PyQt6.QtCore module:
+from PyQt6.QtCore import (
+    Qt
+)
+
+# PyQt6.QtWidgets module:
 from PyQt6.QtWidgets import (
     QMenu,
-    QDialog,
-    QTabBar,
-    QWidget, 
-    QCheckBox, 
+    QWidget,
+    QCheckBox,
     QTabWidget,
-    QMessageBox,
     QFileDialog,
-    QInputDialog,
+    QMessageBox,
     QApplication
 )
 
+from custom.getter  import Getter
+from custom.message import Message
 from tabs.schema.viewer import Viewer
-from tabs.schema.canvas import SaveState
-from custom import Dialog
 
-class TabBar(QTabBar):
-
-    # Signals:
-    sig_rename_tab = pyqtSignal(int)
-    sig_delete_tab = pyqtSignal(int)
-
-    # Initializer:
-    def __init__(self, parent: QWidget | None):
-
-        # Initialize super-class:
-        super().__init__(parent)
-
-        # Customize behavior:
-        self.setTabsClosable(True)
-        self.setElideMode(Qt.TextElideMode.ElideRight)
-
-        # Context-menu:
-        self._cpos = None
-        self._menu = QMenu(self)
-
-        # Menu-actions:
-        _rename = self._menu.addAction("Rename")
-        _delete = self._menu.addAction("Delete")
-
-        # Connect action to signal:
-        _rename.triggered.connect(lambda: self.sig_rename_tab.emit(self.tabAt(self.mapFromGlobal(self._cpos))))
-        _delete.triggered.connect(lambda: self.sig_delete_tab.emit(self.tabAt(self.mapFromGlobal(self._cpos))))
-
-    # Handles context-menu events:
-    def contextMenuEvent(self, event):
-        self._cpos = event.globalPos()
-        self._menu.exec(self._cpos)
-
+# Class Tabber: A custom QTabWidget for managing multiple Viewer tabs.
 class Tabber(QTabWidget):
+    """
+    This class inherits from QTabWidget and provides functionality to switch between different widgets.
 
-    # Global constants:
-    _MAX_TAB = 8
+    Class Methods:
+    --------------
+    - contextMenuEvent():
+        Creates a context menu when the user right-clicks on a tab, allowing them to rename or delete the tab.
+
+    - create_tab():
+        Creates a new tab with a Viewer widget and sets it as the current tab.
+
+    - remove_tab():
+        Removes a tab at the specified index.
+
+    - rename_tab():
+        Renames the tab at the specified index with a new name provided by the user.
+    """
+
+    # Constants for the Tabber class:
+    class Constants:
+        MAX_TABS = 8
 
     # Initializer:
-    def __init__(self, parent: QWidget | None):
+    def __init__(self, parent: QWidget | None = None):
 
         # Initialize super-class:
         super().__init__(parent)
 
-        # Customize behaviour:
-        self.setMovable(True)
+        # Initialize context-menu index:
+        self._menu_index = -1
+
+        # Define corner-widget:
+        check = QCheckBox("Save", self)
+        check.setChecked(True)
+
+        # Customize attributes:
+        self.create_tab()
         self.setTabsClosable(True)
+        self.setCornerWidget(check)
         self.setTabShape(QTabWidget.TabShape.Rounded)
-        self.tabCloseRequested.connect(self.removeTab)
 
-        # Customize behaviour:
-        _tab_bar = TabBar(self)
-        _tab_bar.sig_rename_tab.connect(self.rename_tab)
-        _tab_bar.sig_delete_tab.connect(self.removeTab)
+        # Initialize the context menu:
+        self._init_menu()
+        self._init_keys()
 
-        self.setTabBar(_tab_bar)
+        # Connect signals to slots:
+        self.tabCloseRequested.connect(self.remove_tab)
 
-        # Corner widget:
-        self._cbox = QCheckBox("Save As")
-        self._cbox.setChecked(True)
+    # Method to initialize the context menu:
+    def _init_menu(self):
 
-        # Create first tab:
-        self.addTab()
-        self.setCornerWidget(self._cbox)
+        # Create a context-menu:
+        self._menu = QMenu(self)
+        rename = self._menu.addAction(qta.icon('fa5s.pen'  , color='darkgray'), "Rename", lambda: self.rename_tab(self._menu_index))
+        delete = self._menu.addAction(qta.icon('fa5s.trash', color='darkred') , "Delete", lambda: self.remove_tab(self._menu_index))
 
-    # Slot to create new tabs:
-    @pyqtSlot()
-    @pyqtSlot(Viewer)
-    @pyqtSlot(Viewer, str)
-    def addTab(self, _viewer: Viewer | None = None, _label: str | None = None):
+        rename.setIconVisibleInMenu(True)
+        delete.setIconVisibleInMenu(True)
 
-        # Max tab-count:
-        if self.count() >= 8:
-            print(f"Max tab-count reached!")
+    # Method to initialize keyboard shortcuts:
+    def _init_keys(self):
+        """
+        Initializes keyboard shortcuts for the tab widget.
+        """
+
+        # Shortcuts to create and close tabs:
+        self._create_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), self, self.create_tab)
+        self._rename_tab_shortcut = QShortcut(QKeySequence("Ctrl+R"), self, lambda: self.rename_tab(self.currentIndex()))
+        self._delete_tab_shortcut = QShortcut(QKeySequence("Ctrl+W"), self, lambda: self.remove_tab(self.currentIndex()))
+
+        # Shortcuts to switch between tabs using Ctrl+1, Ctrl+2, ..., Ctrl+8:
+        for j in range(self.Constants.MAX_TABS):
+            QShortcut(
+                QKeySequence(f"Ctrl+{j+1}"),
+                self, lambda index=j: self.setCurrentIndex(index)
+            )
+
+    # Context-menu event handler:
+    def contextMenuEvent(self, event):
+        """
+        This method is called when the user right-clicks on a tab.
+        It shows the context menu with options to rename or delete the tab.
+
+        :param event: The context menu event (instantiated and managed by Qt).
+        """
+
+        # Show the context menu at the position of the clicked tab:
+        self._menu_index = self.tabBar().tabAt(event.pos())
+        if self._menu_index == -1:
             QApplication.beep()
             return
 
-        # Null-check:
-        if not bool(_viewer):   _viewer = Viewer(self)
-        if not bool(_label):    _label  = f"Untitled_{self.count() + 1}*"
+        # Show context-menu:
+        self._menu.exec(event.globalPos())
 
-        # Only accept widgets of type `Viewer`:
-        if not isinstance(_viewer, Viewer): return
+    # Method to create a new tab:
+    def create_tab(self):
+        """
+        Creates a new Viewer and adds it as a tab.
+        """
+        if self.count() >= self.Constants.MAX_TABS:
+            QApplication.beep()
+            return
 
-        # Connect viewer's signals:
-        _viewer.canvas.sig_canvas_state.connect(self.set_indicator)
-        _viewer.canvas.sig_schema_setup.connect(lambda file: 
-                                                    self.setTabText(
-                                                        self.currentIndex(), 
-                                                        file
-                                                    )
-                                                )
+        # Create a new tab and set as current:
+        self.addTab(viewer := Viewer(self), f"Untitled_{self.count() + 1}*")
+        self.setCurrentWidget(viewer)
+
+    # Method to close and remove a tab:
+    def remove_tab(self, index: int):
+        """
+        This method removes the tab at the specified index, then deletes the associated widget.
+
+        :param: index: The index of the tab to remove.
+        """
+        if  index < 0 or index >= self.count():
+            QApplication.beep()
+            return
+
+        # Delete the widget:
+        widget = self.widget(index)
+        widget.close()
+        widget.deleteLater()
+
         # Call super-class implementation:
-        super().addTab(_viewer, _label)
+        self.removeTab(index)
 
-    # Slot to remove tab:
-    @pyqtSlot(int)
-    def removeTab(self, _index):
+    # Method to rename a tab:
+    def rename_tab(self, index: int):
+        """
+        Renames the tab at the specified index.
 
-        # Get currently active `Viewer`:
-        _viewer = self.widget(_index)
-        _viewer.close()
+        :param: index: The index of the tab to rename.
+        """
 
-        if _viewer.closed:
-            super().removeTab(_index)   # Call super-class implementation:
+        # Create a new Getter dialog to get the new label:
+        usr_input = Getter("New Label", "Name", self, Qt.WindowType.Popup)
+        usr_input.open()
 
-    @pyqtSlot(int)
-    def rename_tab(self, _index):
-        name, code = QInputDialog.getText(self, "Rename Tab", "Enter new name:")
-        if code: self.setTabText(_index, f"{name}*")
+        # Get current suffix:
+        suffix = "*" if self.tabText(index).endswith("*") else ""
 
-    # Toggle assistant:
-    def toggle_assistant(self): self.currentWidget().toggle_assistant()
+        # Connect the finished signal to set the tab text:
+        usr_input.finished.connect(
+            lambda: self.setTabText(
+                index,
+                usr_input.text() + suffix
+            ) if usr_input.result() and usr_input.text() else None
+        )
 
-    # Import schematic:
-    def import_schema(self):    self.currentWidget().canvas.import_schema()
+    # Import a new project into the current canvas:
+    def import_schema(self, project: str = str(), clear: bool = False) -> None:
+        """
+        Imports a new project into the viewer.
 
-    # Export schematic:
+        :param project: The path to the project file to be imported.
+        :param clear: If True, clears the current canvas before importing.
+        """
+
+        if not bool(project):
+            project, _ = QFileDialog.getOpenFileName(
+                self,
+                "Import Project",
+                "",
+                "Climact Project Files (*.json);;All Files (*)"
+            )
+
+        # Get the current widget and import the project:
+        viewer = self.currentWidget()
+        if  viewer:
+            viewer.canvas.import_schema(project)
+
+    # Export the current project:
     def export_schema(self):
 
-        # Trigger save:
-        if  self._cbox.isChecked():
-            _save_name = self.tabText(self.currentIndex())  # Save file-name is the same as tab label
-            _save_name = _save_name.split('*')[0]           # Remove `*` from save-name
+        # The default filename is the tab-label:
+        filename = self.tabText(self.currentIndex()).rstrip("*")
 
-            try:
-                _canvas = self.currentWidget().canvas       # Get canvas
-                _canvas.export_schema(f"{_save_name}.json") # Save schematic
-                self.set_indicator(SaveState.SAVED)         # Modify indicator
+        # But if the corner widget is not checked, get a filename from the user:
+        if  not self.cornerWidget().isChecked():
+            filename, result = QFileDialog.getSaveFileName(
+                self,
+                "Export Project",
+                "",
+                "Climact Project Files (*.json);;All Files (*)"
+            )
 
-            except Exception as exception:
-                logging.exception(f"An exception occurred: {exception}")
-
-        else:
-            # File-dialog:
-            _file, _code = QFileDialog.getSaveFileName(None, "Select JSON file", "./", "JSON files (*.json)")\
-
-            if _code:
-                try:
-                    _canvas = self.currentWidget().canvas   # Get canvas
-                    _canvas.export_schema(f"{_file}")       # Save schematic
-                    self.set_modified(False)                # Remove asterisk from tab label
-
-                except Exception as exception:
-                    
-                    # Instantiate error-dialog:
-                    _error_dialog = Dialog(QtMsgType.QtCriticalMsg,
-                                f"An exception occurred: {exception}",
-                                   QMessageBox.StandardButton.Ok)
-                    logging.exception(f"An exception occurred: {exception}")
-
-    # Set/Unset the modified indicator:
-    @pyqtSlot(SaveState)
-    def set_indicator(self, _state: SaveState):
-
-        # Validate argument(s):
-        if not isinstance(_state, SaveState): raise TypeError("Expected argument of type `SaveState`")
-
-        # Get current index and label:
-        _index = self.indexOf(self.currentWidget())
-        _label = self.tabText(_index)
-
-        # Display `UNSAVED` indicator (asterisk):
-        if  _state == SaveState.UNSAVED and not _label.endswith('*'):
-            self.setTabText(_index, f"{_label}*")
-
-        # Remove `UNSAVED` indicator (asterisk):
-        elif _state == SaveState.SAVED and _label.endswith('*'):
-            self.setTabText(_index, f"{_label.split('*')[0]}")
+        if  filename:
+            self.currentWidget().canvas.export_schema(filename + ".json")
+            self.setTabText(self.currentIndex(), filename)
