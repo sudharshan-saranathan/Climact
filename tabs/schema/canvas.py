@@ -173,7 +173,7 @@ class Canvas(QGraphicsScene):
         # Import and export actions:
         self._menu.addSeparator()
         _load = self._menu.addAction(QIcon("rss/icons/menu-open.svg")  , "Import Schema", QKeySequence.StandardKey.Open, self.import_schema)
-        _save = self._menu.addAction(QIcon("rss/icons/menu-floppy.svg"), "Export Schema", QKeySequence.StandardKey.Save, self.export_schema)
+        _save = self._menu.addAction(QIcon("rss/icons/menu-floppy.svg"), "Export Schema")
 
         # Actions for cloning and pasting items:
         self._menu.addSeparator()
@@ -496,6 +496,12 @@ class Canvas(QGraphicsScene):
         :return: str: Unique ID for a new connector.
         """
 
+        id_set = set()
+        for _connector, _state in self.conn_db.items():
+            if _state:
+                # Extract the integer part from the connector's symbol (e.g., "X3" -> 3):
+                id_set.add(int(_connector.symbol.split('X')[1]))
+
         # Get existing connector UIDs:
         id_set = {
             int(_connector.symbol.split('X')[1])
@@ -712,12 +718,9 @@ class Canvas(QGraphicsScene):
     @pyqtSlot(str)
     def import_schema(self, _file: str | None = None):
         """
-        Import a JSON schematic from a file.
+        Import a JSON schematic and populate the canvas with its contents.
 
-        Args:
-            _file (str, optional): The path to the JSON file to be imported.
-
-        Returns: None
+        :param: _file (str, optional): The path to the JSON file to be imported.
         """
 
         # Debugging:
@@ -752,10 +755,7 @@ class Canvas(QGraphicsScene):
         """
         Export the canvas's contents (schematic) as a JSON file.
 
-        Args:
-            _name (str): The name of the file to export the schematic to.
-
-        Returns: None
+        :param: _name (str): The name of the file to export the schematic to.
         """
 
         # Get a new filename if `_export_name` is empty:

@@ -141,7 +141,7 @@ class Viewer(QGraphicsView):
         logging.info(f"Viewer [UID = {self.objectName()}] initialized.")
 
     @property
-    def uid(self)   -> str:  return self.objectName()
+    def uid(self) -> str:  return self.objectName()
 
     @uid.setter
     def uid(self, value: str):   self.setObjectName(value if isinstance(value, str) else self.uid)
@@ -152,7 +152,7 @@ class Viewer(QGraphicsView):
         self._zoom.val *= factor
         self.scale(factor, factor)
 
-    # Toggles visibility of AI-assistant:
+    # Toggles visibility of the AI assistant:
     def toggle_assistant(self):
         self._gemini.setEnabled(not self._gemini.isEnabled())
         self._gemini.setVisible(not self._gemini.isVisible())

@@ -89,8 +89,8 @@ class Connector(QGraphicsObject):
 
         # Validate arguments:
         if not isinstance(_symbol, str): raise TypeError("Expected argument `_symbol` of type `str`")
-        if not isinstance(_origin, Handle | None): raise TypeError("Expected argument `_origin` of type `Handle`")
-        if not isinstance(_target, Handle | None): raise TypeError("Expected argument `_target` of type `Handle`")
+        if not isinstance(_origin, Handle | None): raise TypeError(f"Expected argument `_origin` of type `Handle`")
+        if not isinstance(_target, Handle | None): raise TypeError(f"Expected argument `_target` of type `Handle`")
         if not isinstance(_overwrite, bool): raise TypeError("Expected argument `_overwrite` of type `bool`")
 
         # Initialize base-class:
@@ -176,7 +176,7 @@ class Connector(QGraphicsObject):
     def paint(self, painter, option, widget=None):
         painter.setPen(self._styl.pen_border)
         painter.drawPath(self._attr.path)
-
+    
     def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
         
         # Debugging:

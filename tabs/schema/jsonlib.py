@@ -385,8 +385,12 @@ class JsonLib:
             origin = _canvas.itemAt(opos, QTransform()) # Origin-reference
             target = _canvas.itemAt(tpos, QTransform()) # Target-reference
 
+            if not isinstance(origin, graph.Handle):    continue
+            if not isinstance(target, graph.Handle):    continue
+
             # Establish a new connection:
             try:
+
                 # Create a new connector:
                 connector = graph.Connector(_canvas.create_cuid(),
                                             origin,
@@ -403,7 +407,7 @@ class JsonLib:
 
             # If an exception occurs, print error:
             except Exception as exception:
-                print(f"Connector creation skipped due to an exception: {exception}")
+                print(f"{exception}")
                 logging.exception(f"Connector creation skipped due to an exception: {exception}")
 
         # Execute batch:
