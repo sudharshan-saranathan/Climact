@@ -188,21 +188,16 @@ class Tabber(QTabWidget):
         )
 
     # Import a new project into the current canvas:
-    def import_schema(self, project: str = str(), clear: bool = False) -> None:
+    def import_schema(self, project: str | None = None):
         """
         Imports a new project into the viewer.
-
         :param project: The path to the project file to be imported.
-        :param clear: If True, clears the current canvas before importing.
         """
 
         if not bool(project):
-            project, _ = QFileDialog.getOpenFileName(
-                self,
-                "Import Project",
-                "",
-                "Climact Project Files (*.json);;All Files (*)"
-            )
+            project, _ = QFileDialog.getOpenFileName(self,
+                                                     "Import Project", "",
+                                                     "Climact Project Files (*.json);;All Files (*)")
 
         # Get the current widget and import the project:
         viewer = self.currentWidget()
@@ -217,12 +212,9 @@ class Tabber(QTabWidget):
 
         # But if the corner widget is not checked, get a filename from the user:
         if  not self.cornerWidget().isChecked():
-            filename, result = QFileDialog.getSaveFileName(
-                self,
-                "Export Project",
-                "",
-                "Climact Project Files (*.json);;All Files (*)"
-            )
+            filename, result = QFileDialog.getSaveFileName(self,
+                                                           "Export Project", "",
+                                                           "Climact Project Files (*.json);;All Files (*)")
 
         if  filename:
             self.currentWidget().canvas.export_schema(filename + ".json")

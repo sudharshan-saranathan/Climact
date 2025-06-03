@@ -14,11 +14,11 @@ class ActionsManager:
 
     # Execute actions:
     def do(self, actions):
+        # Prune the undo-stack before performing actions. Otherwise, if the (MAX_UNDO + 1)^th command is a delete operation
+        # of the object in the first action, the object will be removed from the scene permamently by the prune-method.
+        # Thus, undoing the delete-operation will try to access an object that is no longer in memory, crashing the
+        # application.
 
-        # Prune stacks BEFORE performing actions. Otherwise, if the (MAX_UNDO + 1)^th command is a delete operation of
-        # the object in the first action, the object will be removed from the scene BEFORE pruning. Thus, the prune
-        # method will see that this object no longer belongs to a scene and delete it, making the last action no longer
-        # undoable and crash the application.
         self.prune_undo()
         self.prune_redo()
 
