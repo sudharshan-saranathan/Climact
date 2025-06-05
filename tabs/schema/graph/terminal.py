@@ -149,12 +149,12 @@ class StreamTerminal(QGraphicsObject):
         """
 
         # Import SaveState from canvas-module:
-        from tabs.schema import SaveState
+        from tabs.schema import CanvasState
 
         # If terminal was added to a scene:
         if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
             self.socket.sig_item_clicked.connect(value.begin_transient)
-            self.socket.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
+            self.socket.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(CanvasState.UNSAVED))
             self.sig_item_removed.connect(value.on_item_removed)
 
         return value

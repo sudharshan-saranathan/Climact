@@ -1,3 +1,4 @@
+# PyQt6 Library:
 from PyQt6.QtGui import (
     QPen,
     QIcon,
@@ -17,65 +18,78 @@ from PyQt6.QtWidgets import (
     QGraphicsObject, 
     QGraphicsLineItem
 )
+
+# Climact submodule(s):
 from actions import *
 from custom  import *
 from util    import *
-
 from .anchor import Anchor
 from .handle import Handle
 
+# Standard Imports:
+from dataclasses import (
+    dataclass,
+    field
+)
+
+# Class Node
 class Node(QGraphicsObject):
     """
+
     """
 
     # Signals:
-    sig_exec_actions = pyqtSignal(AbstractAction)   # Emitted to execute actions and push them to the undo/redo stack.
-    sig_item_updated = pyqtSignal()         # Emitted when the node has been updated (e.g., renamed, resized, etc.).
-    sig_item_removed = pyqtSignal()         # Emitted when the user deletes the node (e.g., via context-menu).
-    sig_handle_clicked = pyqtSignal(Handle) # Emitted when a handle is clicked, signals the scene to begin a transient connection.
-    sig_handle_updated = pyqtSignal(Handle) # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
-    sig_handle_removed = pyqtSignal(Handle) # Emitted when the user deletes a handle (e.g., via context-menu).
+    sig_exec_actions   = pyqtSignal(AbstractAction) # Emitted to execute actions and push them to the undo/redo stack.
+    sig_item_updated   = pyqtSignal()               # Emitted when the node has been updated (e.g., renamed, resized, etc.).
+    sig_item_removed   = pyqtSignal()               # Emitted when the user deletes the node (e.g., via context-menu).
+    sig_handle_clicked = pyqtSignal(Handle)         # Emitted when a handle is clicked, signals the scene to begin a transient connection.
+    sig_handle_updated = pyqtSignal(Handle)         # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
+    sig_handle_removed = pyqtSignal(Handle)         # Emitted when the user deletes a handle (e.g., via context-menu).
 
-    # Default Attributes:
+    # Meta attribute(s):
+    @dataclass
+    class Meta:
+        nuid: str   = field(default_factory = str)
+        step: float = field(default_factory = lambda: 50.0)
+
+    # Default attribute(s):
+    @dataclass
     class Attr:
-        def __init__(self):
-            self.rect  = QRectF(-100, -75, 200, 150)    # Default rectangle size of the node.
-            self.delta = 50                             # Default step-size for resizing the node.
+        rect: QRectF  = field(default_factory = lambda: QRectF (-100, -75, 200, 150))   # Default rectangle size of the node.
+        spos: QPointF = field(default_factory = QPointF)
 
-    # Style:
-    class Style:
-        def __init__(self):
-            self.pen_border = QPen(Qt.GlobalColor.black, 2.0)   # Default border pen for the node.
-            self.pen_select = QPen(QColor(0xf99c39), 2.0)       # Pen used when the node is selected.
-            self.background = Qt.GlobalColor.white              # Default background color of the node.
+    # Visual attribute(s)::
+    @dataclass
+    class Visual:
+        pen_border: QPen   = field(default_factory = lambda: QPen(Qt.GlobalColor.black, 1.5))
+        pen_select: QPen   = field(default_factory = lambda: QPen(QColor(0xf99c39), 1.5))
+        background: QColor = field(default_factory = lambda: QColor(0xffffff))
+
+    # Register(s):
+    @dataclass
+    class Register:
+        inp: ValidatorDict[Handle] = field(default_factory = ValidatorDict(Handle))
+        out: ValidatorDict[Handle] = field(default_factory = ValidatorDict(Handle))
+        par: ValidatorDict[Entity] = field(default_factory = ValidatorDict(Handle))
 
     # Initializer:
-    def __init__(self, 
-                 _name  : str,
-                 _spos  : QPointF, 
-                 _parent: QGraphicsItem | None = None,
-                 **kwargs
-                ):
-        """
-        Instantiate a new _node with the given name, coordinates, and parent.
-
-        :param: _name  (str)            : The name of the node (displayed at the top in an editable text-box).
-        :param: _spos  (QPointF)        : The position of the node (in scene-coordinates).
-        :param: _parent(QGraphicsItem)  : The node's parent item (usually `None`).
-        """
-
-        # Validate argument(s):
-        if not isinstance(_name, str):      raise TypeError("Expected argument of type `str`")
-        if not isinstance(_spos, QPointF):  raise TypeError("Expected argument of type `QPoint`")
+    @ArgumentValidator
+    def __init__(self,
+                 name  : str,
+                 spos  : QPointF = QPointF(),
+                 parent: QGraphicsItem | None = None,
+                 **kwargs):
 
         # Initialize super-class:
-        super().__init__(_parent)
+        super().__init__(parent)
+
+        # Instantiate attribute(s):
+        self._nvis = self.Visual()
+        self._meta = self.Meta(nuid = kwargs.get('nuid'))
+        self._attr = self.Attr(spos = spos)
 
         # Initialize style and attrib:
-        self._nuid = str()              # The _node's unique ID
-        self._spos = _spos              # Used to track and emit signal if the _node has been moved
-        self._styl = self.Style()       # Instantiate the _node's style
-        self._attr = self.Attr()        # Instantiate the _node's attribute
+        self._nvis = self.Visual()      # Instantiate the node's style
         self._data = dict({
             EntityClass.INP:    dict(), # Dictionary for input variable(s)
             EntityClass.OUT:    dict(), # Dictionary for output variable(s)
@@ -89,14 +103,14 @@ class Node(QGraphicsObject):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
         # Label to display the _node's unique identifier:
-        self._label = Label(self, self._nuid, 
+        self._label = Label(self, self._meta.nuid,
                             width=60,
                             color=QColor(0xadadad), 
                             align=Qt.AlignmentFlag.AlignLeft,
                             editable=False)
 
         # Label to display the _node's name:
-        self._title = Label(self, _name,
+        self._title = Label(self, name,
                             width=120,
                             align=Qt.AlignmentFlag.AlignCenter,
                             editable=True)
@@ -190,7 +204,7 @@ class Node(QGraphicsObject):
             None
         """
 
-        # Add actions to menu:
+        # Add actions to the menu:
         _template = self._menu.addAction("Save as Template", lambda: print("Save as Template"))
 
         # Additional actions:
@@ -225,45 +239,45 @@ class Node(QGraphicsObject):
         # Return bounding-rectangle:
         return self._attr.rect
 
-    def paint(self, _painter, _option, _widget = ...):
+    def paint(self, painter, option, widget = ...):
         """
         Re-implementation of QGraphicsObject.paint().
 
         Args:
-            _painter (QPainter) : The painter object.
-            _option (QStyleOptionGraphicsItem) : The option object.
-            _widget (QWidget) : The widget object.
+            painter (QPainter) : The painter object.
+            option (QStyleOptionGraphicsItem) : The option object.
+            widget (QWidget) : The widget object.
         """
 
-        # Select different pens for selected and unselected states:
-        _pen = self._styl.pen_select if self.isSelected() else self._styl.pen_border
+        # Select border-pen based on the node's selection-state:
+        _pen = self._nvis.pen_select if self.isSelected() else self._nvis.pen_border
                  
         # Draw border:
-        _painter.setPen(_pen)
-        _painter.setBrush(self._styl.background)
-        _painter.drawRoundedRect(self._attr.rect, 12, 6)
+        painter.setPen(_pen)
+        painter.setBrush(self._nvis.background)
+        painter.drawRoundedRect(self._attr.rect, 8, 8)
 
     def itemChange(self, change, value):
 
         # Import canvas module:
-        from tabs.schema import SaveState
+        from tabs.schema import CanvasState
 
         # If this node has been added to a canvas:
         if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
 
             # Connect node's signals to the canvas's slots:
-            self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
+            self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(CanvasState.UNSAVED))
             self.sig_item_removed.connect(value.on_item_removed)
 
             # Connect signal-exec actions:
-            self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
+            self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(CanvasState.UNSAVED))
             self.sig_exec_actions.connect(value.manager.do)
 
             # Forward handle's signals:
             self.sig_handle_clicked.connect(value.begin_transient)
 
             # Adjust scene-position:
-            self.setPos(self._spos)
+            self.setPos(self._attr.spos)
 
         return value
 
@@ -323,7 +337,7 @@ class Node(QGraphicsObject):
         super().mouseReleaseEvent(event)
         
         # If the _node has been moved, notify canvas:
-        if  self.scenePos() != self._spos:
+        if  self.scenePos() != self._attr.spos:
             self.sig_item_updated.emit()
 
     # User-defined methods ---------------------------------------------------------------------------------------------
@@ -364,7 +378,7 @@ class Node(QGraphicsObject):
         for var in _vars:
             replacements[var.symbol] = var.connector().symbol if var.connected else None
 
-        # Parameters symbols are prefixed with the _node's UID:
+        # Parameter symbols are prefixed with the _node's UID:
         for par in _pars:
             replacements[par.symbol] = f"{node_prefix}_{par.symbol}"
 
@@ -599,14 +613,14 @@ class Node(QGraphicsObject):
     # ------------------------------------------------------------------------------------------------------------------
     
     @property
-    def uid(self):  return self._nuid
+    def uid(self):  return self._meta.nuid
     
     @property
     def title(self): return self._title.toPlainText()
 
     @uid.setter
     def uid(self, value: str):
-        self._nuid = value
+        self._meta.nuid = value
         self._label.setPlainText(value)
 
     @title.setter

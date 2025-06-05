@@ -48,7 +48,7 @@ class AMPLEngine:
         self.__ampl.setErrorHandler (self.__errors)
 
     # This function runs the AMPL optimization engine:
-    def optimize(self, statements: str | None):
+    def optimize(self, statements: list | None):
 
         if not bool(statements):
             return None

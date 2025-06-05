@@ -4,8 +4,15 @@ from enum         import Enum
 
 import string
 import random
+import inspect
+import functools
 
 from PyQt6.QtSvgWidgets import QGraphicsSvgItem
+from typing import (
+    Type,
+    Generic,
+    TypeVar
+)
 
 # Parse a qss-stylesheet:
 def read_qss(filename: str) -> str:
@@ -123,3 +130,47 @@ def load_svg(_file: str, _width: int):
     _svg.setScale(float(_width / _svg.boundingRect().width()))  # Rescale the SVG
 
     return _svg
+
+# Argument validator:
+def ArgumentValidator(function):
+    """
+    A decorator to validate the arguments of a function, using the function's annotations
+    """
+    signature = inspect.signature(function)
+
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        """
+        Validates the arguments of the function based on its annotations.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        bound_args = signature.bind(*args, **kwargs)
+        bound_args.apply_defaults()
+        for name, value in bound_args.arguments.items():
+            expected_type = signature.parameters[name].annotation
+            if (
+                expected_type is not inspect.Parameter.empty and
+                not isinstance(value, expected_type)
+            ):
+                raise TypeError(f"Argument '{name}' must be {expected_type}, got {type(value)} instead.")
+
+        return function(*args, **kwargs)
+    return wrapper
+
+# Generic dictionary with runtime type-validation:
+K = TypeVar('K')
+class ValidatorDict(Generic[K], dict):
+    """
+    A generic TypedDict that allows for type hinting of dictionary keys and values.
+    This is useful for defining structured data types in Python.
+    """
+    def __init__(self, key_type: Type[K], *args, **kwargs):
+        self.key_type = key_type
+        super().__init__(*args, **kwargs)
+
+    def __setitem__(self, key: K, value):
+        if not isinstance(key, self.key_type):
+            raise TypeError(f"Key must be of type {self.key_type.__name__}")
+        super().__setitem__(key, value)

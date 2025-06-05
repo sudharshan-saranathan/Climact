@@ -26,19 +26,19 @@ from .navbar import NavBar
 
 from tabs.optima.optimizer import Optimizer
 from tabs.database.manager import DataManager
-# from tabs.sheets.manager import Manager
 
+# Class Gui:
 class Gui(QMainWindow):
 
     # Signals:
     sig_init_window = pyqtSignal()
 
     # Default attrib:
-    @dataclass(frozen=True, slots=True)
+    @dataclass(frozen = True, repr = True)
     class Attr:
-        title  = "CLIMACT"
-        width  = 1920       # Default width
-        height = 1080       # Default height
+        title  = "Climact"      # Default title
+        width  = 1920           # Default width
+        height = 1080           # Default height
 
     # Initializer:
     def __init__(self):
@@ -79,16 +79,13 @@ class Gui(QMainWindow):
 
         # Instantiate menu-bar:
         _menu = self.menuBar()
-        _menu.setNativeMenuBar(False)       # Menu should appear within the main-window (for macOS)
+        _menu.setNativeMenuBar(False)       # The menubar should appear within the main-window (for macOS)
         _menu.setObjectName("Climact Menu") # Set a unique object name
 
         _file_menu = _menu.addMenu("File")  # New project, import/export, quit
-        _edit_menu = _menu.addMenu("Edit")  # Edit menu
-        _view_menu = _menu.addMenu("View")  # View menu
-        _help_menu = _menu.addMenu("Help")  # Help menu
-
-        # Add actions and connect them to appropriate slots:
-        _newtab_action = _file_menu.addAction("New Tab", QKeySequence("Ctrl+T"), self._tabber.addTab)
+        _edit_menu = _menu.addMenu("Edit")  # Includes undo/redo, copy/paste, etc.
+        _view_menu = _menu.addMenu("View")  # Includes find/search, zoom in/out, etc.
+        _help_menu = _menu.addMenu("Help")  # Includes about, documentation, etc.
 
         _file_menu.addSeparator()
         _import_action = _file_menu.addAction("Import Schema", QKeySequence.StandardKey.Open, self._tabber.import_schema)
