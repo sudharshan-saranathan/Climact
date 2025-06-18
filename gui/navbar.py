@@ -1,39 +1,68 @@
-#-----------------------------------------------------------------------------------------------------------------------
-# Author    : Sudharshan Saranathan
-# GitHub    : https://github.com/sudharshan-saranathan/climact
-# Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
-#-----------------------------------------------------------------------------------------------------------------------
 
-from PyQt6.QtGui     import QIcon, QActionGroup, QAction
-from PyQt6.QtCore    import Qt, QSize, pyqtSignal
-from PyQt6.QtWidgets import QWidget, QToolBar, QApplication
+# Debugging:
+import logging
+import qtawesome as qta
 
+# PyQt6.QtGui module:
+from PyQt6.QtGui     import (
+    QIcon,
+    QAction,
+    QActionGroup
+)
+
+# PyQt6.QtCore module:
+from PyQt6.QtCore    import (
+    Qt,
+    QSize,
+    pyqtSignal
+)
+
+# PyQt6.QtWidgets module:
+from PyQt6.QtWidgets import (
+    QWidget,
+    QToolBar,
+    QMessageBox,
+    QApplication
+)
+
+# Class NavBar: A vertical navigation bar for the Climact application.
 class NavBar(QToolBar):
+    """
+    This class inherits from QToolBar and serves as a vertical navigation bar for the Climact application.
+
+    Class Methods:
+    --------------
+    - select_next():
+        Triggers the next action in the navigation bar, cycling through the available actions.
+
+    - select_prev():
+        Triggers the previous action in the navigation bar, cycling through the available actions.
+    """
 
     # Signals:
     sig_open_schema = pyqtSignal()      # Emitted when the user clicks the "Open" action
     sig_save_schema = pyqtSignal()      # Emitted when the user clicks the "Save" action
-    sig_show_widget = pyqtSignal(str)   # Emitted when the user clicks one of the icons in the navbar
+    sig_show_widget = pyqtSignal(str)   # Emitted when the user clicks one of the actions in the navbar
 
     # Initializer:
-    def __init__(self, parent: QWidget | None, **kwargs):
+    def __init__(self,
+                 parent: QWidget | None,
+                 **kwargs):
 
         # Initialize base-class:
         super().__init__(parent)
+        super().setIconSize(QSize(32, 32))
+        super().setOrientation(Qt.Orientation.Vertical)
 
-        # Adjust width:
-        self.setIconSize(QSize(32, 32))
-        self.setOrientation(Qt.Orientation.Vertical)
-
-        # Actions:
-        self._import_schematic = self.addAction(QIcon("rss/icons/json.png"), "Open")          # Action for importing a schematic from a JSON file
-        self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")          # Action for saving a schematic to a JSON file
-        self._switch_to_canvas = self.addAction(QIcon("rss/icons/hammer.png"), "Canvas")        # Action for switching to the canvas tab
-        self._switch_to_sheets = self.addAction(QIcon("rss/icons/excel.png"), "Data")          # Action for switching to the data tab
-        self._switch_to_script = self.addAction(QIcon("rss/icons/charts.png"), "Script")        # Action for switching to the script tab
-        self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optima")        # Action for switching to the optimization tab
-        self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")     # Action for toggling the AI assistant on and off
-        self._template_library = self.addAction(QIcon("rss/icons/components.png"), "Library")   # Action for opening the template library
+        # Define new actions and add them to the toolbar:
+        self._import_schematic = self.addAction(QIcon("rss/icons/json.png")   , "Open", self.sig_open_schema.emit)
+        self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png") , "Save", self.sig_save_schema.emit)
+        self._switch_to_canvas = self.addAction(QIcon("rss/icons/hammer.png") , "Canvas", lambda: self.sig_show_widget.emit(self._switch_to_canvas.text()))
+        self._switch_to_sheets = self.addAction(QIcon("rss/icons/sheets.png") , "Sheets", lambda: self.sig_show_widget.emit(self._switch_to_sheets.text()))
+        self._switch_to_script = self.addAction(QIcon("rss/icons/charts.png") , "Charts", lambda: self.sig_show_widget.emit(self._switch_to_script.text()))
+        self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png") , "Optima", lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))
+        self._toggle_assistant = self.addAction(QIcon("rss/icons/assist.png") , "Assist", lambda: self.sig_show_widget.emit(self._toggle_assistant.text()))
+        self._template_library = self.addAction(QIcon("rss/icons/library.png"), "Library")
 
         # Save actions in a list for easy access:
         self._actions = [
@@ -60,39 +89,39 @@ class NavBar(QToolBar):
         _action_group.addAction(self._switch_to_optima)
         _action_group.setExclusive(True)
 
-        # Connect action-signals:
-        self._import_schematic.triggered.connect(lambda: self.sig_open_schema.emit())
-        self._export_schematic.triggered.connect(lambda: self.sig_save_schema.emit())
-        self._switch_to_canvas.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_canvas.text()))
-        self._switch_to_sheets.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_sheets.text()))
-        self._switch_to_optima.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))
-        self._toggle_assistant.triggered.connect(lambda: self.sig_show_widget.emit(self._toggle_assistant.text()))
-
     # Activate the next action in the navbar:
-    def next(self):
+    def select_next(self):
         """
         Triggers the next action in the navbar.
         """
 
-        for action in self._actions:
-            if action.isChecked():
-                _index = self._actions.index(action)
-                if _index == len(self._actions) - 1:  # Beep if already at the last action
-                    QApplication.beep()  # Beep if already at the first action
-                else:
-                    self._actions[_index + 1].trigger()
-                break
+        # Find the currently checked action and trigger the next in cycle:
+        if  checked_action := next((action for action in self._actions if action.isChecked()), None):
+            checked_index = self._actions.index(checked_action)
+            self._actions[(checked_index + 1) % len(self._actions)].trigger()
 
     # Activate the previous action in the navbar:
-    def previous(self):
+    def select_prev(self):
         """
-        Triggers the previous action in the navbar.
+        Triggers the prev action in the navbar.
+        """
+
+        # Find the currently checked action and trigger the previous in cycle:
+        if  checked_action := next((action for action in self._actions if action.isChecked()), None):
+            checked_index = self._actions.index(checked_action)
+            self._actions[(checked_index - 1) % len(self._actions)].trigger()
+
+    # Activate a specific action by name:
+    def select_action(self, action_name: str):
+        """
+        Activates a specific action by its name.
+
+        Parameters:
+            action_name (str): The name of the action to activate.
         """
         for action in self._actions:
-            if action.isChecked():
-                _index = self._actions.index(action)
-                if  _index == 0:
-                    QApplication.beep()  # Beep if already at the first action
-                else:
-                    self._actions[_index - 1].trigger()
-                break
+            if action.text() == action_name:
+                action.trigger()
+                return
+
+        logging.warning(f"Action '{action_name}' not found in the navigation bar.")

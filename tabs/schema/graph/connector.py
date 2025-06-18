@@ -1,314 +1,289 @@
-import logging 
+"""
+connector.py
+"""
+import numpy as np
 import weakref
+import qtawesome as qta
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSlot, pyqtSignal
-from PyQt6.QtGui import QPainterPath, QPen, QColor
-from PyQt6.QtWidgets import QGraphicsObject, QGraphicsItem, QGraphicsSceneMouseEvent
+# PyQt6 Library:
+from PyQt6.QtCore import (
+    Qt,
+    QRectF,
+    QPointF,
+)
+from PyQt6.QtGui import (
+    QPen,
+    QPainterPath, QColor
+)
+from PyQt6.QtSvgWidgets import QGraphicsSvgItem
+from PyQt6.QtWidgets import (
+    QGraphicsItem,
+    QGraphicsObject,
+)
 
-from custom import Label, EntityClass
-from util import random_id
-from enum import Enum
+from dataclasses import dataclass, field
+from typing import Optional
 
-from tabs.schema.graph.handle import Handle
+from custom import String
+from util import validator, load_svg
 
-class PathGeometry(Enum):
-    LINE = 1
-    RECT = 2
-    BEZIER = 3
+from .handle import Handle
 
-# Bubble-label:
-class BubbleLabel(QGraphicsObject):
-
-    # Constructor:
-    def __init__(self, _text: str, _parent: QGraphicsItem = None):
-
-        # Initialize super-class:
-        super().__init__(_parent)
-
-        # Text attributes:
-        self._rect  = QRectF(-18, -10, 36, 20)
-        self._label = Label(self, _text,
-                            align=Qt.AlignmentFlag.AlignCenter,
-                            width=30,
-                            editable=False)
-
-        self._label.setPos(-15, -11)
-
-    @property
-    def label(self):
-        return self._label.toPlainText()
-
-    @label.setter
-    def label(self, value: str):
-        self._label.setPlainText(value)
-
-    def paint(self, painter, option, widget = ...):
-        painter.setPen(QColor(0x000000))
-        painter.setBrush(QColor(0xffffff))
-        painter.drawRoundedRect(self._rect, 8, 8)
-
-    def boundingRect(self):
-        return self._rect
-
+# Class Connector:
 class Connector(QGraphicsObject):
-
-    # Signals:
-    sig_item_removed = pyqtSignal()
-
-    # Attrib:
-    class Attr:
-        def __init__(self):
-            self.rect = QRectF(-10, -10, 20, 20)
-            self.path = QPainterPath()
-            self.geom = PathGeometry.BEZIER
-
-    # Style:
-    class Style:
-        def __init__(self):
-            self.pen_border = QPen(Qt.GlobalColor.darkGray, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-            self.pen_select = QPen(Qt.GlobalColor.darkGray, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-
-    # Initializer:
-    def __init__(self, 
-                _symbol: str, 
-                _origin: Handle | None = None, 
-                _target: Handle | None = None, 
-                _overwrite: bool = True, 
-                _parent: QGraphicsObject | None = None):
-
+    """
+    A custom `QGraphicsObject` that represents a connection between two handles (input or output) in a graphical scene.
+    """
+    @dataclass
+    class Metadata:
         """
-        Initialize a new connector.
-
-        Parameters:
-            _symbol (str): Symbol of the connector.
-            _origin (Handle): Origin handle (default: None).
-            _target (Handle): Target handle (default: None).
-            _overwrite (bool): Overwrite the target handle's data with the origin handle's data (default: True).
-            _parent (QGraphicsObject, optional): Parent object of the connector (default: None).
+        Metadata for the connector, including symbol and handles.
         """
+        symbol: str = field(default_factory = str)  # Symbol representing the connector (default: empty string)
+        origin: Optional[weakref.ref] = field(default = None)   # Origin handle (default: None)
+        target: Optional[weakref.ref] = field(default = None)   # Target handle (default: None)
 
-        # Validate arguments:
-        if not isinstance(_symbol, str): raise TypeError("Expected argument `_symbol` of type `str`")
-        if not isinstance(_origin, Handle | None): raise TypeError(f"Expected argument `_origin` of type `Handle`")
-        if not isinstance(_target, Handle | None): raise TypeError(f"Expected argument `_target` of type `Handle`")
-        if not isinstance(_overwrite, bool): raise TypeError("Expected argument `_overwrite` of type `bool`")
+    @dataclass
+    class Visual:
+        """
+        Visual attributes for the connector.
+        """
+        path: QPainterPath = field(default_factory = lambda: QPainterPath())                # Path for the connector
+        pen_background: QPen = field(default_factory = lambda: QPen( Qt.GlobalColor.darkGray , 2.5))
+        pen_foreground: QPen = field(default_factory = lambda: QPen( Qt.GlobalColor.lightGray, 2.0))
 
-        # Initialize base-class:
-        super().__init__(_parent)
+    @validator
+    def __init__(self,
+                 symbol: str = '',
+                 origin: Handle | None = None,
+                 target: Handle | None = None,
+                 parent: QGraphicsItem | None = None):
+        """
+        Initializes the Connector with the origin and target handles.
+        :param origin: The originating handle of the connection.
+        :param target: The target handle of the connection.
+        :param parent: The parent item in the graphics scene.
+        """
+        # Initialize the base class:
+        super().__init__(parent)
+        super().setZValue(-2)
 
-        # Attrib:
-        self._cuid = random_id(length=4, prefix='C')
-        self._attr = self.Attr()
-        self._styl = self.Style()
-        self._text = None
-        self._is_obsolete = False
+        # Instantiate visual attributes:
+        self._arrow_l = load_svg("rss/icons/direction.svg", 16)
+        self._arrow_r = load_svg("rss/icons/direction.svg", 16)
 
-        # Customize behavior:   
-        self.setZValue(-1)
+        self._arrow_l.setParentItem(self)
+        self._arrow_r.setParentItem(self)
 
-        # Return if `origin` or `target` is None:
+        self._visual = self.Visual()    # The connector's visual attributes.
+        self._meta   = self.Metadata(   # The connector's metadata.
+            symbol = symbol,
+            origin = None if origin is None else weakref.ref(origin),
+            target = None if target is None else weakref.ref(target)
+        )
+
+        # If `origin` and `target` are provided, connect them:
         if (
-            _origin is None or 
-            _target is None
-        ):  
-            return
+            self._meta.origin and
+            self._meta.target
+        ):
+            self._visual.pen_foreground.setColor(self._meta.origin().color)
+            self._meta.origin().toggle_state(self, self._meta.target())
+            self._meta.target().toggle_state(self, self._meta.origin())
 
-        # Abort-conditions:
-        if _origin == _target:                           raise ValueError("Origin and target handles must be different")
-        if _origin.eclass == EntityClass.PAR:            raise ValueError("Origin handle must be of INP/OUT stream")
-        if _target.eclass == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
-        if _origin.eclass == _target.eclass:             raise ValueError("Origin and target handles must be of different streams")
-        if _origin.parentItem() == _target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
+            # Copy the origin's data into the target:
+            self._meta.target().import_data(self._meta.origin(), exclude = ['symbol', 'color'])
+            self._string = String(self, self._meta.symbol,
+                                  align = Qt.AlignmentFlag.AlignCenter,
+                                  editable = False, width = 40,
+                                  bubble = True)
 
-        # Initialize bubble-label:
-        self._text = BubbleLabel(_symbol, self)
+            # Draw the path:
+            self.render(
+                self._meta.origin().scenePos(),
+                self._meta.target().scenePos()
+            )
 
-        # Store references:
-        self.origin = _origin if _origin.eclass == EntityClass.OUT else _target
-        self.target = _target if _target.eclass == EntityClass.INP else _origin
-
-        # Setup references in handles:
-        self.origin.lock(self.target, self)
-        self.target.lock(self.origin, self)
-
-        # Connect handles' signals to slots:
-        self.origin.sig_item_updated.connect(self.on_origin_updated)    # Emit signal to notify application that origin is now connected
-        self.origin.sig_item_shifted.connect(self.redraw)               # Connect origin's `sig_item_shifted` signal to `redraw`
-        self.target.sig_item_shifted.connect(self.redraw)               # Connect target's `sig_item_shifted` signal to `redraw`
-
-        # If either of the handles are destroyed, set obsolete:
-        self.origin.destroyed.connect(self.set_obsolete)                # If origin handle is destroyed, set connector obsolete
-        self.target.destroyed.connect(self.set_obsolete)                # If target handle is destroyed, set connector obsolete 
-
-        # Assign origin's data to target:
-        if _overwrite:
-            
-            self.target.strid   = self.origin.strid     # Copy stream ID
-            self.target.color   = self.origin.color     # Copy color
-            self.target.units   = self.origin.units     # Copy units
-            self.target.value   = self.origin.value     # Copy value
-            self.target.sigma   = self.origin.sigma     # Copy sigma
-            self.target.minimum = self.origin.minimum   # Copy minimum
-            self.target.maximum = self.origin.maximum   # Copy maximum
-
-        # Notify application that the target handle has been updated:
-        self.target.rename(self.origin.label)
-        self.target.sig_item_updated.emit(self.target)                  # Emit signal to notify application that `target` has been updated
-
-        # Update color, and redraw path:
-        self.set_color(self.origin.color)
-        self.draw(self.origin.scenePos(), self.target.scenePos(), self.geometry)
-
-    @property
-    def path(self): return self._attr.path
-
-    @property
-    def uid(self):  return self._cuid
-
-    @property
-    def symbol(self):   return self._text.label
-
-    @property
-    def geometry(self): return self._attr.geom
-
-    def boundingRect(self): return self._attr.path.boundingRect().adjusted(-10, -10, 10, 10)
+    def boundingRect(self) -> QRectF:
+        """
+        Returns the bounding rectangle of the connector.
+        :return: QRectF representing the bounding rectangle.
+        """
+        return self._visual.path.boundingRect()
 
     def paint(self, painter, option, widget=None):
-        painter.setPen(self._styl.pen_border)
-        painter.drawPath(self._attr.path)
-    
-    def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
-        
-        # Debugging:
-        print(f"Connector.mouseDoubleClickEvent(): {self.symbol} {self.origin.connected} {self.target.connected}")
+        """
+        Paints the connector using the provided painter.
+        :param painter:
+        :param option:
+        :param widget:
+        :return:
+        """
+        # First pass, paint with the thicker black pen:
+        painter.setPen(self._visual.pen_background)
+        painter.drawPath(self._visual.path)
 
-        return super().mouseDoubleClickEvent(event)
+        # Second pass, paint with the thinner pen:
+        painter.setPen(self._visual.pen_foreground)
+        painter.drawPath(self._visual.path)
 
-    def clear(self):    self._attr.path.clear()
+    #
+    #
+    #
 
-    def on_origin_updated(self):
-        if self._is_obsolete:
-            return
+    @validator
+    def render(self,
+               opos: QPointF | None = None,
+               tpos: QPointF | None = None):
+        """
+        Computes the path between the origin and target handles.
+        :param opos: Origin position of the handle.
+        :param tpos: Target position of the handle.
+        """
 
-        self._styl.pen_border = QPen(self.origin.color, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-        if  self.origin.connected:
-            self.target.strid = self.origin.strid
-            self.target.color = self.origin.color
-            self.target.sig_item_updated.emit(self.target)
+        # If origin and target exist, argument-positions will be overridden:
+        if self._meta.origin: opos = self._meta.origin().scenePos()
+        if self._meta.target: tpos = self._meta.target().scenePos()
 
-    def draw(self, opos: QPointF, tpos: QPointF, geometry: PathGeometry):
+        # Emit geometry-change signal (needed to render correctly):
+        self.prepareGeometryChange()
+        self._visual.path.clear()
+        self._visual.path = self.hexagonal(opos, tpos)
 
-        if (
-            not isinstance(opos, QPointF) or
-            not isinstance(tpos, QPointF)
-        ):
-            print(f"Connector.draw(): [ERROR] Expected arguments of type QPointF")
-            return
+        # Show arrows:
+        self._arrow_l.show()
+        self._arrow_r.show()
 
-        # Reset path:
-        self.prepareGeometryChange()        # Required to trigger repainting when the path changes
-        self._attr.path.clear()             # Clear the path
+        if hasattr(self, '_string'):
+            # Update the string position:
+            self._string.setPos(
+                0.5 * (opos.x() + tpos.x()) - self._string.textWidth() / 2,
+                0.5 * (opos.y() + tpos.y()) - self._string.boundingRect().height() / 2
+            )
 
-        # Construct curve:
-        if  geometry == PathGeometry.LINE:
-            self.construct_segment(opos, tpos)
+    @validator
+    def reset(self):
+        """
+        Resets the connector's path to an empty state.
+        """
 
-        elif geometry == PathGeometry.BEZIER:
-            self.construct_bezier(opos, tpos)
+        # Emit geometry-change signal (needed to render correctly):
+        self.prepareGeometryChange()
+        self._arrow_l.hide()
+        self._arrow_r.hide()
+        self._visual.path.clear()
 
-        elif geometry == PathGeometry.RECT:
-            self.construct_manhattan(opos, tpos)
+    # ------------------------------------------------------------------------------------------------------------------
+    # Path geometries
+    # Name                      Description
+    # ------------------------------------------------------------------------------------------------------------------
+    # rectilinear()
+    # hexagonal()
+    # bezier()
+    # ------------------------------------------------------------------------------------------------------------------
 
-        if self._text:
-            self._text.setPos(self._attr.path.boundingRect().center())
+    @validator
+    def rectilinear(self, opos: QPointF, tpos: QPointF):
+        """
+        Draws a rectilinear path between the origin and target handles.
+        """
 
-    @pyqtSlot()
-    @pyqtSlot(Handle)
-    def redraw(self, handle: Handle | None = None):
+        xm = 0.5 * (opos.x() + tpos.x())
+        ym = 0.5 * (opos.y() + tpos.y())
 
-        # Null-check:
-        if self._is_obsolete:
-            print("Connector.redraw(): Reference(s) obsolete. Aborting!")
-            return
+        path = QPainterPath()
+        path.moveTo(opos)
+        path.lineTo(xm, opos.y())
+        path.lineTo(xm, tpos.y())
+        path.lineTo(tpos)
 
-        opos = self.origin.scenePos()
-        tpos = self.target.scenePos()
+        return path
 
-        self.draw(opos, tpos, self._attr.geom)
+    @validator
+    def hexagonal(self, opos: QPointF, tpos: QPointF):
+        """
+        Draws a hexagonal path between the origin and target handles.
+        """
+
+        t  = np.pi / 6.0  if tpos.y() > opos.y() else 5 * np.pi / 6.0
+        xm = 0.50 * (opos.x() + tpos.x())
+        xd = np.tan(t) * (tpos.y() - opos.y()) / 2.0
+        r  = min(0.50 * xd, 5)
+
+        path = QPainterPath()
+        path.moveTo(opos)
+
+        self._arrow_l .setPos((opos.x() + xm - xd) / 2.0 - 8, opos.y() - 8)
+        self._arrow_r.setPos((tpos.x() + xm + xd) / 2.0 - 8, tpos.y() - 8)
+
+        # If the origin is to the left of the target, draw the path accordingly:
+        if  opos.x() < tpos.x():
+            path.lineTo(xm - xd - r, opos.y())
+            path.quadTo(xm - xd, opos.y(), xm - xd + r * np.sin(t), opos.y() + r * np.cos(t))
+            path.lineTo(xm + xd - r * np.sin(t), tpos.y() - r * np.cos(t))
+            path.quadTo(xm + xd, tpos.y(), xm + xd + r, tpos.y())
+
+        else:
+            path.lineTo(xm + xd + r, opos.y())
+            path.quadTo(xm + xd, opos.y(), xm + xd - r * np.sin(t), opos.y() + r * np.cos(t))
+            path.lineTo(xm - xd + r * np.sin(t), tpos.y() - r * np.cos(t))
+            path.quadTo(xm - xd, tpos.y(), xm - xd - r, tpos.y())
+
+        path.lineTo(tpos)
+        return path
+
+    #
+    #
+    #
+
+    @property
+    def symbol(self) -> str:
+        """
+        Returns the symbol associated with the connector.
+        :return: str
+        """
+        return self._meta.symbol
+
+    @property
+    def color(self) -> QColor:
+        """
+        Returns the color of the connector.
+        :return: QColor
+        """
+        return QColor(self._visual.pen_foreground.color())
+
+    @symbol.setter
+    @validator
+    def symbol(self, value: str):
+        """
+        Sets the symbol associated with the connector.
+        :param value: The new symbol for the connector.
+        """
+        self._meta.symbol = value
+
+    @color.setter
+    @validator
+    def color(self, value: QColor):
+        """
+        Sets the color of the connector.
+        :param value: The new color for the connector.
+        """
+        self._visual.pen_foreground.setColor(value)
+        self._visual.pen_background.setColor(value.darker(150))
         self.update()
 
-    def set_obsolete(self)  -> None:    self._is_obsolete = True
+    @property
+    def origin(self) -> Optional[Handle]:
+        """
+        Returns the origin handle of the connector.
+        :return: Handle or None
+        """
+        return self._meta.origin() if self._meta.origin else None
 
-    def set_relevant(self)  -> None:    self._is_obsolete = False
-
-    def set_color(self, _color: QColor):
-
-        # Validate input:
-        if not isinstance(_color, QColor): return
-
-        # Change pen-color:
-        self._styl.pen_border.setColor(_color)
-
-    # Line-segment:
-    def construct_segment(self, opos: QPointF, tpos: QPointF):
-        self._attr.path.moveTo(opos)
-        self._attr.path.lineTo(tpos)
-
-    # Rectilinear:
-    def construct_manhattan(self, opos: QPointF, tpos: QPointF):
-
-        # Define mid points:
-        xm = (opos.x() + tpos.x()) /  2.0   # Midpoint x-coordinate
-        r1 = (tpos.y() - opos.y()) / 25.0   # Arc-radius in the y-direction
-        r2 = (tpos.x() - opos.x()) / 25.0   # Arc-radius in the x-direction
-        r  = min([abs(r1), abs(r2)])        # Min arc-radius
-
-        if opos.x() < tpos.x() and opos.y() < tpos.y():
-            self._attr.path.moveTo(opos)
-            self._attr.path.lineTo(xm - r, opos.y())
-            self._attr.path.arcTo (xm - r, opos.y(), 2*r, 2*r, 90, -90)
-            self._attr.path.lineTo(xm + r, tpos.y() - 2*r)
-            self._attr.path.arcTo (xm + r, tpos.y() - 2*r, 2*r, 2*r, 180, 90)
-            self._attr.path.lineTo(tpos)
-
-        elif opos.x() < tpos.x() and opos.y() >= tpos.y():
-            self._attr.path.moveTo(opos)
-            self._attr.path.lineTo(xm - r, opos.y())
-            self._attr.path.arcTo (xm - 2*r, opos.y() - 2*r, 2*r, 2*r, 270, 90)
-            self._attr.path.lineTo(xm, tpos.y() + r)
-            self._attr.path.arcTo (xm, tpos.y(), 2*r, 2*r, 180, -90)
-            self._attr.path.lineTo(tpos)
-
-        elif opos.x() >= tpos.x() and opos.y() < tpos.y():
-            self._attr.path.moveTo(opos)
-            self._attr.path.lineTo(xm + r, opos.y())
-            self._attr.path.arcTo (xm, opos.y(), 2*r, 2*r, 90, 90)
-            self._attr.path.lineTo(xm, tpos.y() - r)
-            self._attr.path.arcTo (xm - 2*r, tpos.y() - 2*r, 2*r, 2*r, 0, -90)
-            self._attr.path.lineTo(tpos)
-
-        elif opos.x() >= tpos.x() and opos.y() >= tpos.y():
-            self._attr.path.moveTo(opos)
-            self._attr.path.lineTo(xm + r, opos.y())
-            self._attr.path.arcTo (xm, opos.y()-2*r, 2*r, 2*r, 270, -90)
-            self._attr.path.lineTo(xm, tpos.y() +r)
-            self._attr.path.arcTo (xm - 2*r, tpos.y(), 2*r, 2*r, 0, 90)
-            self._attr.path.lineTo(tpos)
-
-    # Bezier curve:
-    def construct_bezier(self, opos: QPointF, tpos: QPointF):
-
-        # Define control-points for the spline curve:
-        xi = opos.x()
-        yi = opos.y()
-        xf = tpos.x()
-        yf = tpos.y()
-        xm = (xi + xf) / 2.0
-        dx = 0.25 * (xf - xi)
-        ep = 0.45 * dx
-
-        # Draw path:
-        self._attr.path.moveTo(opos)
-        self._attr.path.lineTo(xm - dx - ep, yi)
-        self._attr.path.cubicTo(xm, yi, xm, yf, xm + dx + ep, yf)
-        self._attr.path.lineTo(xf, yf)
+    @property
+    def target(self) -> Optional[Handle]:
+        """
+        Returns the target handle of the connector.
+        :return: Handle or None
+        """
+        return self._meta.target() if self._meta.target else None

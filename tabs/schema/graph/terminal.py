@@ -1,8 +1,11 @@
+"""
+terminal.py
+"""
 import logging
+import dataclasses
 
 from PyQt6.QtCore import (
-    Qt, 
-    QRectF, 
+    QRectF,
     QPointF, 
     pyqtSlot,
     pyqtSignal
@@ -19,96 +22,92 @@ from PyQt6.QtWidgets import (
     QMenu
 )
 
-from custom  import EntityClass
+from custom  import EntityRole
 from util    import *
 from .handle import Handle
 
 class StreamTerminal(QGraphicsObject):
-
+    """
+    Represents an entity-terminal in the schema graph.
+    """
     # Signals:
-    sig_item_clicked = pyqtSignal() # Emitted when the terminal's handle is clicked
-    sig_item_updated = pyqtSignal() # Emitted when the terminal is updated
-    sig_item_removed = pyqtSignal() # Emitted when the terminal is removed
+    sig_handle_clicked = pyqtSignal(Handle)     # Emitted when the terminal's handle is clicked
+    sig_handle_updated = pyqtSignal(Handle)     # Emitted when the terminal is updated
+    sig_item_removed   = pyqtSignal()           # Emitted when the user deletes the terminal
 
     # Constants:
+    @dataclasses.dataclass
     class Constants:
+        """
+        Constants for the StreamTerminal class.
+        """
         ICON_WIDTH  = 16 # Width of the icon
         ICON_OFFSET = 1  # Offset of the icon from the terminal's left/right edge
 
-    # Default style:
-    class Style:
-        def __init__(self):
-            self.pen_select = QPen(Qt.GlobalColor.black)
-            self.pen_border = QPen(Qt.GlobalColor.darkGray)
-            self.background = QBrush(Qt.GlobalColor.darkGray)
-
-    # Default Attrib:
-    class Attr:
-        def __init__(self):
-            self.rect = QRectF(-60, -10, 120, 20)
+    # Visual attributes:
+    @dataclasses.dataclass
+    class Visual:
+        """
+        The terminal's visual attributes.
+        """
+        pen_select = QPen  (0xffa347, 1.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        pen_border = QPen  (Qt.GlobalColor.black)
+        background = QBrush(Qt.GlobalColor.lightGray)
 
     # Initializer:
+    @validator
     def __init__(self, 
-                _eclass : EntityClass, 
-                _parent : QGraphicsObject | None
-                ):
+                 role: EntityRole,
+                 parent : QGraphicsObject | None = None):
         """
-        Initialize a new stream terminal.
-
-        Parameters:
-            _eclass (EntityClass): EntityClass (INP or OUT), see custom/entity.py.
-            _parent (QGraphicsObject): Parent QGraphicsObject.
-
-        Returns: None
+        Initializes a new instance of the StreamTerminal class.
+        :param role:
+        :param parent:
         """
-
-        # Validate arguments:
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]:
-            raise ValueError("Expected `EntityClass.INP` or `EntityClass.OUT` for argument `_eclass`")
-        
         # Initialize base-class:
-        super().__init__(_parent)
+        super().__init__(parent)
 
         # Initialize attribute(s):
-        self._tuid  = random_id(length=4, prefix='T')
-        self._attr  = self.Attr()
-        self._style = self.Style()
+        self._role = role
+        self._tuid = random_id(prefix='T')
+        self._rect = QRectF(-60, -10, 120, 20)  # Default rectangle size
+        self._visual = self.Visual()
 
-        # Load icon according to `_eclass`:
-        if  _eclass == EntityClass.OUT:
-            _xpos = self._attr.rect.left() + self.Constants.ICON_OFFSET
-            _ypos = -8
+        # Load icon according to `role`:
+        if  role == EntityRole.OUT:
+            xpos = self._rect.left() + self.Constants.ICON_OFFSET
+            icon = QGraphicsSvgItem("rss/icons/source.svg", self)
 
-            _icon = load_svg("rss/icons/source.svg", self.Constants.ICON_WIDTH)
-            _icon.setPos(_xpos, _ypos)
-            _icon.setParentItem(self)
+            icon.setScale(self.Constants.ICON_WIDTH / icon.boundingRect().width())
+            icon.setPos(xpos, -8)
 
-        elif _eclass == EntityClass.INP:
-            _xpos = self._attr.rect.right() - self.Constants.ICON_WIDTH - self.Constants.ICON_OFFSET
-            _ypos = -8
+        elif role == EntityRole.INP:
+            xpos = self._rect.right() - self.Constants.ICON_WIDTH - self.Constants.ICON_OFFSET
+            icon = QGraphicsSvgItem("rss/icons/sink.svg", self)
 
-            _icon = load_svg("rss/icons/sink.svg", self.Constants.ICON_WIDTH)
-            _icon.setPos(_xpos, _ypos)
-            _icon.setParentItem(self)
-
-        # Initialize entity-class:
-        self._eclass = _eclass
+            icon.setScale(self.Constants.ICON_WIDTH / icon.boundingRect().width())
+            icon.setPos(xpos, -8)
 
         # Customize behavior:
         self.setAcceptHoverEvents(True)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
-        # Create handle and position it:
-        self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
-        self.socket = Handle(_eclass, self.offset, "Resource", self)
-        self.socket.contrast = True
-        self.socket.sig_item_updated.connect(self.on_socket_updated)
+        # Create a handle and position it:
+        self.offset = QPointF(self._rect.right() - 5 if role == EntityRole.OUT else self._rect.left() + 5, 0)
+        self.handle = Handle(role, "Resource", "Default", self)
+        self.handle.setPos(self.offset)
+        self.handle.movable  = False
+        self.handle.contrast = True
+
+        # Re-emit the handle's signal to propagate it to the Canvas:
+        self.handle.sig_item_clicked.connect(lambda: self.sig_handle_clicked.emit(self.handle))
+        self.handle.sig_item_updated.connect(lambda: self.on_handle_updated(self.handle))
 
         # Initialize context-menu:
         self._menu = QMenu()
-        _delete = self._menu.addAction("Delete")
-        _delete.triggered.connect(self.sig_item_removed.emit)
+        delete = self._menu.addAction("Delete")
+        delete.triggered.connect(self.sig_item_removed.emit)
 
     # Re-implemented methods -------------------------------------------------------------------------------------------
     # Name                      Description
@@ -124,7 +123,7 @@ class StreamTerminal(QGraphicsObject):
         Returns:
             QRectF: The bounding rectangle of the terminal.
         """
-        return self._attr.rect
+        return self._rect
 
     # Paint:
     def paint(self, painter, option, widget = ...):
@@ -138,26 +137,9 @@ class StreamTerminal(QGraphicsObject):
 
         Returns: None
         """
-        painter.setPen  (self._style.pen_select if self.isSelected() else self._style.pen_border)
-        painter.setBrush(self._style.background)
-        painter.drawRoundedRect(self._attr.rect, 12, 10)
-
-    # Re-implementation
-    def itemChange(self, change, value):
-        """
-        Reimplementation of QGraphicsObject.itemChange()
-        """
-
-        # Import SaveState from canvas-module:
-        from tabs.schema import CanvasState
-
-        # If terminal was added to a scene:
-        if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
-            self.socket.sig_item_clicked.connect(value.begin_transient)
-            self.socket.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(CanvasState.UNSAVED))
-            self.sig_item_removed.connect(value.on_item_removed)
-
-        return value
+        painter.setPen  (self._visual.pen_select if self.isSelected() else self._visual.pen_border)
+        painter.setBrush(self._visual.background)
+        painter.drawRoundedRect(self._rect, 8, 8)
 
     # Event-handlers ---------------------------------------------------------------------------------------------------
     # Name                      Description
@@ -208,51 +190,75 @@ class StreamTerminal(QGraphicsObject):
     # 1. clone                  Duplicates the terminal.
     # ------------------------------------------------------------------------------------------------------------------
 
-    def clone(self, **kwargs):
+    def clone(self):
         """
-        Duplicates the terminal.
-
-        Parameters:
-            kwargs (dict): Set of keyword arguments
-
-        Returns: 
-            StreamTerminal: A new terminal with the same properties as the original terminal.
+        Duplicates the terminal and returns a new instance.
+        :return: StreamTerminal
         """
 
-        _terminal = StreamTerminal(self._eclass, None)
-        _terminal.setPos(self.scenePos() + QPointF(25, 25))
-        _terminal.setSelected(True)
+        terminal = StreamTerminal(self._role)
+        terminal.setPos(self.scenePos() + QPointF(25, 25))
+        terminal.setSelected(True)
 
-        # Create hash-map entry:
-        Handle.cmap[self.socket] = _terminal.socket
+        # Map cloned handle to the original handle:
+        Handle.clone_map[self.handle] = terminal.handle
 
         # Copy attribute(s):
-        self.socket.clone_into(_terminal.socket)
+        terminal.handle.import_data(self.handle)
         self.setSelected(False)
 
-        # Emit the handle's signal to propagate it to the terminal:
-        _terminal.socket.sig_item_updated.emit(_terminal.socket)
-
         # Return reference:
-        return _terminal
+        return terminal
 
     @pyqtSlot(Handle)
-    def on_socket_updated(self, _socket):
+    @validator
+    def on_handle_updated(self, handle: Handle):
         """
-        Event handler for when the socket is updated.
+        Event handler for when the handle is updated.
+        :param: handle: The handle that was updated.
         """
+        # Set the terminal's background color to the handle's color:
+        strid = self.handle.strid
+        color = self.scene().db.kind.get(strid, Qt.GlobalColor.lightGray)
 
-        self._style.background = self.socket.color
+        self._visual.background = color
 
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
     # 1. uid                    The terminal's unique identifier.
-    # 2. eclass                 The terminal's entity class.
+    # 2. role                   The terminal's role (Input or Output).
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
-    def uid(self) -> str: return self._tuid
+    def uid(self) -> str:
+        """
+        Returns the terminal's unique identifier (TUID).
+        :return: str
+        """
+        return self._tuid
 
     @property
-    def eclass(self): return self._eclass
+    def name(self) -> str:
+        """
+        Returns the terminal's name.
+        :return: str
+        """
+        return self.handle.label
+
+    @property
+    def role(self):
+        """
+        Returns the terminal's role (input or output).
+        :return: EntityRole
+        """
+        return self._role
+
+    @validator
+    def handle_offset(self, role: EntityRole) -> float:
+        """
+        Returns the offset of the node's anchor for the specified role.
+        :param role: The role of the anchor (e.g., INP, OUT).
+        :return: float: The x-position of the anchor in the node's coordinate system.
+        """
+        return -55 if role == EntityRole.INP else 55

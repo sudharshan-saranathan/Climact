@@ -1,8 +1,21 @@
-from .label  import *
-from .button import *
-from .getter import *
-from .message import *
-from .stream import *
+"""
+__init__.py
+"""
+
+from .button import Button
+from .string import String
+from .getter import Getter
+from .stream import StreamActionLabel, StreamMenuAction
 from .entity import *
 
-__all__ = ["Button", "Getter", "Entity", "EntityClass", "EntityState", "Label", "Message", "Stream", "StreamMenuAction"]
+__all__ = [
+    "Button",
+    "String",
+    "Getter",
+    "StreamActionLabel",
+    "StreamMenuAction",
+    "EntityState",
+    "EntityClass",
+    "EntityRole",
+    "Entity"
+]

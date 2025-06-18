@@ -1,628 +1,422 @@
-# PyQt6 Library:
+"""
+node.py
+"""
+
+# Standard library imports:
+import qtawesome as qta
+import logging
+import dataclasses
+
+# PyQt6 library:
 from PyQt6.QtGui import (
     QPen,
-    QIcon,
-    QColor, 
+    QBrush
 )
 from PyQt6.QtCore import (
-    Qt,
     QRectF,
     QLineF,
     QPointF,
     pyqtSignal
 )
 from PyQt6.QtWidgets import (
-    QMenu,
     QApplication,
     QGraphicsItem, 
     QGraphicsObject, 
-    QGraphicsLineItem
 )
 
-# Climact submodule(s):
-from actions import *
-from custom  import *
-from util    import *
+# GraphicsObjects:
 from .anchor import Anchor
 from .handle import Handle
 
-# Standard Imports:
-from dataclasses import (
-    dataclass,
-    field
-)
+from actions import *
+from custom  import *
+from util    import *
 
-# Class Node
+# Class `Node`: A custom QGraphicsObject representing a node in a graphical schema.
 class Node(QGraphicsObject):
     """
-
+    An interactive `QGraphicsObject` subclass that represents a node in a graphical schema. The node includes buttons,
+    labels, and other child items.
     """
-
     # Signals:
-    sig_exec_actions   = pyqtSignal(AbstractAction) # Emitted to execute actions and push them to the undo/redo stack.
-    sig_item_updated   = pyqtSignal()               # Emitted when the node has been updated (e.g., renamed, resized, etc.).
-    sig_item_removed   = pyqtSignal()               # Emitted when the user deletes the node (e.g., via context-menu).
-    sig_handle_clicked = pyqtSignal(Handle)         # Emitted when a handle is clicked, signals the scene to begin a transient connection.
-    sig_handle_updated = pyqtSignal(Handle)         # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
-    sig_handle_removed = pyqtSignal(Handle)         # Emitted when the user deletes a handle (e.g., via context-menu).
+    sig_exec_actions   = pyqtSignal(AbstractAction)     # Signal emitted when an action is executed.
+    sig_item_removed   = pyqtSignal()                   # Signal emitted when the user deletes the node.
+    sig_item_updated   = pyqtSignal()                   # Signal emitted when the node has changed (e.g., position, size, label).
+    sig_item_clicked   = pyqtSignal()                   # Signal emitted when the node is double-clicked.
+    sig_handle_clicked = pyqtSignal(Handle)             # Signal emitted when a handle is clicked.
+    sig_handle_removed = pyqtSignal(Handle)             # Signal emitted when a handle is removed.
 
-    # Meta attribute(s):
-    @dataclass
-    class Meta:
-        nuid: str   = field(default_factory = str)
-        step: float = field(default_factory = lambda: 50.0)
+    # Node attributes:
+    @dataclasses.dataclass
+    class Database:
+        """
+        A dataclass to hold database attributes for the node.
+        """
+        inp: ValidatorDict[Handle] = dataclasses.field(default_factory = lambda: ValidatorDict(Handle)) # Dictionary of input handles.
+        out: ValidatorDict[Handle] = dataclasses.field(default_factory = lambda: ValidatorDict(Handle)) # Dictionary of output handles.
+        par: list[Entity]          = dataclasses.field(default_factory = lambda: [])                    # Dictionary of parameters.
+        eqn: list[str]             = dataclasses.field(default_factory = lambda: [])                    # List of equations.
 
-    # Default attribute(s):
-    @dataclass
-    class Attr:
-        rect: QRectF  = field(default_factory = lambda: QRectF (-100, -75, 200, 150))   # Default rectangle size of the node.
-        spos: QPointF = field(default_factory = QPointF)
+        @validator
+        def __getitem__(self, kind: EntityRole | EntityClass):
+            """
+            Returns the database corresponding to the specified kind (Input/Output/Variable/Parameter/Equation).
+            :param kind: The role or class of the entity.
+            :return:
+            """
+            if  kind == EntityRole.INP:
+                return self.inp
 
-    # Visual attribute(s)::
-    @dataclass
+            if  kind == EntityRole.OUT:
+                return self.out
+
+            if  kind == EntityClass.VAR:
+                return self.inp | self.out
+
+            if  kind == EntityClass.PAR:
+                return self.par
+
+            if  kind == EntityClass.EQN:
+                return self.eqn
+
+            return None
+
+    # Visual attributes:
+    @dataclasses.dataclass(frozen=True)
     class Visual:
-        pen_border: QPen   = field(default_factory = lambda: QPen(Qt.GlobalColor.black, 1.5))
-        pen_select: QPen   = field(default_factory = lambda: QPen(QColor(0xf99c39), 1.5))
-        background: QColor = field(default_factory = lambda: QColor(0xffffff))
+        """
+        A dataclass to hold visual attributes for the node.
+        """
+        pen_normal: QPen   = dataclasses.field(default_factory = lambda: QPen(0x000000, 1.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        pen_select: QPen   = dataclasses.field(default_factory = lambda: QPen(0xffa347, 1.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        background: QBrush = dataclasses.field(default_factory = lambda: QBrush(0xffffff))
+        highlight : QBrush = dataclasses.field(default_factory = lambda: QBrush(QColor(0x00ff00)))
 
-    # Register(s):
-    @dataclass
-    class Register:
-        inp: ValidatorDict[Handle] = field(default_factory = ValidatorDict(Handle))
-        out: ValidatorDict[Handle] = field(default_factory = ValidatorDict(Handle))
-        par: ValidatorDict[Entity] = field(default_factory = ValidatorDict(Handle))
+    # Instantiate dataclass `Visual`
+    visual = Visual()
 
-    # Initializer:
-    @ArgumentValidator
+    # Class constructor:
     def __init__(self,
-                 name  : str,
-                 spos  : QPointF = QPointF(),
-                 parent: QGraphicsItem | None = None,
-                 **kwargs):
+                 nuid: str,
+                 name: str,
+                 cpos: QPointF,
+                 parent: QGraphicsItem | None = None):
 
-        # Initialize super-class:
-        super().__init__(parent)
+        super().__init__(parent)                    # Initialize super class
+        super().setAcceptHoverEvents(True)          # Accept hover events (needed to change the cursor's shape)
+        super().setObjectName(f"{nuid}: {name}")    # This will allow the node to be identified using its UID and name.
 
-        # Instantiate attribute(s):
-        self._nvis = self.Visual()
-        self._meta = self.Meta(nuid = kwargs.get('nuid'))
-        self._attr = self.Attr(spos = spos)
+        super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        super().setPos(cpos)
 
-        # Initialize style and attrib:
-        self._nvis = self.Visual()      # Instantiate the node's style
-        self._data = dict({
-            EntityClass.INP:    dict(), # Dictionary for input variable(s)
-            EntityClass.OUT:    dict(), # Dictionary for output variable(s)
-            EntityClass.PAR:    dict(), # Dictionary for parameters
-            EntityClass.EQN:    list()  # List of equations
-        })
+        # Custom attributes:
+        self._rect = QRectF(-100, -75, 200, 150)    # The node's bounding rectangle.
+        self._open = False                          # This flag is set to true when the node is double-clicked.
 
-        # Customize behaviour:
-        self.setAcceptHoverEvents(True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        # Database:
+        self._db = self.Database()
 
-        # Label to display the _node's unique identifier:
-        self._label = Label(self, self._meta.nuid,
-                            width=60,
-                            color=QColor(0xadadad), 
-                            align=Qt.AlignmentFlag.AlignLeft,
-                            editable=False)
+        # Set up text items in the header:
+        self._nuid = String(self, nuid, width=50, editable=False, align=Qt.AlignmentFlag.AlignLeft, color=QColor(0xbdbdbd))
+        self._name = String(self, name, width=90)
+        self._nuid.setPos(-98, -72.5)
+        self._name.setPos(-45, -72.5)
 
-        # Label to display the _node's name:
-        self._title = Label(self, name,
-                            width=120,
-                            align=Qt.AlignmentFlag.AlignCenter,
-                            editable=True)
+        # Set up buttons in the header:
+        self._expand = Button("rss/icons/expand.svg", self, lambda: self.resize( 50))
+        self._shrink = Button("rss/icons/shrink.svg", self, lambda: self.resize(-50))
+        self._remove = Button("rss/icons/delete.svg", self, self.sig_item_removed.emit)
+        self._expand.moveBy(70, -59)
+        self._shrink.moveBy(70, -65)
+        self._remove.moveBy(86, -62)
 
-        # Position labels:
-        self._label.setPos(-98, -72)
-        self._title.setPos(-60, -72)
-
-        # Header-buttons:
-        _expand = Button("rss/icons/expand.svg", self)
-        _shrink = Button("rss/icons/shrink.svg", self)
-        _remove = Button("rss/icons/delete.svg", self)
-
-        _expand.moveBy(70, -59)
-        _shrink.moveBy(70, -65)
-        _remove.moveBy(86, -62)
-
-        _expand.sig_button_clicked.connect(lambda: self.resize( self._attr.delta))
-        _shrink.sig_button_clicked.connect(lambda: self.resize(-self._attr.delta))
-        _remove.sig_button_clicked.connect(self.sig_item_removed.emit)
-
-        # Instantiate separator:
-        _hline = QGraphicsLineItem(QLineF(-96, 0, 96, 0), self)
-        _hline.moveBy(0, -48)
-
-        self._divider = QGraphicsLineItem(QLineF(0, -40, 0, 68), self)
-        self._divider.setPen(QPen(Qt.GlobalColor.gray, 0.5))
-
-        # Instantiate anchors:
-        self._anchor_inp = Anchor(EntityClass.INP, self)
-        self._anchor_out = Anchor(EntityClass.OUT, self)
-
-        # Position anchors:
-        self._anchor_inp.setPos(-95, 0)
-        self._anchor_out.setPos( 95, 0)
-
+        # Set up anchors:
+        self._anchor_inp = Anchor(EntityRole.INP, self)
+        self._anchor_out = Anchor(EntityRole.OUT, self)
         self._anchor_inp.sig_item_clicked.connect(self.on_anchor_clicked)
         self._anchor_out.sig_item_clicked.connect(self.on_anchor_clicked)
 
-        # Initialize menu:
-        self._menu = QMenu()
-        self._init_menu()
+        # Display a warning or checkmark icon in the node:
+        self._status = load_svg("rss/icons/warning.svg", 24)
+        self._status.setParentItem(self)
+        self._status.moveBy(-12, -12)
+        self._status.acceptHoverEvents()
+        self._status.setToolTip("This node has unused variables or parameters.")
 
-        # Process keyword-arguments:
-        if "uid" in kwargs:    self.uid = kwargs.get("uid")
-
-    def __getitem__(self, _eclass: EntityClass):
+    # Method required to be implemented by a `QGraphicsObject` subclass:
+    def boundingRect(self) -> QRectF:
         """
-        Returns a dictionary or list depending on the entity sought:
-
-        Args:
-            _eclass (EntityClass): Class of the entity (INP, OUT, PAR, or EQN)
-
-        Returns:
-            dict | list: Dictionary or list
+        Returns the bounding rectangle of the node.
         """
+        return self._rect
 
-        if _eclass == EntityClass.VAR:  return self._data[EntityClass.INP] | self._data[EntityClass.OUT]
-        else:                           return self._data[_eclass]
-
-    def __setitem__(self,
-                    _tuple: tuple,
-                    _value: EntityState | str | list
-                    ):
+    # Method required to be implemented by a `QGraphicsObject` subclass:
+    def paint(self, painter, option, widget=None):
         """
-        Sets the state of an entity belonging to the _node.
-
-        Args:
-            _tuple (tuple): A tuple containing the entity class and the entity.
-            _value (EntityState | str | list): The state to set for the entity.
+        Paints the node on the canvas using the provided painter.
+        :param painter: QPainter instance used for drawing.
+        :param option: QStyleOptionGraphicsItem instance containing style options.
+        :param widget: Optional QWidget instance for additional context.
         """
 
-        # Validate argument(s):
-        if not isinstance(_tuple, tuple): raise TypeError("Expected argument of type `tuple`")
+        pen_current = Node.visual.pen_select if self.isSelected() else Node.visual.pen_normal
+        painter.setPen(pen_current)
+        painter.setBrush(Node.visual.background)
+        painter.drawRoundedRect(self._rect, 8, 8)     # The node's border
 
-        # Resolve tuple:
-        _eclass, _entity = _tuple
+        pen_separator = QPen(0xcfcfcf, 1.0)
+        painter.setPen(pen_separator)
+        painter.drawLine(QLineF(-96, -48, 96, -48))
+        painter.drawLine(QLineF(  0, -42,  0, self._rect.bottom() - 6))
 
-        # Assign data:
-        if  _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.PAR]:
-            self._data[_eclass][_entity] = _value
+    #
+    #
+    #
 
-        if  _eclass == EntityClass.EQN:
-            self._data[_eclass] = _value
-
-    def _init_menu(self):
+    @validator
+    def __getitem__(self, kind: EntityRole | EntityClass):
         """
-        Adds actions to the context menu and connects them to appropriate slots.
-
-        Returns: 
-            None
+        Returns
+        :param kind:
+        :return: list
         """
+        return self._db[kind]
 
-        # Add actions to the menu:
-        _template = self._menu.addAction("Save as Template", lambda: print("Save as Template"))
-
-        # Additional actions:
-        self._menu.addSeparator()
-        _expand = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize( self._attr.delta))
-        _shrink = self._menu.addAction(QIcon("rss/icons/shrink.svg"), "Shrink", lambda: self.resize(-self._attr.delta))
-
-        # Additional actions:
-        self._menu.addSeparator()
-        _close = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
-
-        # Make icons visible:
-        _expand.setIconVisibleInMenu(True)
-        _shrink.setIconVisibleInMenu(True)
-        _close.setIconVisibleInMenu(True)
-
-    # Re-implemented methods -------------------------------------------------------------------------------------------
-    # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. boundingRect           Implementation of QGraphicsObject.boundingRect() (see Qt documentation).
-    # 2. paint                  Implementation of QGraphicsObject.paint() (see Qt documentation).
+    # Event handler(s)
+    # Name                              Description
     # ------------------------------------------------------------------------------------------------------------------
+    # hoverEnterEvent(QHoverEvent)      Adds effects (highlighting) when the cursor enters the node's bounding box.
+    # hoverLeaveEvent                   Undoes hoverEnterEvent effects when the cursor exits the node's bounding box.
 
-    def boundingRect(self):
+    def mouseDoubleClickEvent(self, event):
         """
-        Re-implementation of QGraphicsObject.boundingRect().
-
-        Returns:
-            QRectF: The bounding rectangle of the _node.
+        Event-handler for double-click events, emits the sig_item_clicked signal.
+        :param event:
         """
-
-        # Return bounding-rectangle:
-        return self._attr.rect
-
-    def paint(self, painter, option, widget = ...):
-        """
-        Re-implementation of QGraphicsObject.paint().
-
-        Args:
-            painter (QPainter) : The painter object.
-            option (QStyleOptionGraphicsItem) : The option object.
-            widget (QWidget) : The widget object.
-        """
-
-        # Select border-pen based on the node's selection-state:
-        _pen = self._nvis.pen_select if self.isSelected() else self._nvis.pen_border
-                 
-        # Draw border:
-        painter.setPen(_pen)
-        painter.setBrush(self._nvis.background)
-        painter.drawRoundedRect(self._attr.rect, 8, 8)
-
-    def itemChange(self, change, value):
-
-        # Import canvas module:
-        from tabs.schema import CanvasState
-
-        # If this node has been added to a canvas:
-        if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
-
-            # Connect node's signals to the canvas's slots:
-            self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(CanvasState.UNSAVED))
-            self.sig_item_removed.connect(value.on_item_removed)
-
-            # Connect signal-exec actions:
-            self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(CanvasState.UNSAVED))
-            self.sig_exec_actions.connect(value.manager.do)
-
-            # Forward handle's signals:
-            self.sig_handle_clicked.connect(value.begin_transient)
-
-            # Adjust scene-position:
-            self.setPos(self._attr.spos)
-
-        return value
-
-    # Event-handlers ---------------------------------------------------------------------------------------------------
-    # Name                      Description
-    # ------------------------------------------------------------------------------------------------------------------
-    # 1. hoverEnterEvent        Triggered when the mouse enters the _node.
-    # 2. hoverLeaveEvent        Triggered when the mouse leaves the _node.
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def contextMenuEvent(self, event):
-        """
-        Triggered when the context menu is requested.
-
-        Args:
-            event (QContextMenuEvent) : Context-menu event, instantiated by Qt.
-        """
-
-        # Forward event to super-class:
-        super().contextMenuEvent(event)
-        if event.isAccepted(): return
-
-        # Display context menu:
-        self.setSelected(True)
-        self._menu.exec(event.screenPos())
-        event.accept()
+        self._open = True
+        self.sig_item_clicked.emit()
 
     def hoverEnterEvent(self, event):
         """
-        Triggered when the mouse enters the _node.
-
-        Args:
-            event (QHoverEvent) : Hover event, triggered and managed by Qt.
+        Handles the hover enter event for the node.
+        :param: event: QHoverEvent instantiated and managed by Qt.
         """
-        super().hoverEnterEvent(event)              # Forward to super-class
-        self.setCursor(Qt.CursorShape.ArrowCursor)  # Set arrow-cursor
-    
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+        super().hoverEnterEvent(event)
+
     def hoverLeaveEvent(self, event):
         """
-        Triggered when the mouse leaves the _node.
-
-        Args:
-            event (QHoverEvent) : Hover event, triggered and managed by Qt.
+        Handles the hover leave event for the node.
+        :param event: QHoverEvent instantiated and managed by Qt.
         """
-        super().hoverLeaveEvent(event)              # Forward to super-class
-        self.unsetCursor()                          # Unset cursor
+        self.unsetCursor()
+        super().hoverLeaveEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    #
+    # Custom methods
+    #
+    #
+
+    @validator
+    def create_huid(self, role: EntityRole) -> str:
         """
-        Triggered when the mouse is released.
-
-        Args:
-            event (QMouseEvent) : Mouse event, instantiated by Qt.
+        Creates a unique symbol for each handle for each role (INP, OUT).
+        :param role: The role of the handle (e.g., INP, OUT).
+        :return:
         """
+        # Get the set of active handle IDs for the specified role:
+        active_ids = set(
+            int(handle.symbol[1:])
+            for handle, state in self[role].items()
+            if  state == EntityState.ACTIVE
+        )
 
-        # Forward event to super-class:
-        super().mouseReleaseEvent(event)
-        
-        # If the _node has been moved, notify canvas:
-        if  self.scenePos() != self._attr.spos:
-            self.sig_item_updated.emit()
+        # Find the lowest unused ID:
+        index = 0
+        while index in active_ids:
+            index += 1
 
-    # User-defined methods ---------------------------------------------------------------------------------------------
-    # Name                      Description
-    # ------------------------------------------------------------------------------------------------------------------
-    # 1. clone                  Duplicates the _node.
-    # 2. resize                 Resizes the _node in discrete steps.
-    # 3. create_handle          Creates a new handle.
-    # 4. create_huid            Creates a unique identifier for each handle.
-    # 5. on_anchor_clicked      Triggered when an anchor is clicked.
-    # 6. on_handle_clicked      Triggered when a handle is clicked.
-    # 7. on_handle_updated      Triggered when a handle is updated.
-    # 8. on_handle_removed      Triggered when a handle is removed.
-    # ------------------------------------------------------------------------------------------------------------------
+        # Return symbol:
+        return f"R{index:02d}" if role == EntityRole.INP else f"P{index:02d}"
 
-    # Return transformed equations:
-    def substituted(self) -> list[str]:
-
-        transformed = list()
-        node_prefix = self.uid
-
-        _vars = [
-            variable for variable, state in self[EntityClass.VAR].items()
-            if state == EntityState.ACTIVE
-        ]
-
-        _pars = [
-            parameter for parameter, state in self[EntityClass.PAR].items()
-            if state == EntityState.ACTIVE
-        ]
-
-        _eqns = self._data[EntityClass.EQN].copy()
-
-        # Create a dictionary of symbol-replacements:
-        replacements  = dict()
-
-        # Variable symbols (R00, P00, ...) are replaced with connector symbols (X0, X1, ...)
-        for var in _vars:
-            replacements[var.symbol] = var.connector().symbol if var.connected else None
-
-        # Parameter symbols are prefixed with the _node's UID:
-        for par in _pars:
-            replacements[par.symbol] = f"{node_prefix}_{par.symbol}"
-
-        # Modify all equations:
-        for equation in _eqns:
-            tokens = equation.split(' ')
-            update = [replacements.get(token, token) for token in tokens]
-
-            if not None in update:
-                transformed.append(str(" ").join(update))
-
-        return transformed
-
-    def clone(self, **kwargs):
+    @validator
+    def create_handle(self, role: EntityRole, npos: QPointF) -> Handle | None:
         """
-        Create an identical copy of this _node.
-
-        Returns:
-            Node: A new _node with the same properties as the original _node.
+        Creates a new handle at the specified position with the given role.
+        :param role: The role of the handle (e.g., INP, OUT).
+        :param npos: The position where the handle should be created, in the node's coordinate system.
+        :return: Handle: Handle instance.
         """
+        # Abort conditions:
+        if (
+            not isinstance(role, EntityRole) or
+            not isinstance(npos, QPointF)
+        ):
+            logging.error("Invalid parameters: Expected EntityRole and QPointF instances.")
+            return None
 
-        # Instantiate a new _node:
-        _node = Node(self._title.toPlainText(),
-                     self.scenePos() + QPointF(25, 25),
-                     self.parentItem()
-                     )
+        symbol = self.create_huid(role)
+        handle = Handle(role, symbol, "Default", self)
+        handle.setPos(npos)
 
-        # Adjust _node-height:
-        _diff = self.boundingRect().height() - _node.boundingRect().height()
-        _node.resize(_diff)
-        _node.setSelected(self.isSelected())
+        # Connect the handle's signals to event handlers:
+        handle.sig_item_clicked.connect(lambda: self.sig_handle_clicked.emit(handle))
+        handle.sig_item_removed.connect(self.on_handle_removed)
 
-        # Construct lists of active data:
-        _var_active = [_variable  for _variable , _state in self[EntityClass.VAR].items() if _state == EntityState.ACTIVE]
-        _par_active = [_parameter for _parameter, _state in self[EntityClass.PAR].items() if _state == EntityState.ACTIVE]
+        # Add the handle to the node's database:
+        self._db[role][handle] = EntityState.ACTIVE
 
-        # Copy this _node's variable(s):
-        for _entity in _var_active:
+        # Return a reference:
+        return handle
 
-            # Instantiate new handle and copy attribute(s):
-            _copied = _node.create_handle(_entity.eclass,_entity.pos())
-            _entity.clone_into(_copied)
+    def clone(self) -> 'Node':
+        """
+        Returns a cloned instance of this node.
+        :return: Node: A new instance of Node.
+        """
+        # Create a new node with the same UID and name:
+        cloned_node = Node(
+            nuid = self._nuid.toPlainText(),
+            name = self._name.toPlainText(),
+            cpos = self.scenePos()
+        )
 
-            # Add copied variable to the _node's registry:
-            _node[_entity.eclass][_copied] = EntityState.ACTIVE
-            Handle.cmap[_entity] = _copied
+        # Resize the cloned node to match the original:
+        cloned_node.resize(self._rect.height() - cloned_node._rect.height())
 
-        # Copy this _node's parameter(s):
-        for _entity in _par_active:
-            _copied = Entity()              # Instantiate a new entity
-            _entity.clone_into(_copied)     # Copy attributes into the new entity
+        # Clone the handles:
+        for handle, state in self[EntityClass.VAR].items():
+            if state == EntityState.ACTIVE:
+                cloned_handle = cloned_node.create_handle(handle.role, handle.pos())
+                cloned_handle.import_data(handle)
+                cloned_handle.set_stream(handle.strid, handle.color)
 
-            # Add copied variable to the _node's registry:
-            _node[_entity.eclass][_copied] = EntityState.ACTIVE
+                # Map the origin handle to the cloned handle:
+                Handle.clone_map[handle] = cloned_handle
 
-        # Deselect this _node:
-        self.setSelected(False)
-
-        # Process keyword-args:
-        if "set_uid" in kwargs: _node.uid = kwargs.get("set_uid")
-
-        # Return reference to the created _node:
-        return _node
+        # Return the cloned node:
+        return cloned_node
 
     def resize(self, delta: int | float):
         """
         Resizes the _node in discrete steps.
-
-        Args:
-            delta (int) : Increment or decrement step-size.
+        :param delta: The amount to resize the node's height. Positive values increase height, negative values decrease it.
         """
 
         # Set a minimum _node-height:
-        if delta < 0 and self._attr.rect.height() < 200:
+        if  delta < 0 and self._rect.height() < 200:
             QApplication.beep()
             return
 
         # Resize _node, adjust contents:
-        self._attr.rect.adjust(0, 0, 0, delta)
+        self._rect.adjust(0, 0, 0, delta)
         self._anchor_inp.resize(delta)
         self._anchor_out.resize(delta)
 
-        self._divider.setLine(self._anchor_inp.line)
-        self._divider.setX(0)
-        self.update()
-
         # Notify application of state-change:
         self.sig_item_updated.emit()
 
-    def symbols(self) -> list:
-
-        _symbols = list()
-        for _entity, _state in self[EntityClass.VAR].items():
-            if  _state == EntityState.ACTIVE:
-                _symbols.append(_entity.symbol)
-
-        for _entity, _state in self[EntityClass.PAR].items():
-            if  _state == EntityState.ACTIVE:
-                _symbols.append(_entity.symbol) 
-
-        return _symbols
-
-    def replace(self, _oldsym: str, _newsym: str):
+    @validator
+    def on_anchor_clicked(self, cpos: QPointF):
         """
-        Replaces `_oldsym` with `_newsym` in the node's equations. This method is called when a symbol is renamed (e.g.,
-        when a parameter is renamed, or when a variable's symbols are changed due to being imported into a non-empty
-        canvas
-
-        :param: _oldsym (str): The old symbol to be replaced.
-        :param: _newsym (str): The new symbol to replace the old one with
+        Handles the event when an anchor is clicked.
+        :param cpos: Position of the handle in anchor coordinates.
         """
+        if  not isinstance(anchor := self.sender(), Anchor):
+            logging.error("Invalid sender: Expected Anchor instance.")
+            return
 
-        # Validate argument(s):
-        if not isinstance(_oldsym, str): raise TypeError("Expected argument of type `str`")
-        if not isinstance(_newsym, str): raise TypeError("Expected argument of type `str`")
+        if  not isinstance(cpos, QPointF):
+            logging.error("Invalid position: Expected QPointF instance.")
+            return
 
-        # Replace old symbol with new symbol in equations:
-        for i, equation in enumerate(self._data[EntityClass.EQN]):
-            if _oldsym in equation:
-                self._data[EntityClass.EQN][i] = equation.replace(_oldsym, _newsym)
+        npos   = self.mapFromItem(anchor, cpos)
+        handle = self.create_handle(anchor.role, npos)
+        handle.sig_item_clicked.emit()
 
-    def create_handle(self,
-                      _eclass: EntityClass,
-                      _coords: QPointF,
-                      _clone : Handle = None
-                      ):
+    @validator
+    def on_handle_removed(self):
         """
-        Creates a new handle at the given coordinate, returns reference to the handle.
-
-        Args:
-            _eclass (EntityClass): The stream-direction of the new handle (INP or OUT).
-            _coords (QPointF)    : The coordinates of the new handle (must be in the _node's coordinate-system).
-            _clone (Handle)      : If provided, the created handle will be a clone of this handle
-
-        Returns:
-            Handle: Reference to the new handle.
+        This slot is triggered when a handle is removed from the node.
+        :param: handle: The handle that was removed by the user.
         """
+        if not isinstance(handle := self.sender(), Handle): return
 
-        # Instantiate a new handle:
-        _handle = Handle(_eclass,
-                         _coords,
-                         self.create_huid(_eclass),
-                         self
-                        )
+        batch  = BatchActions([])
 
-        # Connect handle's signals to the _node's slots:
-        _handle.sig_item_clicked.connect(self.sig_handle_clicked.emit)
-        _handle.sig_item_updated.connect(self.sig_handle_updated.emit)
-        _handle.sig_item_cleared.connect(self.on_handle_cleared)
-        _handle.sig_item_removed.connect(self.on_handle_removed)
+        # If the handle is connected, disconnect it:
+        if  handle.connected:
+            batch.add_to_batch(DisconnectHandleAction(self.scene(), handle.connector))
 
-        # Add handle to the _node's database:
-        self[_eclass][_handle] = EntityState.ACTIVE
+        batch.add_to_batch(RemoveHandleAction(self, handle))
+        self.sig_exec_actions.emit(batch)
 
-        # Return reference to handle:
-        return _handle 
-
-    def create_huid(self, _eclass: EntityClass):
-        """
-        Creates a unique identifier for each handle.
-
-        Returns:
-            str: The unique identifier for the handle.
-        """
-
-        # Validate argument(s):
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]: raise ValueError("Expected argument: `EntityClass.INP` or `EntityClass.OUT`")
-
-        # Create a unique handle-identifier:
-        prefix = "P" if _eclass == EntityClass.OUT else "R"
-        id_set = {
-            int(handle.symbol[1:])         # Get the _node's currently used symbols
-            for handle, state in self[_eclass].items()
-            if  state
-        }
-
-        # If `id_set` is empty, return prefix + "00":
-        if not id_set:  return prefix + "00"
-
-        # Get sequence of integers from 0 to `max(id_set) + 1`, not in `id_set`:
-        sequence = set(range(0, max(id_set) + 2))
-        reusable = sequence - id_set
-
-        # Return UID (prefix + smallest integer not in `id_set`):
-        return prefix + str(min(reusable)).zfill(2)
-
-    # Triggered when an anchor is clicked:
-    def on_anchor_clicked(self, _coords: QPointF):
-        """
-        Triggered when an anchor is clicked.
-
-        :param: _coords (QPointF): The coordinates where the anchor was clicked, in scene-coordinates.
-        """
-
-        # Validate argument(s):
-        _anchor = self.sender()
-        if not isinstance(_coords, QPointF): raise TypeError("Expected argument of type `QPointF`")
-        if not isinstance(_anchor, Anchor) : raise TypeError("Expected signal-emitter of type `Anchor`")
-
-        # Create a new handle at the anchor's position:
-        _eclass = _anchor.stream()                          # Get anchor's stream (EntityClass.INP or EntityClass.OUT)
-        _coords = self.mapFromItem(_anchor, _coords)        # Map coordinate to _node's coordinate-system
-        _handle = self.create_handle(_eclass, _coords)
-        _handle.sig_item_clicked.emit(_handle)              # Emit signal to begin transient-connection.
-
-        # Enter handle into the _node's database:
-        self[_eclass, _handle] = EntityState.ACTIVE         # Set state `EntityState.ACTIVE`
-
-        # Notify application of state-change:
-        self.sig_exec_actions.emit(CreateHandleAction(self, _handle))
-        self.sig_item_updated.emit()
-    
-    # Triggered when a handle is removed:
-    def on_handle_removed(self, _handle: Handle):
-        # Create an undoable remove-action and notify actions-manager:
-        self.sig_exec_actions.emit(RemoveHandleAction(self, _handle))
-
-    # Triggered when a handle is cleared:
-    def on_handle_cleared(self, handle: Handle):
-        
-        # Create an undoable disconnect-action:
-        _action = DisconnectHandleAction(self.scene(), handle.connector())
-
-        # Emit signal to disconnect handle:
-        self.sig_exec_actions.emit(_action)
-
-    # Properties -------------------------------------------------------------------------------------------------------
-    # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. uid                   The _node's unique identifier.
-    # 2. name                  The _node's name.
+    # Property Getter(s) and Setter(s)
+    # Name                              Description
     # ------------------------------------------------------------------------------------------------------------------
-    
+    # uid()                             Returns the unique identifier of the node.
+    # ------------------------------------------------------------------------------------------------------------------
+
     @property
-    def uid(self):  return self._meta.nuid
-    
-    @property
-    def title(self): return self._title.toPlainText()
+    def uid(self):
+        """
+        Returns the unique identifier of the node.
+        :return: str
+        """
+        return self._nuid.toPlainText()
 
     @uid.setter
+    @validator
     def uid(self, value: str):
-        self._meta.nuid = value
-        self._label.setPlainText(value)
+        """
+        Sets the unique identifier of the node.
+        :param value: The new unique identifier for the node.
+        """
+        self._nuid.setPlainText(value)
 
-    @title.setter
-    def title(self, value: str):
-        self._title.setPlainText(value)
+    @property
+    def name(self) -> str:
+        """
+        Returns the name of the node.
+        :return: str
+        """
+        return self._name.toPlainText()
+
+    @name.setter
+    @validator
+    def name(self, value: str):
+        """
+        Sets the name of the node.
+        :param value: The new name for the node.
+        """
+        self._name.setPlainText(value)
+        self.sig_item_updated.emit()
+
+    @property
+    def open(self):
+        """
+        Returns whether the node is open (expanded).
+        :return: bool
+        """
+        return self._open
+
+    @open.setter
+    @validator
+    def open(self, flag: bool):
+        """
+        Sets the open state of the node.
+        :param flag:
+        """
+        self._open = flag
+
+    @validator
+    def handle_offset(self, role: EntityRole) -> float:
+        """
+        Returns the offset of the node's anchor for the specified role.
+        :param role: The role of the anchor (e.g., INP, OUT).
+        :return: float: The x-position of the anchor in the node's coordinate system.
+        """
+        return -95 if role == EntityRole.INP else 95

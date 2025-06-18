@@ -1,25 +1,71 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QByteArray
 from PyQt6.QtGui  import QColor
-from enum         import Enum
-
-import string
-import random
-import inspect
-import functools
-
-from PyQt6.QtSvgWidgets import QGraphicsSvgItem
 from typing import (
     Type,
     Generic,
-    TypeVar
+    TypeVar,
+    Dict
 )
+
+import qtawesome as qta
+import functools
+import inspect
+import string
+import random
+
+from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtSvgWidgets import QGraphicsSvgItem
+from PyQt6.QtWidgets import QGraphicsPixmapItem
+
+K = TypeVar('K')
+class ValidatorDict(Generic[K], dict):
+    """
+    A generic TypedDict that allows for type hinting of dictionary keys and values.
+    This is useful for defining structured data types in Python.
+    """
+    def __init__(self, key_type: Type[K], *args, **kwargs):
+        self.key_type = key_type
+        super().__init__(*args, **kwargs)
+
+    def __setitem__(self, key: K, value):
+        if not isinstance(key, self.key_type):
+            raise TypeError(f"Key must be of type {self.key_type.__name__}")
+        super().__setitem__(key, value)
+
+# Argument validator:
+def validator(function):
+    """
+    A decorator to validate the arguments of a function, using the function's annotations
+    """
+    signature = inspect.signature(function)
+
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        """
+        Validates the arguments of the function based on its annotations.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        bound_args = signature.bind(*args, **kwargs)
+        bound_args.apply_defaults()
+        for name, value in bound_args.arguments.items():
+            expected_type = signature.parameters[name].annotation
+            if (
+                expected_type is not inspect.Parameter.empty and
+                not isinstance(value, expected_type)
+            ):
+                raise TypeError(f"Argument '{name}' must be {expected_type}, got {type(value)} instead.")
+
+        return function(*args, **kwargs)
+    return wrapper
 
 # Parse a qss-stylesheet:
 def read_qss(filename: str) -> str:
     """
     Parses a QSS stylesheet file and returns contents.
     :param filename: Path to the file as a string.
-    :return: Contents of the file as a string.
+    :return: str: Contents of the file as a string.
     """
 
     if not isinstance(filename, str):
@@ -37,14 +83,14 @@ def replace(expression: str, old: str, new: str):
     :param expression: The string to be substituted.
     :param old: Word or symbol to be replaced
     :param new: Word or symbol to replace with.
-    :return: Substituted string with all occurrences of `old` replaced by `new`
+    :return: str: Substituted string with all occurrences of `old` replaced by `new`
     """
 
     tokens = expression.split(' ')
     update = [new if token == old else token for token in tokens]
     return ' '.join(update)
 
-# Generate a Unique Identifier (UID) of desired length and prefix:
+# Generate a Unique Identifier (UID) of the desired length and prefix:
 def random_id(length: int = 4, prefix: str = ""):
     """
     Returns a random alphanumeric ID.
@@ -52,14 +98,19 @@ def random_id(length: int = 4, prefix: str = ""):
     :param prefix: Prefix string added to the random ID
     :return: A random alphanumeric I, prefixed by `prefix`
     """
-
+    # Validate argument(s):
     if not isinstance(length, int) or not isinstance(prefix, str):
         return None
 
     return prefix + ''.join(random.choices(string.digits, k=length))
 
 # Generate a random color:
-def random_hex():   return "#{:06x}".format(random.randint(0, 0xffffff))
+def random_hex():
+    """
+    Generates a random hex color code.
+    :return: str: A random hex color code in the format '#RRGGBB'.
+    """
+    return "#{:06x}".format(random.randint(0, 0xffffff))
 
 # Find the best contrasting color to any given color:
 def anti_color(_color: QColor | Qt.GlobalColor | str):
@@ -91,86 +142,28 @@ def anti_color(_color: QColor | Qt.GlobalColor | str):
     return QColor(0x000000) if luminance > 0.5 else QColor(0xffffff)
 
 # Convert string to float, return None if not possible:
-def str_to_float(arg: str):
+def as_float(arg: str | int | float):
     """
-    Converts a string to a float, returns None if not possible.
+    Converts the argument to a float, returns None if not possible.
     
-    Args:
-        arg (str): The string to convert.
-
-    Returns:
-        float: The float value of the string, or None if not possible.
+    :param : arg: The argument to convert to float.
+    :return: The float value if conversion is successful, otherwise None.
     """
 
     try:                return float(arg)
     except ValueError:  return None
 
 # Scale an SVG to a specific width:
-def load_svg(_file: str, _width: int):
+@validator
+def load_svg(file: str, width: int):
     """
-    Loads an SVG-icon and rescales it to a specific width.
-
-    Args:
-        _file (str): The path to the SVG-icon.
-        _width (int): The width to rescale the SVG to.
-
-    Returns:
-        QGraphicsSvgItem: The rescaled SVG-icon.
+    Loads an SVG file and rescales it to a specified width.
+    :param file: Path to the SVG file as a string.
+    :param width: Desired width in pixels.
+    :return: QGraphicsSvgItem: The SVG item scaled to the specified width.
     """
-
-    # Validate argument(s):
-    if (
-        not isinstance(_file , str) or
-        not isinstance(_width, int)
-    ):
-        return
-
     # Load SVG-icon and rescale:
-    _svg = QGraphicsSvgItem(_file)
-    _svg.setScale(float(_width / _svg.boundingRect().width()))  # Rescale the SVG
+    svg = QGraphicsSvgItem(file)
+    svg.setScale(float(width / svg.boundingRect().width()))     # Rescale the SVG
 
-    return _svg
-
-# Argument validator:
-def ArgumentValidator(function):
-    """
-    A decorator to validate the arguments of a function, using the function's annotations
-    """
-    signature = inspect.signature(function)
-
-    @functools.wraps(function)
-    def wrapper(*args, **kwargs):
-        """
-        Validates the arguments of the function based on its annotations.
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        bound_args = signature.bind(*args, **kwargs)
-        bound_args.apply_defaults()
-        for name, value in bound_args.arguments.items():
-            expected_type = signature.parameters[name].annotation
-            if (
-                expected_type is not inspect.Parameter.empty and
-                not isinstance(value, expected_type)
-            ):
-                raise TypeError(f"Argument '{name}' must be {expected_type}, got {type(value)} instead.")
-
-        return function(*args, **kwargs)
-    return wrapper
-
-# Generic dictionary with runtime type-validation:
-K = TypeVar('K')
-class ValidatorDict(Generic[K], dict):
-    """
-    A generic TypedDict that allows for type hinting of dictionary keys and values.
-    This is useful for defining structured data types in Python.
-    """
-    def __init__(self, key_type: Type[K], *args, **kwargs):
-        self.key_type = key_type
-        super().__init__(*args, **kwargs)
-
-    def __setitem__(self, key: K, value):
-        if not isinstance(key, self.key_type):
-            raise TypeError(f"Key must be of type {self.key_type.__name__}")
-        super().__setitem__(key, value)
+    return svg

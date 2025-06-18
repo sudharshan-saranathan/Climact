@@ -5,8 +5,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
 from PyQt6.QtWidgets import QListWidget, QWidget, QMenu, QTextEdit, QDialog, QVBoxLayout, QListWidgetItem, QAbstractItemView, QMessageBox
 
-from custom import EntityClass
-from tabs.schema import Canvas
+from custom import EntityRole, EntityState, EntityClass
+from tabs.schema.canvas import Canvas
 
 # Class Equation-View:
 class EqnView(QListWidget):
@@ -66,11 +66,20 @@ class EqnView(QListWidget):
         _delete = self._menu.addAction("Delete Equation(s)", self.delete_equations)
 
     def contextMenuEvent(self, event):
+        """
+        Context menu event handler to open the context menu at the cursor position.
+        :param event:
+        """
+
         # Open menu at cursor position:
         self._menu.exec(event.globalPos())
         event.accept()
 
     def get_equations_from_user(self):
+        """
+        Open a dialog to get equations from the user.
+        :return:
+        """
 
         # Abort if no _node has been set:
         if self._node() is None:

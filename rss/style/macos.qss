@@ -9,32 +9,23 @@ QFrame {
     background  : white;
 }
 
-QInputDialog QLabel {
-    border  : none;
-    color   : darkslategray;
-}
-
-QInputDialog QLineEdit {
-    color           : white;
-    padding         : 2px;
-    border-radius   : 4px;
-    background-color: white;
-}
-
 QComboBox
 {
     color               : black;
     width               : 80px;
-    height              : 12px;
+    height              : 16px;
+    padding             : 2px;
     border              : 1px solid black;
-    background-color    : lightgray;
+    border-radius       : 4px;
+    background-color    : #C6C6D2;
 }
 
 QComboBox:drop-down
 {
     color               : black;
     width               : 20px;
-    background-color    : lightgray;
+    border-radius       : 4px;
+    background-color    : transparent;
 }
 
 QComboBox::down-arrow
@@ -48,16 +39,8 @@ QComboBox QListView {
     color                   : black;
     selection-color         : black;
     background-color        : white;
-    padding-left            : 4px;
+    padding                 : 2px;
 }
-/*
-// Needed to complete the rule set
-QComboBox::item:alternate {
-    background: white;
-    padding-left: 2px;
-    color: #187795;
-}
-*/
 
 QComboBox::item:selected {
     background          : white;
@@ -114,6 +97,13 @@ QLabel {
     margin                  : 0px;
     background              : transparent;
     border-radius           : 4px;
+}
+
+QDialog {
+    border                  : none;
+    padding                 : 2px;
+    border-radius           : 8px;
+    background              : #efefef;
 }
 
 QPushButton {
@@ -452,14 +442,9 @@ QTreeWidget:focus, QTreeView:focus {
 */
 
 QListWidget {
-    background                  : lightslategray;
-    margin                      : 2px;
-    border-radius               : 6px;
-}
-
-QListWidget:focus {
-    border-radius               : 6px;
-    background                  : #81909C;
+    background      : lightslategray;
+    border-right    : 1px solid gray;
+    margin          : 0px;
 }
 
 QListWidget::item {
@@ -509,15 +494,8 @@ QTreeWidget::item:selected:last {
     background                          : #e0e0e0;
 }
 
-QDialog {
-    border                  : none;
-    border-radius           : 4px;
-    background              : lightgray;
-}
-
 QTableWidget, QTableView {
-    border                  : 0px solid black;
-    border-radius           : 0px;
+    border-bottom           : 1px solid darkgray;
     background              : white;
     gridline-color          : lightgray;
 }

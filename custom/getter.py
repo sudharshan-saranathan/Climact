@@ -14,9 +14,9 @@ from PyQt6.QtWidgets import (
 )
 
 class Getter(QDialog):
-
-    # Signals:
-
+    """
+    A dialog that prompts the user for input with a label and a QLineEdit widget.
+    """
 
     # Initializer:
     def __init__(

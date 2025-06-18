@@ -1,423 +1,361 @@
-import logging
+"""
+handle.py
+"""
+
+import types
 import weakref
+import qtawesome as qta
 
+# PyQt6 Library:
 from PyQt6.QtCore import (
-    pyqtSignal,
-    QPointF,
+    Qt,
     QRectF,
-    Qt
-    )
-
+    pyqtSignal
+)
 from PyQt6.QtGui import (
-    QTextCursor,
-    QAction,
-    QCursor,
-    QBrush,
+    QPen,
     QColor,
-    QFont,
-    QPen
-    )
-
+    QCursor,
+    QTextCursor
+)
 from PyQt6.QtWidgets import (
-    QGraphicsObject,
-    QGraphicsEllipseItem,
     QGraphicsItem,
-    QWidgetAction,
-    QLineEdit,
-    QMenu,
-    )
+    QGraphicsObject, QGraphicsEllipseItem, QMenu, QWidgetAction, QLineEdit
+)
 
-from dataclasses    import dataclass
-from util import random_id, load_svg, random_hex, anti_color
-from custom         import *
+# Climact submodule(s):
+from custom import String, StreamMenuAction
+from custom.configure import EntityConfigure
+from custom.entity import *
+from util import anti_color
 
-class Handle(QGraphicsObject, Entity):
-
+# Class Handle:
+class Handle(Entity, QGraphicsObject):
+    """
+    This class inherits from `QGraphicsObject` and `Entity` and is a visual representation of input or output variables
+    in a node.
+    """
     # Signals:
-    sig_item_clicked = pyqtSignal(QGraphicsObject)
-    sig_item_updated = pyqtSignal(QGraphicsObject)
-    sig_item_shifted = pyqtSignal(QGraphicsObject)
-    sig_item_removed = pyqtSignal(QGraphicsObject)
-    sig_item_cleared = pyqtSignal(QGraphicsObject)
+    sig_item_clicked  = pyqtSignal()
+    sig_item_updated  = pyqtSignal()
+    sig_item_removed  = pyqtSignal()
+    sig_create_stream = pyqtSignal(str)  # Signal to create a stream with a given category
 
-    # Copy map:
-    cmap = {}
+    # Application-wide dictionary to map copied and cloned handles (needed to copy-paste connections as well):
+    clone_map = {}
 
-    @dataclass
-    class Attr:
-        size = 5.0
-        rect = QRectF(-size/2.0, -size/2.0, size, size)
-        mark = QRectF(-1.0, -1.0, 2.0, 2.0)
+    # Visual attributes:
+    @dataclasses.dataclass
+    class Visual:
+        """
+        A dataclass to hold visual attributes of the handle.
+        """
+        hint_rect : QRectF = dataclasses.field(default_factory = lambda: QRectF(-1.0, -1.0, 2.0, 2.0))
+        hint_color: QColor = dataclasses.field(default_factory = lambda: QColor(0x0))
+        pen_normal: QPen   = dataclasses.field(default_factory = lambda: QPen(0x0))
+        background: QColor = dataclasses.field(default_factory = lambda: QColor(0xcfffb3))
 
-    @dataclass
-    class Style:
-        def __init__(self):
-            self.pen_border = QPen(Qt.GlobalColor.black, 1.0)
-            self.bg_normal  = QBrush(Qt.GlobalColor.green)
-            self.bg_paired  = QBrush(QColor(0xff3a35))
-            self.bg_active  = self.bg_normal
-
-    # Initializer:
+    # Class constructor:
     def __init__(self,
-                 _eclass: EntityClass,
-                 _coords: QPointF,
-                 _symbol: str,
-                 _parent: QGraphicsObject | None = None
-                ):
-        """
-        Initialize a new handle with given entity-class, coordinates, and symbol.
+                 role:   EntityRole,
+                 symbol: str,
+                 strid : str,
+                 parent: QGraphicsItem | None = None):
 
-        Parameters:
-            _symbol (str): Symbol of the handle.
-            _coords (QPointF): Coordinates of the handle.
-            _eclass (EntityClass): Entity class of the handle (see `custom/entity.py`).
-            _parent (QGraphicsObject, optional): Parent object of the handle (default: None).
-        """
+        # Initialize the Entity base-class:
+        super().__init__(EntityClass.VAR, symbol, strid)
 
-        # Validate coordinate and symbol:
-        if not isinstance(_symbol, str):                        raise TypeError("Expected argument `_symbol` of type `str`")
-        if not isinstance(_coords, QPointF):                    raise TypeError("Expected argument `_coords` of type `QPointF`")
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]:   raise ValueError("Invalid entity class")
+        # Initialize Entity-attribute(s):
+        self.label  = symbol
+        self.symbol = symbol
+        self.strid  = strid
+        self.eclass = EntityClass.VAR
 
-        # Initialize base-class:
-        super().__init__(_parent)
+        # Attribute(s):
+        self._attr   = types.SimpleNamespace(
+            rect     = QRectF(-2.5, -2.5, 5, 5),  # Bounding rectangle of the handle
+            role     = role,                      # EntityRole of the handle (input or output)
+            offset   = float(),                   # Fixed x-coordinate of the handle (w.r.t the node)
+            movable  = True,                      # If this handle is movable (different for nodes and terminals)
+            contrast = False,                     # If the text color should contrast with the background.
+        )
 
-        # Display handle's symbol and customize:
-        self._label = Label(self, _symbol,
-                            align=Qt.AlignmentFlag.AlignRight if _eclass == EntityClass.OUT else Qt.AlignmentFlag.AlignLeft,
-                            editable=False)
-        self._label.setPos(7.5 if _eclass == EntityClass.INP else -self._label.textWidth() - 7.5, -12.5)
+        # Connection state:
+        self._visual    = self.Visual()  # Visual attributes
+        self._connected = False
+        self._conjugate = None
+        self._connector = None
+        self._settings  = EntityConfigure(self)  # Configuration dialog for the handle
+
+        # Label:
+        self._label = String(
+            self,
+            symbol,
+            align = Qt.AlignmentFlag.AlignLeft if role == EntityRole.INP else Qt.AlignmentFlag.AlignRight,
+            editable = False
+        )
+        self._label.setPos(7.5 if role == EntityRole.INP else -7.5 - self._label.textWidth(), -12.0)  # Offset the label position
         self._label.sig_text_changed.connect(self.rename)
 
-        # Attrib (Must be defined after `_label`):
-        self._attr = self.Attr()
-        self._styl = self.Style()
-        self._huid = random_id(prefix='H')
-
-        self.contrast = False # Flag to determine whether handle's text-color should contrast its stream-color
-        self.offset = _coords.toPoint().x()
-        self.eclass = _eclass
-        self.symbol = _symbol
-        self.label  = _symbol
-
-        # Connection status:
-        self.connected = False
-        self.conjugate = None
-        self.connector = None
-
-        # Tags:
-        size = 12
-        self._tags = load_svg("rss/icons/star.svg", size)
-        self._tags.setTransformOriginPoint(size/2, size/2)
-        self._tags.setPos(4 if self.eclass == EntityClass.OUT else - 28, -12.5)
-        self._tags.setParentItem(self)
-        self._tags.hide()
-
-        # Hover hint:
-        self._hint = QGraphicsEllipseItem(self._attr.mark, self)
-        self._hint.setBrush(Qt.GlobalColor.black)
-        self._hint.setPen(QPen())
+        # Hint that is shown when the handle is hovered over:
+        self._hint = QGraphicsEllipseItem(self._visual.hint_rect, self)
+        self._hint.setPen  (self._visual.pen_normal)
+        self._hint.setBrush(self._visual.hint_color)
         self._hint.hide()
 
-        # Behaviour:
-        self.setPos(_coords)
-        self.setAcceptHoverEvents(True)
+        # Customize behavior:
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
-        # Initialize menu:
+        self.setAcceptHoverEvents(True)
+        self.setParentItem(parent)
         self._init_menu()
 
-    # Context-menu initializer:
+    # Context-menu:
     def _init_menu(self):
         """
-        Initializes the context menu for the handle.
-
-        Parameters: None
-        Returns: None
+        Initialize the context menu for the handle.
+        :return:
         """
-
-        # Initialize menu:
         self._menu = QMenu()
-        decision = self._menu.addAction("Decision Variable")
-        decision.triggered.connect(lambda: self.set_decision(decision.isChecked()))
-        decision.setCheckable(True)
+        self._subm = self._menu.addMenu('Stream')
 
+        edit = self._menu.addAction(qta.icon('mdi.label', color='darkblue'), 'Edit', self.set_editable)
         self._menu.addSeparator()
-        self._subm = self._menu.addMenu("Stream")
 
-        # Main menu actions:
-        edit_action = self._menu.addAction("Edit Label")
-        edit_action.triggered.connect(self.set_editable)
-        edit_action.setObjectName("Edit Label")
+        config = self._menu.addAction(qta.icon('ph.gear', color='black'), "Configure")
+        unpair = self._menu.addAction(qta.icon('ph.eject', color='darkgreen'), 'Unpair', lambda: print('Unpair clicked'))
+        remove = self._menu.addAction(qta.icon('ph.trash-simple', color='darkred'), 'Delete', lambda: self.sig_item_removed.emit())
 
-        unpair_action = self._menu.addAction("Unpair")
-        unpair_action.triggered.connect(self.unpair)
-        unpair_action.setObjectName("Unpair")
-
-        delete_action = self._menu.addAction("Delete")
-        delete_action.triggered.connect(lambda: self.sig_item_removed.emit(self))
+        edit.setIconVisibleInMenu(True)
+        config.setIconVisibleInMenu(True)
+        unpair.setIconVisibleInMenu(True)
+        remove.setIconVisibleInMenu(True)
 
         # Sub-menu customization:
         widget = QLineEdit()
         widget.setPlaceholderText("Enter Category")
-        widget.returnPressed.connect(lambda: self.create_stream(widget.text()))
 
         self._prompt = QWidgetAction(self._subm)
         self._prompt.setDefaultWidget(widget)
         self._prompt.setObjectName("Prompt")
 
-        # Add actions to sub-menu:
+        # Add actions to the submenu:
         self._subm.addAction(self._prompt)
         self._subm.addSeparator()
 
-    # Re-implemented methods -------------------------------------------------------------------------------------------
-    # Name                      Description
-    # ------------------------------------------------------------------------------------------------------------------
-    # 1. boundingRect           Returns an artificially enlarged bounding rectangle.
-    # 2. paint                  Handles the painting of the handle.
-    # 3. itemChange             Emits the `sig_item_shifted` signal when the handle's scene-position changes, which is
-    #                           captured by the connector.
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def boundingRect(self):
+    def boundingRect(self) -> QRectF:
         """
-        Re-implementation of `QGraphicsObject.boundingRect`. The returned rectangle is larger than the handle's actual size,
-        to allow for a hover-indicator.
-
-        Returns:
-            QRectF: The bounding rectangle of the handle.
+        Return the bounding rectangle of the handle.
         """
+        return self._attr.rect.adjusted(-7.5, -7.5, 7.5, 7.5)
 
-        return QRectF(-2.0 * self.Attr.size, -2.0 * self.Attr.size, 4.0 * self.Attr.size, 4.0 * self.Attr.size)
-
-    def paint(self, painter, option, widget = ...):
-        painter.setPen(self._styl.pen_border)
-        painter.setBrush(self._styl.bg_active)
+    def paint(self, painter, option, widget=None):
+        """
+        Paint the handle with the specified pen and background color.
+        """
+        painter.setPen(self._visual.pen_normal)
+        painter.setBrush(self._visual.background)
         painter.drawEllipse(self._attr.rect)
 
     def itemChange(self, change, value):
-
-        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.sig_item_shifted.emit(self)
+        """
+        Emits signals when the handle is moved.
+        :param change:
+        :param value:
+        :return:
+        """
+        # If the handle is connected, redraw the connector when the scene-coordinate changes:
+        if (
+            change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged and
+            self._connected
+        ):
+            self._connector().render()
 
         return value
-    
-    # Event-handlers ---------------------------------------------------------------------------------------------------
-    # Name                      Description
+
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. contextMenuEvent       Handles context-menu events (triggered when the user right-clicks on the handle).
-    # 2. hoverEnterEvent        Show a hover-indicator when the mouse is over the handle.
-    # 3. hoverLeaveEvent        Hide the hover-indicator when the mouse is no longer over the handle.
-    # 4. mousePressEvent        For unpaired handles, this will emit a signal to begin a transient-connection. For
-    #                           paired handles, this will toggle-on the handle's movable-flag.
-    # 5. mouseReleaseEvent      Toggles off the handle's movable-flag, snaps x-position to the offset value.
+    # Event handlers:
+    # Name                  Description
     # ------------------------------------------------------------------------------------------------------------------
 
     def contextMenuEvent(self, event):
-
-        # Enable/disable actions based on handle's state:
-        unpair = self._menu.findChild(QAction, name="Unpair")
-        unpair.setEnabled(self.connected)
+        """
+        Handle context menu event to show the handle's context menu.
+        :param event: QContextMenuEvent
+        """
+        # Enable/disable actions based on the handle's state:
+        # unpair = self._menu.findChild(QAction, name="Unpair")
+        # unpair.setEnabled(self.connected)
 
         # Initialize menu-actions:
         menu_actions = [
-            StreamMenuAction(stream, self.strid == stream.strid)
-            for stream in self.scene().type_db
+            StreamMenuAction(strid, color, self.strid == strid)
+            for strid, color in self.scene().db.kind.items()
         ]
 
         # Sort menu-actions by label:
         menu_actions.sort(key=lambda x: x.label)
-            
-        # Add streams dynamically to sub-menu:
+
+        # Add streams dynamically to the submenu:
         for action in menu_actions:
             self._subm.addAction(action)
             action.triggered.connect(self.on_stream_selected)
-            action.setEnabled(False if self.connected and self.eclass == EntityClass.INP else True)
+            action.setEnabled(False if self.connected and self.role == EntityRole.INP else True)
 
         self._menu.popup(QCursor.pos())
         self._menu.exec()
 
-        # Remove all QActions from the sub-menu, leave the QWidgetAction as is:
+        # Remove all QActions from the submenu, leave the QWidgetAction as is:
         for action in menu_actions: self._subm.removeAction(action)
 
     def hoverEnterEvent(self, event):
+        """
+        Handle hover enter event to show the hint and change the cursor.
+        :param event: QHoverEvent
+        """
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setToolTip(self._huid)
-
         self._hint.show()
+
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
-
+        """
+        Handle hover leave event to hide the hint and reset the cursor.
+        :param event:
+        """
+        # Reset the cursor and hide the hint:
+        self.unsetCursor()
         self._hint.hide()
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        # Call the base class implementation:
         super().hoverLeaveEvent(event)
 
     def mousePressEvent(self, event):
         """
-        If handle is paired, toggle-on the handle's movable-flag. Otherwise, emit the `sig_item_clicked` signal.
-
-        Parameters:
-            event (QGraphicsSceneMouseEvent): Mouse-press event, instantiated by Qt.
+        Handle mouse press event to emit a signal when the handle is clicked.
+        :param event: QMouseEvent
         """
+        if  not self._connected:
+            self.sig_item_clicked.emit()
 
-        if event.button() == Qt.MouseButton.LeftButton:
+        elif self.movable:
+             self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
-            if  self.connected: # Toggle-on movable-flag:
-                self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
-
-            else: # Emit signal to begin transient-connection:
-                self.sig_item_clicked.emit(self)
-
-        # Forward event to super-class:
         super().mousePressEvent(event)
         event.accept()
 
     def mouseReleaseEvent(self, event):
         """
-        Toggle off the handle's movable-flag, snap x-position to the offset value.
-
-        Parameters:
-            event (QGraphicsSceneMouseEvent): Mouse-release event, instantiated by Qt.
+        Handle mouse release event to reset the movable flag.
+        :param event:
+        :return:
         """
-
-        # Modify handle-behavior and attributes:
+        # Make the handle immovable after releasing the mouse button:
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
-        self.setPos(self.offset, self.pos().y())
+        self.setPos (self.parentItem().handle_offset(self.role), self.pos().y())               # Reset x-coordinate to offset-position
 
-        # Forward event to super-class:
+        # Call the base class implementation:
         super().mouseReleaseEvent(event)
 
-    # Custom methods -------------------------------------------------------------------------------------------
-    # Name                      Description
-    # ------------------------------------------------------------------------------------------------------------------
-    # 1. unpair                 Unpair this handle from its conjugate.
-    # 2. rename                 Rename the handle's label.
-    # 3. lock                   Lock handle to a conjugate and connector.   
-    # 4. free                   Free handle from its conjugate and connector.
-    # 5. set_stream             Set the stream of the handle.
-    # 6. set_editable           Make the handle's label temporarily editable.
-    # ------------------------------------------------------------------------------------------------------------------
+    # TODO: Describe user-defined functions.
+    #
 
-    def clone_into(self, _copied):
-
-        # Call super-class implementation:
-        super().clone_into(_copied)
-
-        # Set additional attribute(s):
-        _copied.contrast = self.contrast
-        _copied.offset   = self.offset
-
-        # Rename, set position, then emit signal:
-        _copied.rename(self.label)
-        _copied.setPos(self.pos())
-        _copied.sig_item_updated.emit(_copied)
-
-    def unpair(self):
+    # Rename the handle:
+    def rename(self, text: str):
         """
-        Unpair this handle from its conjugate.
-
-        Parameters: None
-        Returns: None
+        Rename the handle with the given text.
+        :param text: str
         """
-
-        # Emit signal to disconnect handle:
-        self.sig_item_cleared.emit(self)
-
-        # Initiate unpairing through stack-manager:
-        logging.info("Unpairing handle")
-
-    def rename(self, _label: str):
-        """
-        Rename the handle's label.
-
-        Parameters:
-            _label (str): The new label for the handle.
-        Returns: None
-        """
-
-        self._prop["label"] = _label
-        self._label.setPlainText(self.label)
+        self._meta.label = text
+        self._label.setPlainText(text)
+        self._label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
 
         if (
-            self.conjugate and
-            self.conjugate() and
-            self.eclass == EntityClass.OUT
+            self._connected and
+            self._conjugate() and
+            self._attr.role == EntityRole.OUT
         ):
-            self.conjugate().rename(self.label)
+            self._conjugate().rename(self.label)
 
-    def lock(self, conjugate, connector):
+    # Configure the handle's data:
+    def configure(self):
+        """
+        Configure the handle's data.
+        This method is a placeholder and should be implemented in subclasses.
+        """
+        self._settings.open()
 
-        # Store references:
-        self.connected = True
-        self.conjugate = weakref.ref(conjugate)
-        self.connector = weakref.ref(connector)
+    def toggle_state(self, connector, conjugate):
+        """
+        Toggle the state of the handle, either connecting or disconnecting it from a connector.
+        :param connector: The connector with which this handle is connected.
+        :param conjugate: The conjugate handle to this.
+        :return:
+        """
+        from tabs.schema.graph.connector import Connector
 
-        # Change background color to red:
-        self._styl.bg_active = self._styl.bg_paired
-
-    def free(self, delete_connector = False):
-
-        # If `delete` is True, delete connector:
+        # Type-check:
         if (
-            delete_connector and
-            self.connected and
-            self.connector()
+            not isinstance(connector, Connector | None) or
+            not isinstance(conjugate, Handle | None)
         ):
-            self.connector().deleteLater()
+            raise TypeError("Invalid arguments")
 
-        # Toggle reference(s):
-        self.connected = False
-        self.conjugate = None
-        self.connector = None
+        # Connect or disconnect the handle:
+        if  connector and conjugate:
+            self._connected = True
+            self._connector = weakref.ref(connector)
+            self._conjugate = weakref.ref(conjugate)
+            self._visual.background = QColor(Qt.GlobalColor.darkRed)
 
-        # Change background color to normal:
-        self._styl.bg_active = self._styl.bg_normal
-
-        # Make item immovable again:
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
+        else:
+            self._connected = False
+            self._connector = None
+            self._conjugate = None
+            self._visual.background = QColor(0xcfffb3)  # Reset to default color
 
     def on_stream_selected(self):
+        """
+        Handle the selection of a stream from the context menu.
+        :return:
+        """
+        # Get the action that triggered the signal:
+        action = self.sender()
+        canvas = self.scene()
 
-        # Import Canvas:
-        from tabs.schema.canvas import Canvas
+        # Set the chosen stream:
+        self.set_stream(action.label, canvas.db.kind[action.label])
 
-        # Validate signal-emitter:
-        if (
-            not isinstance(_action := self.sender(), StreamMenuAction) or
-            not isinstance(_canvas := self.scene() , Canvas)
-        ): 
-            return
-
-        # Get stream-id:
-        _stream = _action.label
-        _stream = _canvas.find_stream(_stream)
-
+    @validator
+    def set_stream(self, strid: str, color: QColor):
+        """
+        Set the stream for the handle and update its visual attributes.
+        :param strid: str
+        :param color: QColor
+        """
         # Set stream:
-        self.set_stream(_stream)
+        self.strid = strid
+
+        if  self.contrast:
+            self._label.setDefaultTextColor(anti_color(color))
+
+        # If the handle is connected, update the conjugate's stream as well:
+        if (
+            self.connector and
+            self.conjugate and
+            self.role == EntityRole.OUT
+        ):
+            self.connector.color = color
+            self.conjugate.set_stream(strid, color)
 
         # Notify application of stream-change:
-        self.sig_item_updated.emit(self)
-
-    def set_stream(self, _stream: Stream):
-
-        # Validate input:
-        if not isinstance(_stream, Stream): return
-
-        # Set stream:
-        self.strid = _stream.strid
-        self.color = _stream.color
-
-        # Change text-color, only if the `contrast` flag is set:
-        if self.contrast:   self._label.setDefaultTextColor(anti_color(self.color))
-
-        # If handle is paired, update conjugate and connector:
-        if  self.connected and self.eclass == EntityClass.OUT:
-            self.connector().set_color (_stream.color)
-            self.conjugate().set_stream(_stream)
+        self.update()
+        self.sig_item_updated.emit()
 
     def set_editable(self):
-
+        """
+        Set the label of the handle to be editable and highlight the entire text.
+        :return:
+        """
         # Make the label temporarily editable:
         self._label.setTextInteractionFlags(Qt.TextInteractionFlag.TextEditorInteraction)
         self._label.setFocus(Qt.FocusReason.OtherFocusReason)
@@ -428,25 +366,79 @@ class Handle(QGraphicsObject, Entity):
         cursor.movePosition(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.KeepAnchor)
         self._label.setTextCursor(cursor)
 
-    def set_decision(self, _flag: bool):    
-        self._tags.setVisible(_flag)
-
-    def create_stream(self, _strid: str):
-
-        # Import canvas module:
-        from tabs.schema import Canvas
-
-        # Define convenience variable:
-        _canvas = self.scene()
-
-        # Fetch stream:
-        _stream = _canvas.find_stream(_strid, True)         # This method will also add the stream to the database
- 
-        # Set stream:
-        self.set_stream(_stream)
-
-        # If the menu is open, update the sub-menu:
-        if  self._menu.isVisible(): self._menu.close()
+    # TODO: Describe property setters and getters.
+    #
+    #
 
     @property
-    def uid(self):  return self._huid
+    def role(self):
+        """
+        Return the role of the handle (input or output).
+        :return: EntityRole
+        """
+        return self._attr.role
+
+    @property
+    def color(self):
+        """
+        Returns the color of the handle
+        :return:
+        """
+        return self.scene().db.kind[self.strid]
+
+    @property
+    def movable(self) -> bool:
+        """
+        Return whether the handle is movable.
+        :return: bool
+        """
+        return self._attr.movable
+
+    @property
+    def contrast(self):
+        """
+        Return whether the text color should contrast with the background.
+        :return: bool
+        """
+        return self._attr.contrast
+
+    @property
+    def connected(self):
+        """
+        Return whether the handle is connected to a connector.
+        :return: bool
+        """
+        return self._connected
+
+    @property
+    def conjugate(self):
+        """
+        Return the conjugate handle if connected.
+        :return: Handle | None
+        """
+        return self._conjugate() if self._conjugate else None
+
+    @property
+    def connector(self):
+        """
+        Return the connector if connected.
+        :return: Connector | None
+        """
+        return self._connector() if self._connector else None
+
+    @movable.setter
+    def movable(self, value: bool):
+        """
+        Set whether the handle is movable.
+        :param value: bool
+        """
+        self._attr.movable = value
+
+    @contrast.setter
+    @validator
+    def contrast(self, value: bool):
+        """
+        Set whether the text color should contrast with the background.
+        :param value: bool
+        """
+        self._attr.contrast = value
