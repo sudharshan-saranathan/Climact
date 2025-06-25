@@ -88,7 +88,7 @@ class Gui(QMainWindow):
         _help_menu = _menu.addMenu("Help")  # Help menu
 
         # Add actions and connect them to appropriate slots:
-        _newtab_action = _file_menu.addAction("New Tab", QKeySequence("Ctrl+T"), self._tabber.addTab)
+        _newtab_action = _file_menu.addAction("New Tab", self._tabber.create_tab)
 
         _file_menu.addSeparator()
         _import_action = _file_menu.addAction("Import Schema", QKeySequence.StandardKey.Open, self._tabber.import_schema)

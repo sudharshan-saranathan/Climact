@@ -54,6 +54,7 @@ class AMPLEngine:
             return None
 
         try:
+            self.__ampl.reset()
             self.__ampl.eval(statements)
             self.__ampl.solve(solver='ipopt', verbose=True)
 
