@@ -61,9 +61,17 @@ class Climact(QApplication):
 
 # Instantiate application and enter event-loop:
 def main():
-    print(platform.system())
-    _app = Climact(sys.argv)
-    _app.exec()
+
+    print(f"-" * 50)
+    print(f"CLIMATE ACTION TOOL")
+    print(f"-" * 50)
+    print(f"Version:\t{Climact.Metadata.APP_VERSION}")
+    print(f"Platform:\t{platform.system()}")
+    print(f"Sub-mods:\tPyQt6, Google-AI (Gemini)")
+    print(f"-" * 50)
+
+    app = Climact(sys.argv)
+    app.exec()
 
 if __name__ == "__main__":
     main()

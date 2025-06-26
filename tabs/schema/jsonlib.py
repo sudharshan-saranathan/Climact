@@ -195,28 +195,22 @@ class JsonLib:
         return None
 
     @staticmethod
-    def encode(_canvas):
+    def encode(canvas):
         """
-        Serializes all selected items from the canvas (or all active items if no items are selected)
-        and returns a JSON string.
-
-        Args:
-            _canvas (Canvas): The canvas, whose items are to be serialized.
-
-        Returns:
-            str: A JSON string containing the serialized items.
+        Serializes all items in the canvas (nodes, terminals, and connectors) into a JSON string.
+        :param canvas: The `Canvas` object containing the items to serialize.
         """
 
-        item_list = (
-            [_item for _item, _state in _canvas.node_db.items() if _state] +     # Active nodes
-            [_item for _item, _state in _canvas.term_db.items() if _state] +     # Active terminals 
-            [_item for _item, _state in _canvas.conn_db.items() if _state]       # Active connectors
+        total_items_list = (
+            [item for item, state in canvas.node_db.items() if state] +     # Active nodes
+            [item for item, state in canvas.term_db.items() if state] +     # Active terminals
+            [item for item, state in canvas.conn_db.items() if state]       # Active connectors
         )
 
         # Fetch serialized JSON objects for each item-type:
-        node_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.Node)]
-        conn_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.Connector)]
-        term_array = [JsonLib.serialize(_item) for _item in item_list if isinstance(_item, graph.StreamTerminal)]
+        node_array = [JsonLib.serialize(_item) for _item in total_items_list if isinstance(_item, graph.Node)]
+        conn_array = [JsonLib.serialize(_item) for _item in total_items_list if isinstance(_item, graph.Connector)]
+        term_array = [JsonLib.serialize(_item) for _item in total_items_list if isinstance(_item, graph.StreamTerminal)]
 
         # Initialize JSON objects:
         schematic = {
