@@ -51,12 +51,12 @@ class Gui(QMainWindow):
         self._tabber = Tabber(self._wstack)     # Tab-widget to hold multiple canvas
         self._navbar = NavBar(self)             # Detachable, interactive navigation-bar
 
-        self._data   = DataManager(self._tabber.currentWidget().canvas, self)
+        self._sheets = DataManager(self._tabber.currentWidget().canvas, self)
         self._optima = Optimizer  (self._tabber.currentWidget().canvas, self)
 
         # Add stack-widgets:
         self._wstack.addWidget(self._tabber)    # Tab-widget to hold multiple canvas
-        self._wstack.addWidget(self._data)      # Data-manager
+        self._wstack.addWidget(self._sheets)      # Data-manager
         self._wstack.addWidget(self._optima)    # Optimizer
 
         # Add `_navbar` as a toolbar:
@@ -66,12 +66,13 @@ class Gui(QMainWindow):
         # Connect navbar's signal:
         self._navbar.sig_open_schema.connect(self._tabber.import_schema)
         self._navbar.sig_save_schema.connect(self._tabber.export_schema)
-        self._navbar.sig_show_widget.connect(self.show_widget)
+        self._navbar.sig_show_widget.connect(self.set_active_widget)
+
+        # Connect the canvas's double-clicked signal:
+        self._tabber.canvas.sig_node_clicked.connect(lambda: self._navbar.select_action("Sheets"))
 
         # Initialize menu:
         self._init_menubar()
-        self._init_shortcuts()
-
         self.showMaximized()
 
     # Create a menu-bar and add menu items:
@@ -97,50 +98,23 @@ class Gui(QMainWindow):
         _file_menu.addSeparator()
         _quit_action = _file_menu.addAction("Quit Application", QKeySequence.StandardKey.Quit, QApplication.instance().quit)
 
-    # Initialize keyboard shortcuts:
-    def _init_shortcuts(self):
-
-        # Navigation shortcuts:
-        shortcut_up    = QShortcut(QKeySequence.StandardKey.MoveToPreviousLine, self, self._navbar.previous)
-        shortcut_left  = QShortcut(QKeySequence.StandardKey.MoveToPreviousChar, self)
-        shortcut_down  = QShortcut(QKeySequence.StandardKey.MoveToNextLine, self, self._navbar.next)
-        shortcut_right = QShortcut(QKeySequence.StandardKey.MoveToNextChar, self)
-
-        shortcut_left .activated.connect(lambda: self._tabber.setCurrentIndex(self._tabber.currentIndex() - 1))
-        shortcut_right.activated.connect(lambda: self._tabber.setCurrentIndex(self._tabber.currentIndex() + 1))
-
     def load_project(self): self._tabber.import_schema()
 
-    def show_widget(self, _label: str):
+    def set_active_widget(self, label: str):
 
-        if _label == "Data":
-            self._data.reload(self._tabber.currentWidget().canvas)
-            self._wstack.setCurrentWidget(self._data)
+        """
+        Sets the active widget in the QStackedWidget based on the argument `label` received from the NavBar.
+        :param label:
+        """
+        if  label == "Canvas" and self._wstack.currentWidget() != self._tabber:
+            self._wstack.setCurrentWidget(self._tabber)
+            return
 
-        if _label == "Optima":
-            self._optima.reload(self._tabber.currentWidget().canvas)
+        if label == "Sheets" and self._wstack.currentWidget() != self._sheets:
+            self._sheets.reload(self._tabber.canvas)
+            self._wstack.setCurrentWidget(self._sheets)
+            return
+
+        if  label == "Optima" and self._wstack.currentWidget() != self._optima:
             self._wstack.setCurrentWidget(self._optima)
-
-
-        if _label == "Canvas":      self._wstack.setCurrentWidget(self._tabber)
-        if _label == "Assistant":   self._tabber.currentWidget().toggle_assistant()
-
-    def closeEvent(self, event):
-
-        """
-        # Confirm quit:
-        _dialog = Message(QtMsgType.QtWarningMsg,
-                         "Do you want to save unsaved changes?",
-                          QMessageBox.StandardButton.Yes |
-                          QMessageBox.StandardButton.No |
-                          QMessageBox.StandardButton.Cancel
-                          )
-
-        # Execute dialog and get result:
-        _dialog_code = _dialog.exec()
-
-        # Handle close-event accordingly:
-        if _dialog_code == QMessageBox.StandardButton.Yes:      event.accept()
-        if _dialog_code == QMessageBox.StandardButton.No:       event.accept()
-        if _dialog_code == QMessageBox.StandardButton.Cancel:   event.ignore()
-        """
+            return

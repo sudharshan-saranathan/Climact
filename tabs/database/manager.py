@@ -6,6 +6,7 @@ from tabs.schema.canvas import Canvas
 from tabs.database.eqnview import EqnView
 from tabs.database.table import Table
 from tabs.database.tree import Tree
+from custom.entity import EntityState
 
 class DataManager(QWidget):
 
@@ -68,13 +69,16 @@ class DataManager(QWidget):
     # Tree-item selected:
     def on_tree_item_selected(self, nuid: str, huid: str):
 
-        # Find _node using UID:
-        node = self._canvas.find_node(nuid)
+        # Find the node by unique identifier (nuid):
+        for node, state in self._canvas.node_db.items():
+            if state:
+                if  node and node.uid == nuid:
+                    print(f"Displaying data for {node.uid} ({node.title})")
 
-        # Display data for _node:
-        self._sheets.setRowCount(0)
-        self._sheets.fetch(node)
+                    # Display data for _node:
+                    self._sheets.setRowCount(0)
+                    self._sheets.fetch(node)
 
-        # Enable the equation-editor:
-        self._eqview.setEnabled(True)
-        self._eqview.node = node
+                    # Enable the equation-editor:
+                    self._eqview.setEnabled(True)
+                    self._eqview.node = node

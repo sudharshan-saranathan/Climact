@@ -256,3 +256,7 @@ class Tabber(QTabWidget):
 
         elif state == SaveState.ERROR:
             self.setTabIcon(self.currentIndex(), qta.icon('ph.warning', color='red'))
+
+    @property
+    def canvas(self):
+        return self.currentWidget().canvas if self.currentWidget() else None

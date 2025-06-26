@@ -29,7 +29,7 @@ class NavBar(QToolBar):
         self._import_schematic = self.addAction(QIcon("rss/icons/json.png"), "Open")          # Action for importing a schematic from a JSON file
         self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")          # Action for saving a schematic to a JSON file
         self._switch_to_canvas = self.addAction(QIcon("rss/icons/hammer.png"), "Canvas")        # Action for switching to the canvas tab
-        self._switch_to_sheets = self.addAction(QIcon("rss/icons/excel.png"), "Data")          # Action for switching to the data tab
+        self._switch_to_sheets = self.addAction(QIcon("rss/icons/excel.png") , "Sheets")          # Action for switching to the data tab
         self._switch_to_script = self.addAction(QIcon("rss/icons/charts.png"), "Script")        # Action for switching to the script tab
         self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optima")        # Action for switching to the optimization tab
         self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")     # Action for toggling the AI assistant on and off
@@ -68,31 +68,14 @@ class NavBar(QToolBar):
         self._switch_to_optima.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))
         self._toggle_assistant.triggered.connect(lambda: self.sig_show_widget.emit(self._toggle_assistant.text()))
 
-    # Activate the next action in the navbar:
-    def next(self):
+    # Activate a specific action by name:
+    def select_action(self, action_name: str):
         """
-        Triggers the next action in the navbar.
-        """
-
-        for action in self._actions:
-            if action.isChecked():
-                _index = self._actions.index(action)
-                if _index == len(self._actions) - 1:  # Beep if already at the last action
-                    QApplication.beep()  # Beep if already at the first action
-                else:
-                    self._actions[_index + 1].trigger()
-                break
-
-    # Activate the previous action in the navbar:
-    def previous(self):
-        """
-        Triggers the previous action in the navbar.
+        Activates a specific action by its name.
         """
         for action in self._actions:
-            if action.isChecked():
-                _index = self._actions.index(action)
-                if  _index == 0:
-                    QApplication.beep()  # Beep if already at the first action
-                else:
-                    self._actions[_index - 1].trigger()
-                break
+            if action.text() == action_name:
+                action.trigger()
+                return
+
+        logging.warning(f"Action '{action_name}' not found in the navigation bar.")

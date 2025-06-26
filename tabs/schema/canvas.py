@@ -78,6 +78,7 @@ class Canvas(QGraphicsScene):
     """
 
     # Signals:
+    sig_node_clicked = pyqtSignal()             # Emitted when an item is double-clicked.
     sig_item_created = pyqtSignal()             # Emitted when a new item is created.
     sig_item_removed = pyqtSignal()             # Emitted when an item is removed.
     sig_canvas_reset = pyqtSignal()             # Emitted when the canvas is reset.
@@ -391,15 +392,11 @@ class Canvas(QGraphicsScene):
                    _push: bool = True
                    ):
         """
-        Create a new _node and add it to the scene.
-
-        Args:
-            _name (str, optional): The name of the _node (default: "Node").
-            _cpos (QPointF, optional): The position of the _node (in scene-coordinates).
-            _push (bool): Flag that determines whether the action will be pushed to the stack.
-
-        Returns: 
-            Node: The newly created _node.
+        Create a new _node and add it to the canvas.
+        :param _name: Name of the node to be created. Default is "Node".
+        :param _cpos: Position of the node in scene-coordinates. If `None`, the last-displayed position of the context menu is used.
+        :param _push: Whether to push the creation action to the undo-stack. Default is `True`.
+        :return:
         """
 
         # If the input coordinate is `None`, use the context menu's last-displayed position:
@@ -786,6 +783,7 @@ class Canvas(QGraphicsScene):
                             f"Error saving to file. Please check log file for details.")
 
             logging.info(f"Exception caught: {exception}")  # Output to the log file
+            self.sig_canvas_state.emit(SaveState.ERROR)     # Notify application of error state
             return None
 
     @pyqtSlot(Handle)

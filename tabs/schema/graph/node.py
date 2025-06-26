@@ -32,6 +32,7 @@ class Node(QGraphicsObject):
     sig_exec_actions = pyqtSignal(AbstractAction)   # Emitted to execute actions and push them to the undo/redo stack.
     sig_item_updated = pyqtSignal()         # Emitted when the node has been updated (e.g., renamed, resized, etc.).
     sig_item_removed = pyqtSignal()         # Emitted when the user deletes the node (e.g., via context-menu).
+    sig_item_clicked = pyqtSignal()         # Emitted when the node is double-clicked.
     sig_handle_clicked = pyqtSignal(Handle) # Emitted when a handle is clicked, signals the scene to begin a transient connection.
     sig_handle_updated = pyqtSignal(Handle) # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
     sig_handle_removed = pyqtSignal(Handle) # Emitted when the user deletes a handle (e.g., via context-menu).
@@ -72,6 +73,7 @@ class Node(QGraphicsObject):
         super().__init__(_parent)
 
         # Initialize style and attrib:
+        self.double_clicked = False     # Used to track when the node has been double-clicked
         self._nuid = str()              # The _node's unique ID
         self._spos = _spos              # Used to track and emit signal if the _node has been moved
         self._styl = self.Style()       # Instantiate the _node's style
@@ -254,6 +256,7 @@ class Node(QGraphicsObject):
             # Connect node's signals to the canvas's slots:
             self.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
             self.sig_item_removed.connect(value.on_item_removed)
+            self.sig_item_clicked.connect(value.sig_node_clicked.emit)
 
             # Connect signal-exec actions:
             self.sig_exec_actions.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
@@ -325,6 +328,10 @@ class Node(QGraphicsObject):
         # If the _node has been moved, notify canvas:
         if  self.scenePos() != self._spos:
             self.sig_item_updated.emit()
+
+    def mouseDoubleClickEvent(self, event):
+        self.double_clicked = True
+        self.sig_item_clicked.emit()  # Emit signal when the _node is double-clicked
 
     # User-defined methods ---------------------------------------------------------------------------------------------
     # Name                      Description
@@ -470,8 +477,8 @@ class Node(QGraphicsObject):
     def replace(self, _oldsym: str, _newsym: str):
         """
         Replaces `_oldsym` with `_newsym` in the node's equations. This method is called when a symbol is renamed (e.g.,
-        when a parameter is renamed, or when a variable's symbols are changed due to being imported into a non-empty
-        canvas
+        when a parameter is renamed or when a variable's symbols are changed due to being imported into a non-empty
+        canvas).
 
         :param: _oldsym (str): The old symbol to be replaced.
         :param: _newsym (str): The new symbol to replace the old one with

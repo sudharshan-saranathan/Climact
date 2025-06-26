@@ -222,7 +222,7 @@ class Table(QTableWidget):
 
         # Display the _node's variables:
         for variable, state in node[EntityClass.VAR].items():
-            if state == EntityState.ACTIVE or state:
+            if  state:
                 self.add_stream(variable)
 
         # Display the _node's parameters:

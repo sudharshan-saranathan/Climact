@@ -24,27 +24,28 @@ class Tree(QTreeWidget):
         self._canvas = canvas
 
         # Customize column-header:
-        self.setHeaderLabels(["ID", "NAME", "ATTR"])
-        self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.setHeaderLabels(["SYMBOL", "NAME", "ROLE/CLASS", "CONNECTOR"])
         self.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.header().setStretchLastSection(False)
 
         # Customize attribute(s):
         self.setFixedWidth(480)
-        self.setColumnCount(3)
+        self.setColumnCount(4)
 
         # Connect to slot:
         self.itemSelectionChanged.connect(self.on_item_selected)
 
     # Reload
-    def reload(self, _canvas: Canvas):
+    def reload(self, canvas: Canvas):
 
         # Validate argument(s):
-        if not isinstance(_canvas, Canvas):
+        if not isinstance(canvas, Canvas):
             raise ValueError("Expected argument of type `Canvas`")
 
         # Store canvas reference:
-        self._canvas = _canvas
+        self._canvas = canvas
 
         # Debugging:
         logging.info("Reloading graph-data")
@@ -55,13 +56,15 @@ class Tree(QTreeWidget):
         # Add top-level root:
         for node, state in self._canvas.node_db.items():
             if  state:
-                self.add_node_item(node)
+                item = self.add_node_item(node)
+                if  node.double_clicked:
+                    item.setSelected(True)
 
     # Add top-level root:
     def add_node_item(self, node: Node):
 
         # Create a top-level item:
-        item = QTreeWidgetItem(self, [node.uid, node.title, "None"])
+        item = QTreeWidgetItem(self, [node.uid, node.title, None, None])
         item.setIcon(0, QIcon("rss/icons/checked.png"))
         item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
         item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
@@ -69,27 +72,30 @@ class Tree(QTreeWidget):
         # Fetch the _node's variable(s) and parameter(s):
         for variable, state in node[EntityClass.VAR].items():
             if state == EntityState.ACTIVE:
-                _eclass = "Input" if variable.eclass == EntityClass.INP else "Output"
-                var_item = QTreeWidgetItem(item, [variable.symbol, variable.label, _eclass])
+                var_item = QTreeWidgetItem(item, [variable.symbol, variable.label, variable.eclass.name, variable.connector().symbol if variable.connector else ""])
                 var_item.setIcon(0, QIcon("rss/icons/variable.png"))
                 var_item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
                 var_item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
+                var_item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
 
         for parameter in node[EntityClass.PAR]:
-            par_item = QTreeWidgetItem(item, [parameter.symbol, parameter.label, "Parameter"])
+            par_item = QTreeWidgetItem(item, [parameter.symbol, parameter.label, parameter.eclass.name, None])
             par_item.setIcon(0, QIcon("rss/icons/parameter.png"))
             par_item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
             par_item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
+            par_item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
+
+        return item
 
     # Handle item selection:
     def on_item_selected(self):
 
         items = self.selectedItems()
-        if not len(items):
+        if  not len(items):
             return
 
         top_level_item = items[0]
-        if top_level_item.parent() is None:  # Item is a top-level item:
+        if  top_level_item.parent() is None:  # Item is a top-level item:
             self.sig_item_selected.emit(top_level_item.text(0), None)
             print(f"Tree.on_item_selected(): {top_level_item.text(0)} selected")
 
