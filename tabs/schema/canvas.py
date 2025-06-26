@@ -351,7 +351,7 @@ class Canvas(QGraphicsScene):
 
         # Create a new connection between the origin and target and add it to the canvas:
         _connector = Connector(self.create_cuid(), _origin, _target)
-        self.conn_db[_connector] = True
+        self.conn_db[_connector] = EntityState.ACTIVE
         self.addItem(_connector)
 
         # Push action to undo-stack:
@@ -412,7 +412,7 @@ class Canvas(QGraphicsScene):
         )
 
         # Add the created node to the database, and to the QGraphicsScene:
-        self.node_db[_node] = True
+        self.node_db[_node] = EntityState.ACTIVE
         self.addItem(_node)
 
         # Push to undo stack (if required):
@@ -475,7 +475,7 @@ class Canvas(QGraphicsScene):
         _terminal.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
-        self.term_db[_terminal] = True
+        self.term_db[_terminal] = EntityState.ACTIVE
         self.addItem(_terminal)
 
         # If the flag is set, create the corresponding action and push it to the undo-stack:
@@ -494,17 +494,11 @@ class Canvas(QGraphicsScene):
         :return: str: Unique ID for a new connector.
         """
 
-        id_set = set()
-        for _connector, _state in self.conn_db.items():
-            if _state:
-                # Extract the integer part from the connector's symbol (e.g., "X3" -> 3):
-                id_set.add(int(_connector.symbol.split('X')[1]))
-
         # Get existing connector UIDs:
         id_set = {
             int(_connector.symbol.split('X')[1])
-            for _connector, _state in self.conn_db.items()
-            if _state
+            for _connector, state in self.conn_db.items()
+            if  state == EntityState.ACTIVE
         }
 
         # If `id_set` is empty, return "X0":
@@ -573,7 +567,7 @@ class Canvas(QGraphicsScene):
                 item_clone = item.clone(set_uid = self.create_nuid())
 
                 # Add to canvas:
-                self.node_db[item_clone] = True
+                self.node_db[item_clone] = EntityState.ACTIVE
                 self.addItem(item_clone)
 
                 # Add to batch-operations:
@@ -586,7 +580,7 @@ class Canvas(QGraphicsScene):
                 item_clone = item.clone()
 
                 # Add to canvas:
-                self.term_db[item_clone] = True
+                self.term_db[item_clone] = EntityState.ACTIVE
                 self.addItem(item_clone)
 
                 # Add to batch operations:
@@ -610,7 +604,7 @@ class Canvas(QGraphicsScene):
                 _connector.sig_item_removed.connect(self.on_item_removed)
 
                 # Add _connector to canvas:
-                self.conn_db[_connector] = True
+                self.conn_db[_connector] = EntityState.ACTIVE
                 self.addItem(_connector)
 
                 # Add _connector-creation to batch:
@@ -647,13 +641,13 @@ class Canvas(QGraphicsScene):
             _item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
             _item.sig_exec_actions.connect(self.manager.do)
             _item.sig_handle_clicked.connect(self.begin_transient)
-            self.node_db[_item] = True
+            self.node_db[_item] = EntityState.ACTIVE
 
         elif isinstance(_item, StreamTerminal):
             _item.socket.sig_item_clicked.connect(self.begin_transient)
             _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
             _item.sig_item_removed.connect(self.on_item_removed)
-            self.term_db[_item] = True
+            self.term_db[_item] = EntityState.ACTIVE
 
         # Add item to canvas:
         self.addItem(_item)
@@ -702,14 +696,14 @@ class Canvas(QGraphicsScene):
 
     def symbols(self):
 
-        _symbols = list()
-        for _node, _state in self.node_db.items():
-            if _state:
-                _symbols += _node.symbols()
+        symlist = list()
+        for _node, state in self.node_db.items():
+            if  state == EntityState.ACTIVE:
+                symlist += _node.symbols()
 
-        for _conn, _state in self.conn_db.items():
-            if _state:
-                _symbols.append(_conn.symbol)
+        for conn, state in self.conn_db.items():
+            if  state == EntityState.ACTIVE:
+                symlist.append(conn.symbol)
 
     # Method to import a JSON schematic:
     @pyqtSlot()

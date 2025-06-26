@@ -125,9 +125,9 @@ class CreateNodeAction(AbstractAction):
         nref = self.nref()  # Dereference _node pointer
 
         # Deactivate _node:
-        cref.node_db[nref] = False      # Mark _node as deactivated (i.e. False) in the canvas' database
-        nref.setVisible(False)          # Toggle-off visibility
-        nref.blockSignals(True)         # Block signals
+        cref.node_db[nref] = EntityState.HIDDEN         # Hide the node
+        nref.setVisible(False)                          # Toggle-off visibility
+        nref.blockSignals(True)                         # Block signals
 
     # Redo operation:
     def redo(self)  -> None:
@@ -141,7 +141,7 @@ class CreateNodeAction(AbstractAction):
         nref = self.nref()  # Dereference _node pointer
 
         # Re-activate _node:
-        cref.node_db[nref] = True       # Mark _node as reactivated (i.e. False) in the canvas' database
+        cref.node_db[nref] = EntityState.ACTIVE       # Mark _node as reactivated (i.e. False) in the canvas' database
         nref.blockSignals(False)        # Toggle-on visibility
         nref.setVisible(True)           # Unblock signals
 
@@ -219,10 +219,10 @@ class RemoveNodeAction(AbstractAction):
             ):
                 handle.conjugate().free()                   # Free the handle's conjugate
                 handle.connector().setVisible(False)        # Toggle-off connector's visibility
-                cref.conn_db[handle.connector()] = False    # Mark connector as deactivated in the canvas' database
+                cref.conn_db[handle.connector()] = EntityState.HIDDEN    # Mark connector as deactivated in the canvas' database
 
         # Deactivate _node:
-        cref.node_db[nref] = False      # Mark _node as deactivated in the canvas' database
+        cref.node_db[nref] = EntityState.HIDDEN      # Mark _node as deactivated in the canvas' database
         nref.setVisible(False)          # Toggle-off visibility
         nref.blockSignals(True)         # Block signals
 
@@ -247,10 +247,10 @@ class RemoveNodeAction(AbstractAction):
             ):
                 handle.conjugate().lock(handle, handle.connector()) # Lock the handle's conjugate
                 handle.connector().setVisible(True)                 # Toggle-on connector's visibility  
-                cref.conn_db[handle.connector()] = True             # Mark connector as reactivated in the canvas' database
+                cref.conn_db[handle.connector()] = EntityState.ACTIVE             # Mark connector as reactivated in the canvas' database
 
         # Reactivate _node:
-        cref.node_db[nref] = True
+        cref.node_db[nref] = EntityState.ACTIVE
         nref.blockSignals(False)
         nref.setVisible(True)
 
@@ -322,7 +322,7 @@ class CreateStreamAction(AbstractAction):
             tref.socket.connector().blockSignals(True)
 
         # Deactivate terminal:
-        cref.term_db[tref] = False
+        cref.term_db[tref] = EntityState.HIDDEN
         tref.setVisible(False)
         tref.blockSignals(True)
 
@@ -348,7 +348,7 @@ class CreateStreamAction(AbstractAction):
             tref.socket.connector().setVisible(True)
 
         # Reactivate terminal:
-        cref.term_db[tref] = True
+        cref.term_db[tref] = EntityState.ACTIVE
         tref.blockSignals(False)
         tref.setVisible(True)
 
@@ -413,7 +413,7 @@ class RemoveStreamAction(AbstractAction):
             tref.socket.connector().blockSignals(True)
 
         # Deactivate terminal:
-        cref.term_db[tref] = False
+        cref.term_db[tref] = EntityState.HIDDEN
         tref.setVisible(False)
         tref.blockSignals(True)
 
@@ -439,7 +439,7 @@ class RemoveStreamAction(AbstractAction):
             tref.socket.connector().setVisible(True)
 
         # Reactivate terminal:
-        cref.term_db[tref] = True
+        cref.term_db[tref] = EntityState.ACTIVE
         tref.blockSignals(False)
         tref.setVisible(True)
 
@@ -465,7 +465,7 @@ class RemoveStreamAction(AbstractAction):
             tref.socket.connector().blockSignals(True)
 
         # Deactivate terminal:
-        cref.term_db[tref] = False
+        cref.term_db[tref] = EntityState.HIDDEN
         tref.setVisible(False)
         tref.blockSignals(True)
 
@@ -735,7 +735,7 @@ class ConnectHandleAction(AbstractAction):
         # Deactivate connector:
         lref.setVisible(True)
         lref.blockSignals(False)
-        cref.conn_db[lref] = True
+        cref.conn_db[lref] = EntityState.ACTIVE
 
 # Class DisconnectHandleAction: For connector operations (delete, undo/redo)
 class DisconnectHandleAction(AbstractAction):
@@ -810,6 +810,6 @@ class DisconnectHandleAction(AbstractAction):
         # Reactivate connector:
         lref.setVisible(True)
         lref.blockSignals(False)
-        cref.conn_db[lref] = True
+        cref.conn_db[lref] = EntityState.ACTIVE
 
     def redo(self): self.execute()

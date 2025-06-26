@@ -202,15 +202,16 @@ class JsonLib:
         """
 
         total_items_list = (
-            [item for item, state in canvas.node_db.items() if state] +     # Active nodes
-            [item for item, state in canvas.term_db.items() if state] +     # Active terminals
-            [item for item, state in canvas.conn_db.items() if state]       # Active connectors
+            [item for item, state in canvas.node_db.items() if state == EntityState.ACTIVE] +     # Active nodes
+            [item for item, state in canvas.term_db.items() if state == EntityState.ACTIVE] +     # Active terminals
+            [item for item, state in canvas.conn_db.items() if state == EntityState.ACTIVE]       # Active connectors
         )
 
+        print(len(total_items_list))
         # Fetch serialized JSON objects for each item-type:
-        node_array = [JsonLib.serialize(_item) for _item in total_items_list if isinstance(_item, graph.Node)]
-        conn_array = [JsonLib.serialize(_item) for _item in total_items_list if isinstance(_item, graph.Connector)]
-        term_array = [JsonLib.serialize(_item) for _item in total_items_list if isinstance(_item, graph.StreamTerminal)]
+        node_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.Node)]
+        conn_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.Connector)]
+        term_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.StreamTerminal)]
 
         # Initialize JSON objects:
         schematic = {

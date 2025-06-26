@@ -41,11 +41,11 @@ class Tree(QTreeWidget):
 
         # Add top-level root:
         for node, state in canvas.node_db.items():
-            if  state:
-                item = self.add_node_item(node)
-                if  node.double_clicked:
-                    item.setSelected(True)
+            if  state == EntityState.HIDDEN:
+                continue
 
+            if  node.double_clicked:
+                item.setSelected(True)
                 node.double_clicked = False  # Reset double-clicked state
 
     # Add top-level root:
