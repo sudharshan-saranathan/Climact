@@ -29,7 +29,7 @@ class Climact(QApplication):
 
     class Constants:
         QSS_SHEET = "rss/style/macos.qss"
-        FONT_SIZE = 14 if platform.system() == "Darwin" else 9  # Adjust font size for macOS
+        FONT_SIZE = 13 if platform.system() == "Darwin" else 10
 
     # Initializer
     def __init__(self, argv: list):
@@ -61,6 +61,7 @@ class Climact(QApplication):
 
 # Instantiate application and enter event-loop:
 def main():
+    print(platform.system())
     _app = Climact(sys.argv)
     _app.exec()
 

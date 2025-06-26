@@ -26,38 +26,33 @@ from .navbar import NavBar
 
 from tabs.optima.optimizer import Optimizer
 from tabs.database.manager import DataManager
-# from tabs.sheets.manager import Manager
 
+# The application's main interface
 class Gui(QMainWindow):
 
-    # Signals:
-    sig_init_window = pyqtSignal()
-
-    # Default attrib:
-    @dataclass(frozen=True, slots=True)
-    class Attr:
-        title  = "CLIMACT"
-        width  = 1920       # Default width
-        height = 1080       # Default height
-
-    # Initializer:
+    # Constructor:
     def __init__(self):
+        """
+        Instantiates and organizes several child widgets that directly interface with the user. The central widget is a
+        QStackWidget that allows the user to switch between the application's main 'pages', including the drawing area
+        (canvas), data manager, and optimization setup through a detachable navigation bar (NavBar).
+        """
 
         # Initialize base-class:
         super().__init__(None)
 
         # Widgets:
-        self._wstack = QStackedWidget(self)     # Central stacked-widget
-        self._tabber = Tabber(self._wstack)     # Tab-widget to hold multiple canvas
-        self._navbar = NavBar(self)             # Detachable, interactive navigation-bar
+        self._navbar = NavBar(self)             # Navigation bar that contains icon-buttons for switching between the main widgets.
+        self._wstack = QStackedWidget(self)     # Main Widget #1 - Allows user to switch between different main widgets.
+        self._tabber = Tabber(self._wstack)     # Main Widget #2 - Allows the user to create, edit, and manage multiple canvas tabs.
 
-        self._sheets = DataManager(self._tabber.currentWidget().canvas, self)
-        self._optima = Optimizer  (self._tabber.currentWidget().canvas, self)
+        self._sheets = DataManager(self)   # Main Widget #3 - Allows the user to view and edit schematic data in a tabular format.
+        self._optima = Optimizer  (self)   # Main Widget #4 - Allows the user to set up and run constrained optimization problems.
 
         # Add stack-widgets:
-        self._wstack.addWidget(self._tabber)    # Tab-widget to hold multiple canvas
-        self._wstack.addWidget(self._sheets)      # Data-manager
-        self._wstack.addWidget(self._optima)    # Optimizer
+        self._wstack.addWidget(self._tabber)
+        self._wstack.addWidget(self._sheets)
+        self._wstack.addWidget(self._optima)
 
         # Add `_navbar` as a toolbar:
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self._navbar)

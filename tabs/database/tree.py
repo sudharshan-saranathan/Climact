@@ -15,13 +15,10 @@ class Tree(QTreeWidget):
     sig_item_selected = pyqtSignal(str, str)
 
     # Initializer:
-    def __init__(self, canvas: Canvas, parent: QWidget | None):
+    def __init__(self, parent: QWidget | None):
 
         # Initialize base-class:
         super().__init__(parent)
-
-        # Save canvas reference:
-        self._canvas = canvas
 
         # Customize column-header:
         self.setHeaderLabels(["SYMBOL", "NAME", "ROLE/CLASS", "CONNECTOR"])
@@ -37,24 +34,13 @@ class Tree(QTreeWidget):
         # Connect to slot:
         self.itemSelectionChanged.connect(self.on_item_selected)
 
-    # Reload
     def reload(self, canvas: Canvas):
-
-        # Validate argument(s):
-        if not isinstance(canvas, Canvas):
-            raise ValueError("Expected argument of type `Canvas`")
-
-        # Store canvas reference:
-        self._canvas = canvas
-
-        # Debugging:
-        logging.info("Reloading graph-data")
 
         # Clear tree and dictionary:
         self.clear()
 
         # Add top-level root:
-        for node, state in self._canvas.node_db.items():
+        for node, state in canvas.node_db.items():
             if  state:
                 item = self.add_node_item(node)
                 if  node.double_clicked:

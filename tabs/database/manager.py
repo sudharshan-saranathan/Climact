@@ -3,7 +3,7 @@ import logging
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from tabs.schema.canvas import Canvas
-from tabs.database.eqnview import EqnView
+from tabs.database.eqnlist import EqnList
 from tabs.database.table import Table
 from tabs.database.tree import Tree
 from custom.entity import EntityState
@@ -11,23 +11,22 @@ from custom.entity import EntityState
 class DataManager(QWidget):
 
     # Initializer:
-    def __init__(self, canvas: Canvas, parent: QWidget | None):
+    def __init__(self, parent: QWidget | None):
 
         # Initialize base-class:
         super().__init__(parent)
 
-        # Save canvas reference:
-        self._canvas = canvas
+        # Set properties:
+        self.setProperty("canvas", None)
+        self.setProperty("title" , "Node-data Manager")
 
         # Main-widgets:
-        self._eqview = EqnView(self._canvas, self)
-        self._trview = Tree(self._canvas, self)
-        self._sheets = Table(self, headers=['Symbol', 'Description', 'Units', 'Category',
-                                                    'Value', 'Lower', 'Upper' , 'Sigma',
-                                                    'Interpolation', 'Auto'])
+        self._eqns = EqnList(self)
+        self._tree = Tree(self)
+        self._data = Table(self, headers=['Symbol', 'Description', 'Units', 'Category', 'Value', 'Lower', 'Upper', 'Sigma', 'Interpolation', 'Auto'])
 
         # Connect signals to slots:
-        self._trview.sig_item_selected.connect(self.on_tree_item_selected)
+        self._tree.sig_item_selected.connect(self.on_tree_item_selected)
 
         # Layout:
         self._layout = QGridLayout(self)
@@ -35,47 +34,42 @@ class DataManager(QWidget):
         self._layout.setSpacing(0)
 
         # Customize the equation-editor:
-        self._eqview.setFixedHeight(250)
-        self._eqview.setEnabled(False)
+        self._eqns.setFixedHeight(240)
+        self._eqns.setEnabled(False)
 
-        self._layout.addWidget(self._trview, 0, 0, 3, 1)
-        self._layout.addWidget(self._sheets, 0, 1, 2, 1)
-        self._layout.addWidget(self._eqview, 2, 1)
+        self._layout.addWidget(self._tree, 0, 0, 3, 1)
+        self._layout.addWidget(self._data, 0, 1, 2, 1)
+        self._layout.addWidget(self._eqns, 2, 1)
 
         # Connect signals:
-        self._sheets.sig_table_modified.connect(self._trview.show_modification_status)
+        self._data.sig_table_modified.connect(self._tree.show_modification_status)
 
     # Clear data:
     def clear(self):
-        self._sheets.reset()
-        self._eqview.clear()
+        self._data.reset()
+        self._eqns.clear()
 
     # Reload data:
-    def reload(self, _canvas: Canvas):
+    def reload(self, canvas: Canvas):
 
-        if not isinstance(_canvas, Canvas):
-            raise ValueError("Expected argument of type `Canvas`")
-
-        # Store canvas reference:
-        self._canvas = _canvas
+        # Store reference to the canvas:
+        self.setProperty("canvas", canvas)
 
         # Reload tree:
-        self._trview.reload(self._canvas)
+        self._tree.reload(canvas)
 
         # Reset spreadsheets and equation-viewer:
-        self._sheets.reset()
-        self._eqview.clear()
+        self._data.reset()
+        self._eqns.clear()
 
     # Tree-item selected:
     def on_tree_item_selected(self, nuid: str, huid: str):
 
         # Find the node by unique identifier (nuid):
-        for node, state in self._canvas.node_db.items():
-            if state:
-                if  node and node.uid == nuid:
-                    print(f"Displaying data for {node.uid} ({node.title})")
+        for node, state in self.property("canvas").node_db.items():
+            if state and node.uid == nuid:
 
-                    # Display data for _node:
-                    self._sheets.fetch(node)
-                    self._eqview.setEnabled(True)
-                    self._eqview.node = node
+                # Display data for _node:
+                self._data.fetch(node)
+                self._eqns.setEnabled(True)
+                self._eqns.node = node

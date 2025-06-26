@@ -9,23 +9,19 @@ from custom import EntityClass
 from tabs.schema import Canvas
 
 # Class Equation-View:
-class EqnView(QListWidget):
+class EqnList(QListWidget):
 
     # Initializer:
-    def __init__(self,
-                 _canvas: Canvas,   # Required for validating symbols
-                 _parent: QWidget   # Parent widget
-                 ):
+    def __init__(self, parent: QWidget | None = None):
 
         # Initialize super-class:
-        super().__init__(_parent)
+        super().__init__(parent)
 
         # Reference to the _node being updated, initialize with `None`:
         self._node = None
         self._symb = []
 
         # Customize behavior:
-        self.itemChanged.connect(self.on_eqn_modified)  # Connect item-changed signal to method
         self.setSelectionMode(QAbstractItemView.SelectionMode.ContiguousSelection)
 
         # Initialize menus:
