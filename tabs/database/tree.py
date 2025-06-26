@@ -60,6 +60,8 @@ class Tree(QTreeWidget):
                 if  node.double_clicked:
                     item.setSelected(True)
 
+                node.double_clicked = False  # Reset double-clicked state
+
     # Add top-level root:
     def add_node_item(self, node: Node):
 

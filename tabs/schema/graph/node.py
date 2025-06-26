@@ -1,7 +1,9 @@
+import qtawesome as qta
 from PyQt6.QtGui import (
     QPen,
     QIcon,
-    QColor, 
+    QColor,
+    QBrush
 )
 from PyQt6.QtCore import (
     Qt,
@@ -12,9 +14,10 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtWidgets import (
     QMenu,
+    QColorDialog,
     QApplication,
-    QGraphicsItem, 
-    QGraphicsObject, 
+    QGraphicsItem,
+    QGraphicsObject,
     QGraphicsLineItem
 )
 from actions import *
@@ -194,6 +197,7 @@ class Node(QGraphicsObject):
 
         # Add actions to menu:
         _template = self._menu.addAction("Save as Template", lambda: print("Save as Template"))
+        _bg_color = self._menu.addAction(qta.icon("ph.palette", color='lightblue'), "Set Color", self.on_set_color)
 
         # Additional actions:
         self._menu.addSeparator()
@@ -205,6 +209,7 @@ class Node(QGraphicsObject):
         _close = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
 
         # Make icons visible:
+        _bg_color.setIconVisibleInMenu(True)
         _expand.setIconVisibleInMenu(True)
         _shrink.setIconVisibleInMenu(True)
         _close.setIconVisibleInMenu(True)
@@ -242,7 +247,7 @@ class Node(QGraphicsObject):
                  
         # Draw border:
         _painter.setPen(_pen)
-        _painter.setBrush(self._styl.background)
+        _painter.setBrush(QBrush(QColor(self._styl.background)))
         _painter.drawRoundedRect(self._attr.rect, 12, 6)
 
     def itemChange(self, change, value):
@@ -598,6 +603,12 @@ class Node(QGraphicsObject):
         # Emit signal to disconnect handle:
         self.sig_exec_actions.emit(_action)
 
+    # Change background color:
+    def on_set_color(self):
+
+        color = QColorDialog.getColor(self._styl.background, None, "Select Background Color")
+
+        self._styl.background = color if color.isValid() else self._styl.background
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
