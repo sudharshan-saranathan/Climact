@@ -208,7 +208,6 @@ class JsonLib:
         """
 
         item_list = (
-            _canvas.selectedItems()  if _canvas.selectedItems() else
             [_item for _item, _state in _canvas.node_db.items() if _state] +     # Active nodes
             [_item for _item, _state in _canvas.term_db.items() if _state] +     # Active terminals 
             [_item for _item, _state in _canvas.conn_db.items() if _state]       # Active connectors
