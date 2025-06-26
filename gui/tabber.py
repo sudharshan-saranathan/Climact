@@ -70,7 +70,7 @@ class Tabber(QTabWidget):
         self._menu_index = -1
 
         # Define corner-widget:
-        check = QCheckBox("Save", self)
+        check = QCheckBox("Use tab-label", self)
         check.setChecked(True)
 
         # Customize attributes:
@@ -171,7 +171,7 @@ class Tabber(QTabWidget):
 
         widget = self.widget(index)
         if  dialog == QMessageBox.StandardButton.Yes:
-            widget.canvas.export_schema(widget.canvas.filename)
+            self.export_schema()
 
         elif dialog == QMessageBox.StandardButton.Cancel:
             return
@@ -229,7 +229,7 @@ class Tabber(QTabWidget):
         # The default filename is the tab-label:
         filename = self.tabText(self.currentIndex())
 
-        # But if the corner widget is not checked, get a filename from the user:
+        # If the "Save As" checkbox is unchecked, prompt the user for a filename:
         if  not self.cornerWidget().isChecked():
             filename, result = QFileDialog.getSaveFileName(
                 self,
