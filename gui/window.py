@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 )
 
 from dataclasses   import dataclass
-from custom.message import Message
+from custom.dialog import Dialog
 
 from .tabber import Tabber
 from .navbar import NavBar

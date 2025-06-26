@@ -32,8 +32,9 @@ from PyQt6.QtWidgets import (
 )
 
 from custom.getter  import Getter
-from custom.message import Message
+from custom.dialog import Dialog
 from tabs.schema.viewer import Viewer
+from tabs.schema.canvas import SaveState
 
 # Class Tabber: A custom QTabWidget for managing multiple Viewer tabs.
 class Tabber(QTabWidget):
@@ -57,7 +58,7 @@ class Tabber(QTabWidget):
 
     # Constants for the Tabber class:
     class Constants:
-        MAX_TABS = 8
+        MAX_TABS = 4
 
     # Initializer:
     def __init__(self, parent: QWidget | None = None):
@@ -138,12 +139,19 @@ class Tabber(QTabWidget):
         Creates a new Viewer and adds it as a tab.
         """
         if self.count() >= self.Constants.MAX_TABS:
-            QApplication.beep()
+            Dialog.information(
+                None,
+                str(),
+                "Maximum number of allowed tabs reached! Please close existing tabs and try again.")
             return
 
         # Create a new tab and set as current:
-        self.addTab(viewer := Viewer(self), f"Untitled_{self.count() + 1}*")
+        self.addTab(viewer := Viewer(self), f"Untitled-{self.count() + 1}")
+        self.setTabIcon(self.count() - 1, qta.icon('ph.warning', color='orange'))
         self.setCurrentWidget(viewer)
+
+        # Connect the canvas's state change signal to update the tab icon:
+        viewer.canvas.sig_canvas_state.connect(self.on_canvas_state_change)
 
     # Method to close and remove a tab:
     def remove_tab(self, index: int):
@@ -152,16 +160,25 @@ class Tabber(QTabWidget):
 
         :param: index: The index of the tab to remove.
         """
-        if  index < 0 or index >= self.count():
-            QApplication.beep()
+
+        # Confirm tab-removal:
+        dialog = Dialog.information(
+            None,
+            str(),
+            "Do you want to save unsaved changes before closing the tab?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel
+        )
+
+        widget = self.widget(index)
+        if  dialog == QMessageBox.StandardButton.Yes:
+            widget.canvas.export_schema(widget.canvas.filename)
+
+        elif dialog == QMessageBox.StandardButton.Cancel:
             return
 
-        # Delete the widget:
-        widget = self.widget(index)
+        # Call super-class implementation:
         widget.close()
         widget.deleteLater()
-
-        # Call super-class implementation:
         self.removeTab(index)
 
     # Method to rename a tab:
@@ -173,17 +190,14 @@ class Tabber(QTabWidget):
         """
 
         # Create a new Getter dialog to get the new label:
-        usr_input = Getter("New Label", "Name", self, Qt.WindowType.Popup)
+        usr_input = Getter("New Label", "Name", self)
         usr_input.open()
-
-        # Get current suffix:
-        suffix = "*" if self.tabText(index).endswith("*") else ""
 
         # Connect the finished signal to set the tab text:
         usr_input.finished.connect(
             lambda: self.setTabText(
                 index,
-                usr_input.text() + suffix
+                usr_input.text()
             ) if usr_input.result() and usr_input.text() else None
         )
 
@@ -213,7 +227,7 @@ class Tabber(QTabWidget):
     def export_schema(self):
 
         # The default filename is the tab-label:
-        filename = self.tabText(self.currentIndex()).rstrip("*")
+        filename = self.tabText(self.currentIndex())
 
         # But if the corner widget is not checked, get a filename from the user:
         if  not self.cornerWidget().isChecked():
@@ -227,3 +241,18 @@ class Tabber(QTabWidget):
         if  filename:
             self.currentWidget().canvas.export_schema(filename + ".json")
             self.setTabText(self.currentIndex(), filename)
+
+    def on_canvas_state_change(self, state: SaveState):
+        """
+        Updates the tab icon based on the canvas state.
+
+        :param state: The current state of the canvas.
+        """
+        if state == SaveState.EXPORTED:
+            self.setTabIcon(self.currentIndex(), qta.icon('ph.check-circle', color='lightgreen'))
+
+        elif state == SaveState.MODIFIED:
+            self.setTabIcon(self.currentIndex(), qta.icon('ph.warning', color='orange'))
+
+        elif state == SaveState.ERROR:
+            self.setTabIcon(self.currentIndex(), qta.icon('ph.warning', color='red'))

@@ -31,7 +31,7 @@ from PyQt6.QtWidgets import (
 )
 
 from custom.entity  import EntityClass
-from custom.message import Message
+from custom.dialog import Dialog
 from dataclasses   import dataclass
 from tabs.gemini   import widget
 from util          import *
@@ -163,7 +163,7 @@ class Viewer(QGraphicsView):
 
             try: JsonLib.decode(json_data, self.canvas, True)
             except (RuntimeError, JSONDecodeError) as exception:
-                Message.critical(None, "Error", f"Error decoding JSON: {exception}")
+                Dialog.critical(None, "Error", f"Error decoding JSON: {exception}")
                 logging.critical(exception)
                 return
 
@@ -203,42 +203,3 @@ class Viewer(QGraphicsView):
     def wheelEvent(self, event):
         delta = event.angleDelta().y()
         self.zoom(float(delta))         # Zoom by desired amount
-
-    # Handle close-events:
-    @pyqtSlot(QEvent)
-    def closeEvent(self, event):
-
-        # Print save-state:
-        print(str(self.canvas.state))
-
-        # Check if canvas has been modified:
-        if self.canvas.state == SaveState.MODIFIED:
-
-            # Confirm quit:
-            _dialog = Message(QtMsgType.QtWarningMsg,
-                         "Do you want to save unsaved changes?",
-                              QMessageBox.StandardButton.Yes |
-                              QMessageBox.StandardButton.No |
-                              QMessageBox.StandardButton.Cancel
-                              )
-
-            # Execute dialog and get result:
-            _dialog_code = _dialog.exec()
-
-            # Handle close-event accordingly:
-            if _dialog_code == QMessageBox.StandardButton.Yes:
-                self.closed = True
-                event.accept()
-
-            if _dialog_code == QMessageBox.StandardButton.No:
-                self.closed = True
-                event.accept()
-
-            if _dialog_code == QMessageBox.StandardButton.Cancel:
-                self.closed = False
-                event.ignore()
-
-        # Close directly
-        else:
-            self.closed = True
-            event.accept()

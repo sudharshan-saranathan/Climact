@@ -64,6 +64,7 @@ class StartupWindow(QDialog):
 
         # Arrange buttons in startup-window:
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
         layout.addLayout(top_layout)
         layout.addWidget(blank_project)
         layout.addWidget(saved_project)

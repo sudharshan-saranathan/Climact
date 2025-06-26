@@ -1,6 +1,5 @@
-* {
-    font        : 13pt "Trebuchet MS";
-	border      : none;
+QWidget {
+    border      : none;
 	background  : white;
 }
 
@@ -45,6 +44,10 @@ QComboBox QListView {
 QComboBox::item:selected {
     background          : white;
     color               : #187795;
+}
+
+QDialog {
+    background-color        : #efefef;
 }
 
 QTextEdit {
@@ -97,13 +100,6 @@ QLabel {
     margin                  : 0px;
     background              : transparent;
     border-radius           : 4px;
-}
-
-QDialog {
-    border                  : none;
-    padding                 : 2px;
-    border-radius           : 8px;
-    background              : lightgray;
 }
 
 QPushButton {
@@ -189,15 +185,18 @@ QGroupBox {
 }
 
 QTabWidget::tab-bar {
-    left            : 1px;
+    left            : 2px;
+}
+
+QTabWidget::pane {
+    border-top      : 1px solid #efefef;
 }
 
 QTabBar::tab {
-    border          : 1px solid black;
-    border-radius   : 4px;
+    border-radius   : 6px;
     color           : black;
     margin          : 2px 1px 2px 1px;
-    padding         : 4px;
+    padding         : 6px;
     background      : lightgray;
 }
 
@@ -207,7 +206,7 @@ QTabBar::tab:selected {
 }
 
 QTabBar::tab:hover:!selected {
-    color           : white;
+    color           : black;
     background      : #acacac;
 }
 
@@ -271,13 +270,8 @@ QLineEdit {
 	border					: none;
 	border-radius           : 3px;
 	padding                 : 3px;
-	color                   : black;
-	background-color      	: white;
-}
-
-QLineEdit:focus{
-    color                   : black;
-    background              : #e0e0e0;
+	color                   : white;
+	background-color      	: lightslategray;
 }
 
 QScrollBar:horizontal {
@@ -440,6 +434,7 @@ QTreeWidget::item:selected:last {
 }
 
 QTableWidget, QTableView {
+    border-bottom           : 1px solid darkgray;
     background              : white;
     gridline-color          : lightgray;
 }

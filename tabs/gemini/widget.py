@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget
 )
 
-from custom import Message
+from custom import Dialog
 from tabs.schema.jsonlib import JsonLib
 from tabs.gemini.gemini  import Gemini
 from tabs.gemini.thread  import Thread
@@ -152,6 +152,6 @@ class Gui(QFrame):
         else:
 
             # Display error-message:
-            Message.critical(None,
+            Dialog.critical(None,
                             "Climact: Error",
                             f"Expected a string-response, but got: {type(_response)}")

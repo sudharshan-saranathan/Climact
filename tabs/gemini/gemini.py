@@ -11,7 +11,7 @@ from typing             import Dict, Any
 from google             import genai
 from google.genai       import types
 
-from custom.message import Message
+from custom.dialog import Dialog
 
 # Class Gemini: A wrapper that fetches responses from Google's Gemini API:
 class Gemini:
@@ -39,11 +39,11 @@ class Gemini:
             self._prompts = open(instructions, 'r').read()
 
         # Validity checks:
-        if not self._enabled:       Message.warning(None,
+        if not self._enabled:       Dialog.warning(None,
                                                    "Climact: Warning",
                                                    "Environment variable GOOGLE_API_KEY is undefined! The AI-assistant will be disabled")
 
-        if self._prompts is None:   Message.warning(None,
+        if self._prompts is None:   Dialog.warning(None,
                                                    "Climact: Warning",
                                                    "Genai-instructions are unavailable! Assistant will offer limited support!")
 

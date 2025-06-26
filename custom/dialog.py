@@ -3,7 +3,7 @@ from PyQt6.QtWidgets    import QMessageBox, QWidget
 from dataclasses        import dataclass
 
 # Class Message:
-class Message(QMessageBox):
+class Dialog(QMessageBox):
 
     # Default attribute(s):
     @dataclass
@@ -27,7 +27,7 @@ class Message(QMessageBox):
 
         # Display message:
         self.setText(_msg_string)
-        if _msg_type == QtMsgType.QtInfoMsg:
+        if  _msg_type == QtMsgType.QtInfoMsg:
             self.setIcon(QMessageBox.Icon.Information)
 
         elif _msg_type == QtMsgType.QtWarningMsg:

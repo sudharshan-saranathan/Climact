@@ -45,6 +45,7 @@ from actions import *
 class SaveState(Enum):
     EXPORTED = 0
     MODIFIED = 1
+    ERROR    = 2
 
 # Class Canvas - Subclass of QGraphicsScene, manages graphical items:
 class Canvas(QGraphicsScene):
@@ -129,7 +130,7 @@ class Canvas(QGraphicsScene):
 
         # Customize attribute(s):
         self.setSceneRect(self._rect)
-        self.setBackgroundBrush(QColor(0xefefef))
+        self.setBackgroundBrush(QBrush(0xefefef, Qt.BrushStyle.DiagCrossPattern))
         self.setObjectName(random_id(length=4, prefix='S'))
 
         # Initialize registries:
@@ -282,7 +283,7 @@ class Canvas(QGraphicsScene):
         if  self._conn.active:
             self._conn.connector.draw(self._conn.origin().scenePos(), 
                                       event.scenePos(), 
-                                      PathGeometry.BEZIER
+                                      PathGeometry.HEXAGON
                                       )
 
         # Store the cursor position in scene-coordinates:
@@ -780,7 +781,7 @@ class Canvas(QGraphicsScene):
 
         except Exception as exception:
 
-            Message.warning(None,
+            Dialog.warning(None,
                             "Climact: Save Failed",
                             f"Error saving to file. Please check log file for details.")
 
@@ -881,13 +882,13 @@ class Canvas(QGraphicsScene):
 
         # Abort-conditions:
         if  len(self.items()) <= 1: # Less than 1 because the transient-connector must be discounted
-            Message.information(None, "Info", "No items on the scene!")
+            Dialog.information(None, "Info", "No items on the scene!")
             return
 
         # Initialize confirmation-dialog:
-        message = Message(QtMsgType.QtWarningMsg,
+        message = Dialog(QtMsgType.QtWarningMsg,
                           "This action cannot be undone. Are you sure?",
-                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
+                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
                          )
 
         # If the user confirms, delete nodes and streams:

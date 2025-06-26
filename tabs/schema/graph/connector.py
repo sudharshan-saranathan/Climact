@@ -1,12 +1,13 @@
 import logging 
 import weakref
+import numpy as np
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSlot, pyqtSignal
 from PyQt6.QtGui import QPainterPath, QPen, QColor
 from PyQt6.QtWidgets import QGraphicsObject, QGraphicsItem, QGraphicsSceneMouseEvent
 
 from custom import Label, EntityClass
-from util import random_id
+from util import *
 from enum import Enum
 
 from tabs.schema.graph.handle import Handle
@@ -15,6 +16,7 @@ class PathGeometry(Enum):
     LINE = 1
     RECT = 2
     BEZIER = 3
+    HEXAGON = 4
 
 # Bubble-label:
 class BubbleLabel(QGraphicsObject):
@@ -60,7 +62,7 @@ class Connector(QGraphicsObject):
         def __init__(self):
             self.rect = QRectF(-10, -10, 20, 20)
             self.path = QPainterPath()
-            self.geom = PathGeometry.BEZIER
+            self.geom = PathGeometry.HEXAGON
 
     # Style:
     class Style:
@@ -103,6 +105,13 @@ class Connector(QGraphicsObject):
         self._text = None
         self._is_obsolete = False
 
+        # Direction arrows:
+        self._dir_w = load_svg("rss/icons/direction.svg", 20)
+        self._dir_e = load_svg("rss/icons/direction.svg", 20)
+
+        self._dir_w.setParentItem(self)
+        self._dir_e.setParentItem(self)
+
         # Customize behavior:   
         self.setZValue(-1)
 
@@ -120,8 +129,8 @@ class Connector(QGraphicsObject):
         if _origin.eclass == _target.eclass:             raise ValueError("Origin and target handles must be of different streams")
         if _origin.parentItem() == _target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
 
-        # Initialize bubble-label:
-        self._text = BubbleLabel(_symbol, self)
+        # Initialize bubble-label and direction-arrows:
+        self._text  = BubbleLabel(_symbol, self)
 
         # Store references:
         self.origin = _origin if _origin.eclass == EntityClass.OUT else _target
@@ -184,7 +193,10 @@ class Connector(QGraphicsObject):
 
         return super().mouseDoubleClickEvent(event)
 
-    def clear(self):    self._attr.path.clear()
+    def clear(self):
+        self._dir_w.hide()
+        self._dir_e.hide()
+        self._attr.path.clear()
 
     def on_origin_updated(self):
         if self._is_obsolete:
@@ -215,6 +227,9 @@ class Connector(QGraphicsObject):
 
         elif geometry == PathGeometry.BEZIER:
             self.construct_bezier(opos, tpos)
+
+        elif geometry == PathGeometry.HEXAGON:
+            self.construct_hexagonal(opos, tpos)
 
         elif geometry == PathGeometry.RECT:
             self.construct_manhattan(opos, tpos)
@@ -294,6 +309,38 @@ class Connector(QGraphicsObject):
             self._attr.path.lineTo(xm, tpos.y() +r)
             self._attr.path.arcTo (xm - 2*r, tpos.y(), 2*r, 2*r, 0, 90)
             self._attr.path.lineTo(tpos)
+
+    # Hexagonal:
+    def construct_hexagonal(self, opos: QPointF, tpos: QPointF):
+        """
+        Draws a hexagonal path between the origin and target handles.
+        """
+
+        t = np.pi / 6.0 if tpos.y() > opos.y() else 5 * np.pi / 6.0
+        xm = 0.50 * (opos.x() + tpos.x())
+        xd = np.tan(t) * (tpos.y() - opos.y()) / 2.0
+        r = min(0.50 * xd, 5)
+
+        self._attr.path.clear()
+        self._attr.path.moveTo(opos)
+
+        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 8, opos.y() - 10)
+        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 8, tpos.y() - 10)
+
+        # If the origin is to the left of the target, draw the path accordingly:
+        if opos.x() < tpos.x():
+            self._attr.path.lineTo(xm - xd - r, opos.y())
+            self._attr.path.quadTo(xm - xd, opos.y(), xm - xd + r * np.sin(t), opos.y() + r * np.cos(t))
+            self._attr.path.lineTo(xm + xd - r * np.sin(t), tpos.y() - r * np.cos(t))
+            self._attr.path.quadTo(xm + xd, tpos.y(), xm + xd + r, tpos.y())
+
+        else:
+            self._attr.path.lineTo(xm + xd + r, opos.y())
+            self._attr.path.quadTo(xm + xd, opos.y(), xm + xd - r * np.sin(t), opos.y() + r * np.cos(t))
+            self._attr.path.lineTo(xm - xd + r * np.sin(t), tpos.y() - r * np.cos(t))
+            self._attr.path.quadTo(xm - xd, tpos.y(), xm - xd - r, tpos.y())
+
+        self._attr.path.lineTo(tpos)
 
     # Bezier curve:
     def construct_bezier(self, opos: QPointF, tpos: QPointF):

@@ -116,7 +116,7 @@ def load_svg(_file: str, _width: int):
         not isinstance(_file , str) or
         not isinstance(_width, int)
     ):
-        return
+        return None
 
     # Load SVG-icon and rescale:
     _svg = QGraphicsSvgItem(_file)
