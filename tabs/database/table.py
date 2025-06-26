@@ -217,18 +217,22 @@ class Table(QTableWidget):
         self.blockSignals(True)             # Block signal (self.cellChanged()) from triggering slots when fetching _node data
 
         # Abort if the _node is None:
-        if self._node() is None:
+        if  self._node() is None:
             return
 
         # Display the _node's variables:
         for variable, state in node[EntityClass.VAR].items():
-            if  state:
+            print(variable, state)
+            if  state == EntityState.ACTIVE:
                 self.add_stream(variable)
 
         # Display the _node's parameters:
         for parameter, state in node[EntityClass.PAR].items():
-            if state == EntityState.ACTIVE or state:
+            print(parameter, state)
+            if state == EntityState.ACTIVE:
                 self.add_params(parameter)
+
+        self.update()
 
         # Unblock signals:
         self.blockSignals(False)

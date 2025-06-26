@@ -76,9 +76,6 @@ class DataManager(QWidget):
                     print(f"Displaying data for {node.uid} ({node.title})")
 
                     # Display data for _node:
-                    self._sheets.setRowCount(0)
                     self._sheets.fetch(node)
-
-                    # Enable the equation-editor:
                     self._eqview.setEnabled(True)
                     self._eqview.node = node
