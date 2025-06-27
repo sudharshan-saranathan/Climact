@@ -74,33 +74,33 @@ class JsonLib:
 
     @staticmethod
     def json_to_entity(
-        _entity: Entity,        # Entity object to be updated.
-        _eclass: EntityClass,   # Entity's class
-        _object: json,          # JSON-dictionary containing entity's attributes.
-        _symbol: bool = True    # Whether to set the symbol from the JSON code
+        entity: Entity,        # Entity object to be updated.
+        eclass: EntityClass,   # Entity's class
+        jsdict: json,          # JSON-dictionary containing entity's attributes.
+        symbol: bool = True    # Whether to set the symbol from the JSON code
     ):
 
         # Determine prefix:
-        if _eclass in [
+        if eclass in [
             EntityClass.INP,
             EntityClass.OUT,
             EntityClass.VAR]:   prefix = "variable"
 
-        elif _eclass == EntityClass.PAR:    prefix = "parameter"
-        else:   raise ValueError(f"Invalid entity class: {_eclass}")
+        elif eclass == EntityClass.PAR:    prefix = "parameter"
+        else:   raise ValueError(f"Invalid entity class: {eclass}")
 
         # If the flag is set, copy the symbol:
-        if _symbol: _entity.symbol = _object.get(f"{prefix}-symbol")
+        if symbol: entity.symbol = jsdict.get(f"{prefix}-symbol")
 
         # Read other attribute(s):
-        _entity.label   = _object.get(f"{prefix}-label")
-        _entity.units   = _object.get(f"{prefix}-units")
-        _entity.info    = _object.get(f"{prefix}-info")
-        _entity.strid   = _object.get(f"{prefix}-strid")
-        _entity.value   = _object.get(f"{prefix}-value")
-        _entity.sigma   = _object.get(f"{prefix}-sigma")
-        _entity.minimum = _object.get(f"{prefix}-minimum")
-        _entity.maximum = _object.get(f"{prefix}-maximum")
+        entity.label   = jsdict.get(f"{prefix}-label")
+        entity.units   = jsdict.get(f"{prefix}-units")
+        entity.info    = jsdict.get(f"{prefix}-info")
+        entity.strid   = jsdict.get(f"{prefix}-strid")
+        entity.value   = jsdict.get(f"{prefix}-value")
+        entity.sigma   = jsdict.get(f"{prefix}-sigma")
+        entity.minimum = jsdict.get(f"{prefix}-minimum")
+        entity.maximum = jsdict.get(f"{prefix}-maximum")
 
     @staticmethod
     def serialize(_item: QGraphicsObject):
@@ -207,7 +207,6 @@ class JsonLib:
             [item for item, state in canvas.conn_db.items() if state == EntityState.ACTIVE]       # Active connectors
         )
 
-        print(len(total_items_list))
         # Fetch serialized JSON objects for each item-type:
         node_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.Node)]
         conn_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.Connector)]
@@ -224,18 +223,18 @@ class JsonLib:
         return json.dumps(schematic, indent=4)
 
     @staticmethod
-    def decode(_code: str,
-               _canvas,
-               _combine: bool = False
+    def decode(code: str,
+               canvas,
+               combine: bool = False
                ):
         """
         Parses a schematic JSON string and reconstructs the corresponding nodes, variables, and connectors
         on the given `Canvas`. All actions are grouped into a single undoable `BatchAction`.
 
         Args:
-            _code (str): The JSON string to parse.
-            _canvas (Canvas): The canvas to reconstruct the schematic on.
-            _combine (bool): Whether to combine the actions into a single undoable `BatchAction`.
+            code (str): The JSON string to parse.
+            canvas (Canvas): The canvas to reconstruct the schematic on.
+            combine (bool): Whether to combine the actions into a single undoable `BatchAction`.
 
         Returns:
             None
@@ -248,12 +247,12 @@ class JsonLib:
         _symmap = dict()
 
         # Initialize convenience-variables:
-        root  = json.loads(_code)
+        root  = json.loads(code)
         batch = BatchActions([])
 
         # Validate argument(s):
-        if not isinstance(_code, str):      raise ValueError("Invalid JSON code")
-        if not isinstance(_canvas, Canvas): raise ValueError("Invalid `Canvas` object")
+        if not isinstance(code, str):      raise ValueError("Invalid JSON code")
+        if not isinstance(canvas, Canvas): raise ValueError("Invalid `Canvas` object")
 
         # Read JSON and execute operations:
         # Nodes:
@@ -265,18 +264,18 @@ class JsonLib:
                             node_json.get("node-scenepos").get("y")
                             )
 
-            _node = _canvas.create_node(
+            _node = canvas.create_node(
                 title,  # Title
                 npos,   # Coordinate
                 False   # Do not create a corresponding action
             )
 
-            _node.resize(int(height) - 150) # Adjust _node's height
-            _canvas.node_db[_node] = True   # Add _node to canvas' database:
-            _canvas.addItem(_node)          # Add _node to canvas
+            _node.resize(int(height) - 150)                     # Adjust _node's height
+            canvas.node_db[_node] = EntityState.ACTIVE         # Add node to canvas' database:
+            canvas.addItem(_node)                              # Add node to canvas
 
             # Add action to batch:
-            batch.add_to_batch(CreateNodeAction(_canvas, _node))
+            batch.add_to_batch(CreateNodeAction(canvas, _node))
 
             # Add variable(s):
             for var_json in node_json.get("variables") or []:
@@ -352,14 +351,14 @@ class JsonLib:
             )
 
             # Create terminal:
-            _terminal = _canvas.create_terminal(eclass, tpos)
+            _terminal = canvas.create_terminal(eclass, tpos)
             _terminal.socket.rename(_term_json.get("terminal-label"))
             _terminal.socket.create_stream(_term_json.get("terminal-strid"))
             _terminal.socket.sig_item_updated.emit(_terminal.socket)
 
             # Add terminal to the database and canvas:
-            _canvas.term_db[_terminal] = True
-            _canvas.addItem(_terminal)
+            canvas.term_db[_terminal] = EntityState.ACTIVE
+            canvas.addItem(_terminal)
 
         # Connections:
         for conn_json in root.get("CONNECTORS") or []:
@@ -376,8 +375,8 @@ class JsonLib:
                 conn_json.get("target-scenepos").get("y")
             )
 
-            origin = _canvas.itemAt(opos, QTransform()) # Origin-reference
-            target = _canvas.itemAt(tpos, QTransform()) # Target-reference
+            origin = canvas.itemAt(opos, QTransform()) # Origin-reference
+            target = canvas.itemAt(tpos, QTransform()) # Target-reference
 
             if not isinstance(origin, graph.Handle):    continue
             if not isinstance(target, graph.Handle):    continue
@@ -386,26 +385,26 @@ class JsonLib:
             try:
 
                 # Create a new connector:
-                connector = graph.Connector(_canvas.create_cuid(),
+                connector = graph.Connector(canvas.create_cuid(),
                                             origin,
                                             target,
                                             False
                                             )
 
                 # Add connector to database and canvas:
-                _canvas.conn_db[connector] = True
-                _canvas.addItem(connector)
+                canvas.conn_db[connector] = EntityState.ACTIVE
+                canvas.addItem(connector)
 
                 # Add connector-creation action to batch:
-                batch.add_to_batch(ConnectHandleAction(_canvas, connector))
+                batch.add_to_batch(ConnectHandleAction(canvas, connector))
 
             # If an exception occurs, print error:
             except Exception as exception:
-                print(f"{exception}")
+
                 logging.exception(f"Connector creation skipped due to an exception: {exception}")
 
         # Execute batch:
-        if _combine: _canvas.manager.do(batch)
+        if combine: canvas.manager.do(batch)
 
 
 

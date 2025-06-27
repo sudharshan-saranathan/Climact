@@ -334,23 +334,23 @@ class Canvas(QGraphicsScene):
             _item.sig_item_clicked.emit(_apos)      # Emit signal to create a new handle.
 
         # Define convenience variables:
-        _origin = self._conn.origin()               # Origin handle is set in `self.begin_transient()`
-        _target = self.itemAt(_tpos, QTransform())  # This should return the new handle created at the target anchor.
+        origin = self._conn.origin()               # Origin handle is set in `self.begin_transient()`
+        target = self.itemAt(_tpos, QTransform())  # This should return the new handle created at the target anchor.
 
         # Abort-conditions:
         if (
-            not isinstance(_target, Handle) or
-            _target.connected or
-            _origin == _target or
-            _origin.eclass == _target.eclass or
-            _origin.parentItem() == _target.parentItem()
+            not isinstance(target, Handle) or
+            target.connected or
+            origin == target or
+            origin.eclass == target.eclass or
+            origin.parentItem() == target.parentItem()
         ):
             self.reset_transient()
             super().mouseReleaseEvent(event)
             return
 
         # Create a new connection between the origin and target and add it to the canvas:
-        _connector = Connector(self.create_cuid(), _origin, _target)
+        _connector = Connector(self.create_cuid(), origin, target)
         self.conn_db[_connector] = EntityState.ACTIVE
         self.addItem(_connector)
 
@@ -708,37 +708,37 @@ class Canvas(QGraphicsScene):
     # Method to import a JSON schematic:
     @pyqtSlot()
     @pyqtSlot(str)
-    def import_schema(self, _file: str | None = None):
+    def import_schema(self, file: str | None = None):
         """
         Import a JSON schematic and populate the canvas with its contents.
 
-        :param: _file (str, optional): The path to the JSON file to be imported.
+        :param: file (str, optional): The path to the JSON file to be imported.
         """
 
         # Debugging:
         logging.info("Opening JSON file")
 
         # Get the file path if it hasn't been provided:
-        if not isinstance(_file, str):
+        if not isinstance(file, str):
             
-            _file, _code = QFileDialog.getOpenFileName(None, "Select JSON file", "./", "JSON files (*.json)")
-            if not _code: 
+            file, code = QFileDialog.getOpenFileName(None, "Select JSON file", "./", "JSON files (*.json)")
+            if  not code:
                 logging.info("Open operation cancelled!")
                 return None
 
         # Open the file:
-        with open(_file, "r+") as _json_str:
-            _code = _json_str.read()
+        with open(file, "r+") as json_str:
+            code = json_str.read()
             
         # Decode JSON-string:
-        _json = JsonLib.decode(_code, self, True)
+        json = JsonLib.decode(code, self, True)
 
         # Notify application of state-change:
-        self.sig_schema_setup.emit(_file)
+        self.sig_schema_setup.emit(file)
         self.sig_canvas_state.emit(SaveState.MODIFIED)
 
         # Return the file-path:
-        return _file
+        return file
 
     # Method to encode the schematic to a JSON string and save it to a file:
     @pyqtSlot()

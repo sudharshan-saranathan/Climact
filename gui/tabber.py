@@ -16,9 +16,7 @@ from PyQt6.QtGui import (
 )
 
 # PyQt6.QtCore module:
-from PyQt6.QtCore import (
-    Qt
-)
+from PyQt6.QtCore import Qt
 
 # PyQt6.QtWidgets module:
 from PyQt6.QtWidgets import (
@@ -31,6 +29,7 @@ from PyQt6.QtWidgets import (
     QApplication
 )
 
+from pathlib import Path
 from custom.getter  import Getter
 from custom.dialog import Dialog
 from tabs.schema.viewer import Viewer
@@ -151,6 +150,7 @@ class Tabber(QTabWidget):
         self.setCurrentWidget(viewer)
 
         # Connect the canvas's state change signal to update the tab icon:
+        viewer.canvas.sig_schema_setup.connect(lambda file: self.rename_tab(self.currentIndex(), Path(file).stem))
         viewer.canvas.sig_canvas_state.connect(self.on_canvas_state_change)
 
     # Method to close and remove a tab:
@@ -182,14 +182,18 @@ class Tabber(QTabWidget):
         self.removeTab(index)
 
     # Method to rename a tab:
-    def rename_tab(self, index: int):
+    def rename_tab(self, index: int, label: str | None = None):
         """
         Renames the tab at the specified index.
 
         :param: index: The index of the tab to rename.
         """
 
-        # Create a new Getter dialog to get the new label:
+        if  isinstance(label, str):
+            self.setTabText(index, label)
+            return
+
+        # Otherwise, prompt the user for a new label:
         usr_input = Getter("New Label", "Name", self)
         usr_input.open()
 
