@@ -224,7 +224,7 @@ class Tabber(QTabWidget):
 
         # Get the current widget and import the project:
         viewer = self.currentWidget()
-        if  viewer:
+        if  viewer and project:
             viewer.canvas.import_schema(project)
 
     # Export the current project:

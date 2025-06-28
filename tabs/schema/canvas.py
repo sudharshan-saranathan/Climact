@@ -6,6 +6,7 @@
 #-----------------------------------------------------------------------------------------------------------------------
 import logging
 import weakref
+import qtawesome as qta
 
 from dataclasses import dataclass
 from PyQt6.QtGui import (
@@ -161,21 +162,21 @@ class Canvas(QGraphicsScene):
         self._subm = self._menu.addMenu("Create Objects")   # Submenu for creating items.
 
         # Submenu for creating scene-items:
-        _node = self._subm.addAction(QIcon("rss/icons/node.png"), "Node", QKeySequence("Ctrl+N"), self.create_node)
-        _tout = self._subm.addAction(
-            QIcon("rss/icons/input.png"), "Terminal (Inp)", QKeySequence("Ctrl+["),
-            lambda: self.create_terminal(EntityClass.OUT,self._cpos)
-        )  # Action to create a new output terminal
+        _node = self._subm.addAction(qta.icon("ph.cpu", color="darkblue"),
+                                     "Node", QKeySequence("Ctrl+N"), self.create_node)
 
-        _tinp = self._subm.addAction(
-            QIcon("rss/icons/output.png"), "Terminal (Out)", QKeySequence("Ctrl+]"),
-            lambda: self.create_terminal(EntityClass.INP,self._cpos)
-        )  # Action to create a new output terminal
+        _tout = self._subm.addAction(qta.icon("ph.plus", color="darkgreen"),
+                                     "Terminal (Inp)", QKeySequence("Ctrl+["),
+                                     lambda: self.create_terminal(EntityClass.OUT,self._cpos))  # Action to create a new output terminal
+
+        _tinp = self._subm.addAction(qta.icon("ph.minus", color="darkred"),
+                                     "Terminal (Out)", QKeySequence("Ctrl+]"),
+                                     lambda: self.create_terminal(EntityClass.INP,self._cpos))  # Action to create a new output terminal
 
         # Import and export actions:
         self._menu.addSeparator()
-        _load = self._menu.addAction(QIcon("rss/icons/menu-open.svg")  , "Import Schema", QKeySequence.StandardKey.Open, self.import_schema)
-        _save = self._menu.addAction(QIcon("rss/icons/menu-floppy.svg"), "Export Schema")
+        _load = self._menu.addAction(qta.icon("mdi.folder", color="darkgray"), "Import Schema")
+        _save = self._menu.addAction(qta.icon("mdi.content-save", color="darkgreen"), "Export Schema")
 
         # Actions for cloning and pasting items:
         self._menu.addSeparator()

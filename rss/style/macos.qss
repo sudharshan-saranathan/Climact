@@ -60,10 +60,15 @@ QTextEdit:focus {
 QMenu {
     font                    : 13pt "Trebuchet MS";
     border                  : 1px solid black;
-    padding                 : 4px;
+    padding                 : 2px;
     color                   : black;
     background              : white;
     border-radius           : 8px;
+}
+
+QMenu::icon {
+    margin-left     : 4px;
+    margin-right    : 4px;
 }
 
 QMenu::right-arrow {
@@ -73,20 +78,18 @@ QMenu::right-arrow {
 }
 
 QMenu::item {
-    padding                 : 4px;
+    padding                 : 8px;
     color                   : black;
     min-width               : 100px;
     background-color        : white;
 }
 
 QMenu::item:disabled {
-    padding                 : 4px 4px 4px 4px;
     color                   : gray;
     background-color        : white;
 }
 
 QMenu::item:selected {
-    padding                 : 4px 4px 4px 4px;
     color                   : #187795;
     background              : #dddddd;
     border-radius           : 6px;
