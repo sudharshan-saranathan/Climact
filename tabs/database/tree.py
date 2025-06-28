@@ -44,6 +44,7 @@ class Tree(QTreeWidget):
             if  state == EntityState.HIDDEN:
                 continue
 
+            item = self.add_node_item(node)
             if  node.double_clicked:
                 item.setSelected(True)
                 node.double_clicked = False  # Reset double-clicked state
