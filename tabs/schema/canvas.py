@@ -166,11 +166,13 @@ class Canvas(QGraphicsScene):
                                      "Node", QKeySequence("Ctrl+N"), self.create_node)
 
         _tout = self._subm.addAction(qta.icon("ph.plus", color="darkgreen"),
-                                     "Terminal (Inp)", QKeySequence("Ctrl+["),
+                                     "Terminal (Inp)",
+                                     QKeySequence("Ctrl+["),
                                      lambda: self.create_terminal(EntityClass.OUT,self._cpos))  # Action to create a new output terminal
 
         _tinp = self._subm.addAction(qta.icon("ph.minus", color="darkred"),
-                                     "Terminal (Out)", QKeySequence("Ctrl+]"),
+                                     "Terminal (Out)",
+                                     QKeySequence("Ctrl+]"),
                                      lambda: self.create_terminal(EntityClass.INP,self._cpos))  # Action to create a new output terminal
 
         # Import and export actions:
@@ -180,26 +182,21 @@ class Canvas(QGraphicsScene):
 
         # Actions for cloning and pasting items:
         self._menu.addSeparator()
-        _undo  = self._menu.addAction(QIcon("rss/icons/menu-undo.png"), "Undo", QKeySequence.StandardKey.Undo, self.manager.undo)
-        _redo  = self._menu.addAction(QIcon("rss/icons/menu-redo.png"), "Redo", QKeySequence.StandardKey.Redo, self.manager.redo)
-        _clone = self._menu.addAction(QIcon("rss/icons/menu-clone.svg"), "Clone", QKeySequence.StandardKey.Copy , self.store)
-        _paste = self._menu.addAction(QIcon("rss/icons/menu-paste.svg"), "Paste", QKeySequence.StandardKey.Paste, self.clone)
+        _undo  = self._menu.addAction(qta.icon("mdi.undo", color="black"), "Undo", QKeySequence.StandardKey.Undo)
+        _redo  = self._menu.addAction(qta.icon("mdi.redo", color="black"), "Redo", QKeySequence.StandardKey.Redo)
+        _clone = self._menu.addAction(qta.icon("mdi.content-copy", color="lightblue"), "Clone", QKeySequence.StandardKey.Copy)
+        _paste = self._menu.addAction(qta.icon("mdi.content-paste", color="orange"), "Paste", QKeySequence.StandardKey.Paste)
 
         # Actions for selecting and deleting items:
         self._menu.addSeparator()
-        _select = self._menu.addAction(
-            QIcon("rss/icons/menu-select.png"), "Select All", QKeySequence.StandardKey.SelectAll,
-            lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db)
-        )
-
-        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence.StandardKey.Delete,
-                                       lambda: self.delete_items(set(self.selectedItems())))
+        _select = self._menu.addAction(qta.icon("mdi.select", color="magenta"), "Select All", QKeySequence.StandardKey.SelectAll)
+        _delete = self._menu.addAction(qta.icon("mdi.delete", color="red"), "Delete", QKeySequence.StandardKey.Delete)
 
         # Group and Clear actions:
         self._menu.addSeparator()
-        _group = self._menu.addAction(QIcon("rss/icons/menu-group.svg"), "Group Items", QKeySequence("Ctrl+G"))
-        _clear = self._menu.addAction(QIcon("rss/icons/menu-erase.svg"), "Clear Scene", QKeySequence("Ctrl+Delete"), self.clear)
-        _exit = self._menu.addAction(QIcon("rss/icons/menu-power.svg"), "Quit" , QKeySequence.StandardKey.Quit,  QApplication.quit)
+        _group = self._menu.addAction(qta.icon("mdi.layers", color="teal"), "Group Items", QKeySequence("Ctrl+G"), lambda: print(f"Grouping selected items"))
+        _clear = self._menu.addAction(qta.icon("mdi.eraser", color="darkred"), "Clear Scene", QKeySequence("Ctrl+E"), self.clear)
+        _exit  = self._menu.addAction(qta.icon("mdi.power", color="black"), "Quit" , QKeySequence.StandardKey.Quit,  QApplication.quit)
 
         # Show icons:
         _node.setIconVisibleInMenu(True)
