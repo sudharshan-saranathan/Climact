@@ -155,9 +155,9 @@ class JsonLib:
 
             # Create JSON-object:
             stream_obj = {
-                "terminal-eclass"   : _item.socket.eclass.name,
-                "terminal-label"    : _item.socket.label,
-                "terminal-strid"    : _item.socket.strid,
+                "terminal-eclass"   : _item.handle.eclass.name,
+                "terminal-label"    : _item.handle.label,
+                "terminal-strid"    : _item.handle.strid,
                 "terminal-scenepos" : {
                     "x": _item.scenePos().x(),
                     "y": _item.scenePos().y()
@@ -352,9 +352,9 @@ class JsonLib:
 
             # Create terminal:
             _terminal = canvas.create_terminal(eclass, tpos)
-            _terminal.socket.rename(_term_json.get("terminal-label"))
-            _terminal.socket.create_stream(_term_json.get("terminal-strid"))
-            _terminal.socket.sig_item_updated.emit(_terminal.socket)
+            _terminal.handle.rename(_term_json.get("terminal-label"))
+            _terminal.handle.create_stream(_term_json.get("terminal-strid"))
+            _terminal.handle.sig_item_updated.emit(_terminal.handle)
 
             # Add terminal to the database and canvas:
             canvas.term_db[_terminal] = EntityState.ACTIVE

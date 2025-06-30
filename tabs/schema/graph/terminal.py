@@ -101,9 +101,9 @@ class StreamTerminal(QGraphicsObject):
 
         # Create handle and position it:
         self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
-        self.socket = Handle(_eclass, self.offset, "Resource", self)
-        self.socket.contrast = True
-        self.socket.sig_item_updated.connect(self.on_socket_updated)
+        self.handle = Handle(_eclass, self.offset, "Resource", self)
+        self.handle.contrast = True
+        self.handle.sig_item_updated.connect(self.on_socket_updated)
 
         # Initialize context-menu:
         self._menu = QMenu()
@@ -153,8 +153,8 @@ class StreamTerminal(QGraphicsObject):
 
         # If terminal was added to a scene:
         if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
-            self.socket.sig_item_clicked.connect(value.begin_transient)
-            self.socket.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
+            self.handle.sig_item_clicked.connect(value.begin_transient)
+            self.handle.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
             self.sig_item_removed.connect(value.on_item_removed)
 
         return value
@@ -224,14 +224,14 @@ class StreamTerminal(QGraphicsObject):
         _terminal.setSelected(True)
 
         # Create hash-map entry:
-        Handle.cmap[self.socket] = _terminal.socket
+        Handle.cmap[self.handle] = _terminal.handle
 
         # Copy attribute(s):
-        self.socket.clone_into(_terminal.socket)
+        self.handle.clone_into(_terminal.handle)
         self.setSelected(False)
 
         # Emit the handle's signal to propagate it to the terminal:
-        _terminal.socket.sig_item_updated.emit(_terminal.socket)
+        _terminal.handle.sig_item_updated.emit(_terminal.handle)
 
         # Return reference:
         return _terminal
@@ -242,7 +242,7 @@ class StreamTerminal(QGraphicsObject):
         Event handler for when the socket is updated.
         """
 
-        self._style.background = self.socket.color
+        self._style.background = self.handle.color
 
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description

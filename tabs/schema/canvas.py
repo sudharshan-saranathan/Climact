@@ -468,8 +468,8 @@ class Canvas(QGraphicsScene):
         # Create a new terminal and position it:
         _terminal = StreamTerminal(_eclass, None)
         _terminal.setPos(_coords)
-        _terminal.socket.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
-        _terminal.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
+        _terminal.handle.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
+        _terminal.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
         _terminal.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
@@ -642,8 +642,8 @@ class Canvas(QGraphicsScene):
             self.node_db[_item] = EntityState.ACTIVE
 
         elif isinstance(_item, StreamTerminal):
-            _item.socket.sig_item_clicked.connect(self.begin_transient)
-            _item.socket.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            _item.handle.sig_item_clicked.connect(self.begin_transient)
+            _item.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
             _item.sig_item_removed.connect(self.on_item_removed)
             self.term_db[_item] = EntityState.ACTIVE
 
