@@ -177,8 +177,8 @@ class Canvas(QGraphicsScene):
 
         # Import and export actions:
         self._menu.addSeparator()
-        _load = self._menu.addAction(qta.icon("mdi.folder", color="darkgray"), "Import Schema", self.import_schema)
-        _save = self._menu.addAction(qta.icon("mdi.content-save", color="darkgreen"), "Export Schema", self.export_schema)
+        _load = self._menu.addAction(qta.icon("mdi.folder", color="darkgray"), "Import Schema", QKeySequence.StandardKey.Open, self.import_schema)
+        _save = self._menu.addAction(qta.icon("mdi.content-save", color="darkgreen"), "Export Schema", QKeySequence.StandardKey.Save, self.export_schema)
 
         # Actions for cloning and pasting items:
         self._menu.addSeparator()

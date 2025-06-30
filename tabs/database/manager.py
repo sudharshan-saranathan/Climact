@@ -1,13 +1,14 @@
 import logging
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QGridLayout, QGraphicsItem, QTextEdit, QLabel, QFormLayout, QLineEdit
+from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QWidget, QGridLayout, QGraphicsView, QTextEdit, QLabel, QFormLayout, QLineEdit
 
 from custom import EntityClass, EntityState
 from tabs.schema.canvas import Canvas
 from tabs.database.eqnlist import EqnList
 from tabs.database.table import Table
-from tabs.database.tree import Tree
+from tabs.database.tree import Tree, SearchBar
 from tabs.schema.graph.node import Node
 
 class DataManager(QWidget):
@@ -29,27 +30,36 @@ class DataManager(QWidget):
                                   "border: 1px solid black;"
                                   "}")
 
-        self._editor = QTextEdit(self)
         self._eqlist = EqnList(self)
         self._trview = Tree(self)
         self._sheets = Table(self, headers=['Symbol', 'Label', 'Description', 'Units', 'Category', 'Initial', 'Final', 'Model'])
 
+        self._search = SearchBar(self)
+        self._search.setMinimumWidth(400)
+
+        self._viewer = QGraphicsView(self)
+        self._viewer.setRenderHint(QPainter.Antialiasing)
+        self._viewer.setEnabled(False)
+
         # Connect signals to slots:
         self._trview.sig_node_selected.connect(self.on_node_selected)
+        self._search.editor.returnPressed.connect(lambda: self._trview.filter(self._search.editor.text()))
 
         # Layout:
         self._layout = QGridLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(4, 4, 4, 4)
+        self._layout.setSpacing(2)
 
         # Customize the equation-editor:
         self._eqlist.setEnabled(False)
 
-        self._layout.addWidget(self._trview, 0, 0, 3, 1)
-        self._layout.addWidget(self._sheets, 0, 1, 1, 2)
-        self._layout.addWidget(self._label , 1, 1, 1, 2)
-        self._layout.addWidget(self._eqlist, 2, 1)
+        self._layout.addWidget(self._trview, 0, 0, 1, 1)
+        self._layout.addWidget(self._viewer, 1, 0, 1, 1)
+        self._layout.addWidget(self._search, 2, 0, 1, 1, Qt.AlignmentFlag.AlignBottom)
+        self._layout.addWidget(self._sheets, 0, 1)
+        self._layout.addWidget(self._eqlist, 1, 1)
         self._layout.setRowStretch(0, 4)
+        self._layout.setColumnStretch(1, 5)
 
         # Connect signals:
         self._sheets.sig_table_modified.connect(self._trview.show_modification_status)
@@ -74,6 +84,7 @@ class DataManager(QWidget):
         self.setProperty('canvas', canvas)
 
         # Reset spreadsheets and equation-viewer:
+        self._viewer.setScene(canvas)
         self._sheets.reset()
         self._eqlist.clear()
 
@@ -93,6 +104,7 @@ class DataManager(QWidget):
         # Display data for node:
         self._sheets.setRowCount(0)
         self._sheets.fetch(node)
+        self._viewer.fitInView(node, Qt.AspectRatioMode.KeepAspectRatio)
 
         # Enable the equation-editor:
         self._eqlist.setEnabled(True)

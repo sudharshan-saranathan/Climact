@@ -72,7 +72,6 @@ class Tree(QTreeWidget):
         # Initialize base-class:
         super().__init__(parent)
         super().setColumnCount(5)
-        super().setFixedWidth(450)
 
         # Save canvas reference:
         self._canvas = None
@@ -90,13 +89,6 @@ class Tree(QTreeWidget):
 
         # Connect signals to slots:
         self.itemSelectionChanged.connect(self.on_item_selected)
-
-        # Searchbar:
-        layout = QGridLayout(self)
-        layout.setContentsMargins(2, 2, 2, 2)
-        layout.setRowStretch(0, 10)
-        layout.addWidget(search := SearchBar(self), 1, 0, Qt.AlignmentFlag.AlignBottom)
-        search.editor.returnPressed.connect(lambda: self.filter(search.editor.text()))
 
     # Add the canvas's nodes as top-level items in the tree:
     def add_node_item(self, node: Node):
@@ -184,12 +176,13 @@ class Tree(QTreeWidget):
         :param node: Search term to filter nodes.
         """
 
+        self.collapseAll()
+        self.clearSelection()
+
         items = self.findItems(node, Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0)
-        print(items)
         if  not len(items):
             return
 
-        self.collapseAll()
         self.expand(self.indexFromItem(items[0]))
         items[0].setSelected(True)
 

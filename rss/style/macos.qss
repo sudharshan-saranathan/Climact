@@ -335,6 +335,11 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical{
 	background 				: transparent;
 }
 
+QGraphicsView {
+    border                  : 1px solid black;
+    background              : transparent;
+}
+
 QHeaderView::down-arrow {
     image       : url(rss/icons/expand.svg);
     width       : 12px;
@@ -358,10 +363,6 @@ QHeaderView::section:horizontal, QTreeWidget::header {
     background              : #D8E9DF;
 }
 
-QHeaderView::section:horizontal:first {
-    border-left: 1px solid darkgray;
-}
-
 QHeaderView::section:horizontal:last {
     border-right    : none;
 }
@@ -375,23 +376,14 @@ QHeaderView::section:vertical:hover {
 }
 
 QTreeWidget, QTreeView {
-    border-right                : 1px solid darkgray;
-    border-radius               : 0px;
+    border                      : 1px solid black;
     background                  : #efefef;
     selection-background-color  : transparent;
 }
 
-/*
-QTreeWidget:focus, QTreeView:focus {
-    padding                     : 1px;
-    border                      : 2px solid #ffab38;
-    background                  : lightslategray;
-}
-*/
-
 QListWidget {
+    border          : 1px solid black;
     background      : lightslategray;
-    border-right    : 1px solid gray;
     margin          : 0px;
 }
 
@@ -443,6 +435,7 @@ QTreeWidget::item:selected:last {
 }
 
 QTableWidget, QTableView {
+    border                  : 1px solid black;
     background              : white;
     gridline-color          : lightgray;
 }
@@ -453,6 +446,7 @@ QTableCornerButton::section {
 
 QTableWidget::item {
     border          : none;
+    padding         : 2px;
     color           : black;
 }
 
@@ -468,7 +462,6 @@ QTableWidget::item:selected, QTableView::item:selected {
 
 QTreeWidget::branch:has-children:closed {
     margin          : 2px;
-    border-radius   : 8px;
     background      : transparent;
     image           : url(rss/icons/caret-right.png);
 }
