@@ -399,7 +399,6 @@ class Canvas(QGraphicsScene):
 
         # If the input coordinate is `None`, use the context menu's last-displayed position:
         if _cpos is None:   _cpos = self._cpos
-        print(self._cpos)
 
         # Create a new _node and assign a unique-identifier:
         _node = Node(

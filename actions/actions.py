@@ -313,13 +313,13 @@ class CreateStreamAction(AbstractAction):
 
         # If terminal is connected, disconnect:
         if (
-            tref.socket.connected and
-            tref.socket.conjugate() and 
-            tref.socket.connector()
+            tref.handle.connected and
+            tref.handle.conjugate() and 
+            tref.handle.connector()
         ):
-            tref.socket.conjugate().free()
-            tref.socket.connector().setVisible(False)
-            tref.socket.connector().blockSignals(True)
+            tref.handle.conjugate().free()
+            tref.handle.connector().setVisible(False)
+            tref.handle.connector().blockSignals(True)
 
         # Deactivate terminal:
         cref.term_db[tref] = EntityState.HIDDEN
@@ -339,13 +339,13 @@ class CreateStreamAction(AbstractAction):
 
         # If terminal is connected, disconnect:
         if (
-            tref.socket.connected and
-            tref.socket.conjugate() and 
-            tref.socket.connector()
+            tref.handle.connected and
+            tref.handle.conjugate() and 
+            tref.handle.connector()
         ):
-            tref.socket.conjugate().lock(tref.socket, tref.socket.connector())
-            tref.socket.connector().blockSignals(False)
-            tref.socket.connector().setVisible(True)
+            tref.handle.conjugate().lock(tref.handle, tref.handle.connector())
+            tref.handle.connector().blockSignals(False)
+            tref.handle.connector().setVisible(True)
 
         # Reactivate terminal:
         cref.term_db[tref] = EntityState.ACTIVE
@@ -404,13 +404,13 @@ class RemoveStreamAction(AbstractAction):
 
         # If terminal is connected, disconnect:
         if (
-            tref.socket.connected and
-            tref.socket.conjugate() and 
-            tref.socket.connector()
+            tref.handle.connected and
+            tref.handle.conjugate() and 
+            tref.handle.connector()
         ):
-            tref.socket.conjugate().free()
-            tref.socket.connector().setVisible(False)
-            tref.socket.connector().blockSignals(True)
+            tref.handle.conjugate().free()
+            tref.handle.connector().setVisible(False)
+            tref.handle.connector().blockSignals(True)
 
         # Deactivate terminal:
         cref.term_db[tref] = EntityState.HIDDEN
@@ -430,13 +430,13 @@ class RemoveStreamAction(AbstractAction):
 
         # Reconnect terminal with its conjugate:
         if (
-            tref.socket.connected and
-            tref.socket.conjugate() and 
-            tref.socket.connector()
+            tref.handle.connected and
+            tref.handle.conjugate() and 
+            tref.handle.connector()
         ):
-            tref.socket.conjugate().lock(tref.socket, tref.socket.connector())
-            tref.socket.connector().blockSignals(False)
-            tref.socket.connector().setVisible(True)
+            tref.handle.conjugate().lock(tref.handle, tref.handle.connector())
+            tref.handle.connector().blockSignals(False)
+            tref.handle.connector().setVisible(True)
 
         # Reactivate terminal:
         cref.term_db[tref] = EntityState.ACTIVE
@@ -456,13 +456,13 @@ class RemoveStreamAction(AbstractAction):
 
         # Reconnect terminal with its conjugate:
         if (
-            tref.socket.connected and
-            tref.socket.conjugate() and 
-            tref.socket.connector()
+            tref.handle.connected and
+            tref.handle.conjugate() and 
+            tref.handle.connector()
         ):
-            tref.socket.conjugate().free()
-            tref.socket.connector().setVisible(False)
-            tref.socket.connector().blockSignals(True)
+            tref.handle.conjugate().free()
+            tref.handle.connector().setVisible(False)
+            tref.handle.connector().blockSignals(True)
 
         # Deactivate terminal:
         cref.term_db[tref] = EntityState.HIDDEN

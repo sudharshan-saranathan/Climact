@@ -19,8 +19,6 @@ class SearchBar(QFrame):
     """
     Search bar for the tree widget.
     """
-    # Signals:
-    sig_search = pyqtSignal(str)
 
     # Constructor:
     def __init__(self, parent: QWidget | None):
@@ -65,6 +63,7 @@ class Tree(QTreeWidget):
     """
     # Signals:
     sig_node_selected = pyqtSignal(Node)
+    sig_term_selected = pyqtSignal(StreamTerminal)
 
     # Class constructor:
     def __init__(self, parent: QWidget | None):
@@ -109,20 +108,20 @@ class Tree(QTreeWidget):
         for entity, state in node[EntityClass.VAR].items():
             if  state == EntityState.ACTIVE:
                 var_item = QTreeWidgetItem(item, [entity.symbol, entity.label, entity.eclass.name, entity.strid, entity.connector().symbol if entity.connected else str()])
-
                 var_item.setData(0, Qt.ItemDataRole.UserRole, entity)
                 var_item.setIcon(0, qta.icon('mdi.variable', color='darkgray'))
                 var_item.setForeground(4, QBrush(entity.color))
                 for column in range(1, 7):
                     var_item.setTextAlignment(column, Qt.AlignmentFlag.AlignCenter)
 
-        for entity in node[EntityClass.PAR]:
-            par_item = QTreeWidgetItem(item, [entity.symbol, entity.label, "-", entity.eclass.name])
-            par_item.setData(0, Qt.ItemDataRole.UserRole, entity)
-            par_item.setIcon(0, qta.icon('mdi.alpha', color='darkgray'))
-            par_item.setForeground(4, QBrush(entity.color))
-            for column in range(1, 7):
-                par_item.setTextAlignment(column, Qt.AlignmentFlag.AlignCenter)
+        for entity, state in node[EntityClass.PAR].items():
+            if state == EntityState.ACTIVE:
+                par_item = QTreeWidgetItem(item, [entity.symbol, entity.label, entity.eclass.name, entity.strid])
+                par_item.setData(0, Qt.ItemDataRole.UserRole, entity)
+                par_item.setIcon(0, qta.icon('mdi.alpha', color='darkgray'))
+                par_item.setForeground(4, QBrush(entity.color))
+                for column in range(1, 7):
+                    par_item.setTextAlignment(column, Qt.AlignmentFlag.AlignCenter)
 
         # If the node was double-clicked, show its contents:
         if  node.double_clicked:
@@ -198,6 +197,9 @@ class Tree(QTreeWidget):
         item = items[0].data(0, Qt.ItemDataRole.UserRole)
         if  isinstance(item, Node):
             self.sig_node_selected.emit(item)
+
+        if  isinstance(item, StreamTerminal):
+            self.sig_term_selected.emit(item)
 
     # Toggle modification status:
     def show_modification_status(self, node: Node, unsaved: bool):

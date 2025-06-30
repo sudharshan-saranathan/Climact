@@ -103,7 +103,7 @@ class StreamTerminal(QGraphicsObject):
         self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
         self.handle = Handle(_eclass, self.offset, "Resource", self)
         self.handle.contrast = True
-        self.handle.sig_item_updated.connect(self.on_socket_updated)
+        self.handle.sig_item_updated.connect(self.on_handle_updated)
 
         # Initialize context-menu:
         self._menu = QMenu()
@@ -223,7 +223,7 @@ class StreamTerminal(QGraphicsObject):
         _terminal.setPos(self.scenePos() + QPointF(25, 25))
         _terminal.setSelected(True)
 
-        # Create hash-map entry:
+        # Create a hash-map entry:
         Handle.cmap[self.handle] = _terminal.handle
 
         # Copy attribute(s):
@@ -237,11 +237,10 @@ class StreamTerminal(QGraphicsObject):
         return _terminal
 
     @pyqtSlot(Handle)
-    def on_socket_updated(self, _socket):
+    def on_handle_updated(self, handle):
         """
-        Event handler for when the socket is updated.
+        Event handler for when the handle is updated.
         """
-
         self._style.background = self.handle.color
 
     # Properties -------------------------------------------------------------------------------------------------------

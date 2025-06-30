@@ -408,10 +408,10 @@ class Handle(QGraphicsObject, Entity):
         self.strid = _stream.strid
         self.color = _stream.color
 
-        # Change text-color, only if the `contrast` flag is set:
+        # Change the color only if the `contrast` flag is set:
         if self.contrast:   self._label.setDefaultTextColor(anti_color(self.color))
 
-        # If handle is paired, update conjugate and connector:
+        # If the handle is paired, update conjugate and connector:
         if  self.connected and self.eclass == EntityClass.OUT:
             self.connector().set_color (_stream.color)
             self.conjugate().set_stream(_stream)

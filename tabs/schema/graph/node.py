@@ -148,44 +148,36 @@ class Node(QGraphicsObject):
         # Process keyword-arguments:
         if "uid" in kwargs:    self.uid = kwargs.get("uid")
 
-    def __getitem__(self, _eclass: EntityClass):
+    def __getitem__(self, eclass: EntityClass):
         """
         Returns a dictionary or list depending on the entity sought:
-
-        Args:
-            _eclass (EntityClass): Class of the entity (INP, OUT, PAR, or EQN)
-
-        Returns:
-            dict | list: Dictionary or list
         """
 
-        if _eclass == EntityClass.VAR:  return self._data[EntityClass.INP] | self._data[EntityClass.OUT]
-        else:                           return self._data[_eclass]
+        if eclass == EntityClass.VAR:   return self._data[EntityClass.INP] | self._data[EntityClass.OUT]
+        else:                           return self._data[eclass]
 
-    def __setitem__(self,
+    def __setitem__( self,
                     _tuple: tuple,
-                    _value: EntityState | str | list
-                    ):
+                    _value: EntityState | str | list):
         """
         Sets the state of an entity belonging to the _node.
-
-        Args:
-            _tuple (tuple): A tuple containing the entity class and the entity.
-            _value (EntityState | str | list): The state to set for the entity.
         """
 
         # Validate argument(s):
         if not isinstance(_tuple, tuple): raise TypeError("Expected argument of type `tuple`")
 
         # Resolve tuple:
-        _eclass, _entity = _tuple
+        eclass, entity = _tuple
 
         # Assign data:
-        if  _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.PAR]:
-            self._data[_eclass][_entity] = _value
+        if  eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
+            self._data[eclass][entity] = _value
 
-        if  _eclass == EntityClass.EQN:
-            self._data[_eclass] = _value
+        if  eclass in [EntityClass.PAR]:
+            self._data[eclass] = _value
+
+        if  eclass == EntityClass.EQN:
+            self._data[eclass] = _value
 
     def _init_menu(self):
         """

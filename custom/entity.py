@@ -28,12 +28,12 @@ class Entity(Stream):
 
         # Define properties:
         self._prop = dict({
-            "uid"       : str(),
-            "info"      : str(),
+            "eclass"    : EntityClass.PAR,
+            "symbol"    : str(),
             "label"     : str(),
             "units"     : str(),
-            "eclass"    : None,
-            "symbol"    : str(),
+            "info"      : str(),
+            "uid"       : str(),
             "value"     : str(),
             "sigma"     : str(),
             "minimum"   : str(),
@@ -105,19 +105,12 @@ class Entity(Stream):
         self._prop["units"] = _units
 
     @property
-    def eclass(self) -> EntityClass | None:
-        _name = self._prop["eclass"]
-        return EntityClass[_name] if _name else None
+    def eclass(self) -> EntityClass:
+        return self._prop["eclass"]
 
     @eclass.setter
-    def eclass(self, _eclass: EntityClass):
-
-        # Validate input-type:
-        if  not isinstance(_eclass, EntityClass):
-            raise TypeError("Expected argument of type `EntityClass`")
-
-        # Set eclass:
-        self._prop["eclass"] = _eclass.name
+    def eclass(self, eclass: EntityClass):
+        self._prop["eclass"] = eclass
         
     @property
     def symbol(self) -> str: return self._prop["symbol"]

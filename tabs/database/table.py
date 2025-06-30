@@ -27,8 +27,6 @@ class Table(QTableWidget):
 
         # References and temporary objects:
         self.setProperty('node', None)      # Node reference.
-        self.setProperty('hmap', {})        # Hash-map to store variable-references.
-        self.setProperty('pmap', {})        # Hash-map to store parameter-references.
         self.setProperty('save', False)     # Flag to indicate if the table has been modified.
 
         # Set headers:
@@ -40,7 +38,7 @@ class Table(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
 
         # Install shortcuts:
-        shortcut_add_row = QShortcut(QKeySequence("Shift+="), self, lambda: self.add_entity(EntityClass.PAR))
+        shortcut_add_row = QShortcut(QKeySequence("Shift+="), self, self.add_entity)
         shortcut_commit  = QShortcut(QKeySequence("Ctrl+Return"), self, self.commit)
 
         # Connect table's signals:
@@ -54,17 +52,20 @@ class Table(QTableWidget):
     def _init_menu(self):
 
         self._menu = QMenu()
-        assign = self._menu.addAction(qta.icon('mdi.equal' , color='black'), "Assign", self.assign)
+        assign = self._menu.addAction(qta.icon('mdi.equal' , color='darkgray'), "Assign", self.assign)
         eraser = self._menu.addAction(qta.icon('mdi.eraser', color='darkred'), "Erase" , self.erase)
+        self._menu.addSeparator()
 
+        delete = self._menu.addAction(qta.icon('mdi.delete', color='black'), "Delete Row", self.delete)
         assign.setIconVisibleInMenu(True)
-        eraser .setIconVisibleInMenu(True)
+        eraser.setIconVisibleInMenu(True)
+        delete.setIconVisibleInMenu(True)
 
     def contextMenuEvent(self, event):
         self._menu.exec(event.globalPos())
 
     # Create row to display variable data:
-    def add_entity(self, eclass: EntityClass, entity: Entity | None = None):
+    def add_entity(self, eclass: EntityClass = EntityClass.PAR, entity: Entity | None = None):
         """
         Create a row in the table to display the variable's data.
 
@@ -74,9 +75,6 @@ class Table(QTableWidget):
 
         # Call super-class's method (see QTableWidget documentation) to insert a new row:
         row_id = self.rowCount()
-        hmap   = self.property('hmap')
-        pmap   = self.property('pmap')
-
         self.insertRow(self.rowCount())
         self.insertRow(self.rowCount())
         self.insertRow(self.rowCount())
@@ -120,18 +118,15 @@ class Table(QTableWidget):
 
         # Customize behavior for variables:
         if  eclass == EntityClass.VAR:
-            hmap[row_id] = entity
             item_4.setFlags(item_4.flags() & ~Qt.ItemFlag.ItemIsEditable)       # Make strid non-editable
             item_1.setFlags(item_1.flags() & ~Qt.ItemFlag.ItemIsEditable)       # Make label non-editable
             item_0.setFlags(item_0.flags() & ~Qt.ItemFlag.ItemIsEditable)       # Make symbol non-editable
+            item_0.setData(Qt.ItemDataRole.UserRole, entity)      # Store variable reference
 
         # Customize behavior for parameters:
         if  eclass == EntityClass.PAR:
-            pmap[row_id] = entity
-            item_0.setFlags(item_0.flags() | Qt.ItemFlag.ItemIsEditable)        # Make parameter-symbols editable
-
-        self.setProperty('hmap', hmap)
-        self.setProperty('pmap', pmap)
+            item_0.setFlags(item_0.flags() | Qt.ItemFlag.ItemIsEditable)                # Make parameter-symbols editable
+            item_0.setData(Qt.ItemDataRole.UserRole, entity or Entity())    # Store parameter reference
 
         # Center align all cells:
         for column in range(0, 5):
@@ -160,24 +155,28 @@ class Table(QTableWidget):
         Delete all selected rows in the table.
         :return:
         """
+
         # Get all selected rows:
-        rows = set([item.row() for item in self.selectedItems()])
+        modified = False
+        selected = {item.row() for item in self.selectedItems()}
+        grouped  = set()
+
+        # Group rows by their base row (every three rows correspond to a variable or parameter):
+        for row in selected:
+            base = row - (row % 3)                      # Calculate the base row
+            grouped.update([base, base + 1, base + 2])  # Add the base row and the next two rows
 
         # Sort in reverse order for `removeRow()` to work correctly:
-        for row in sorted(rows, reverse=True):
-
-            is_selected = True
-            for column in range(self.columnCount()):
-                item = self.item(row, column)
-                if  item:
-                    is_selected &= item.isSelected()
-
-            # Remove the row if it is selected:
-            if is_selected: self.removeRow(row)
+        for row in sorted(grouped, reverse=True):
+            self.removeRow(row + 2)         # Remove row from the table
+            self.removeRow(row + 1)         # Remove the next row (minimum)
+            self.removeRow(row)             # Remove the next row (maximum)
+            modified |= True
 
         # Notify manager:
-        self.setProperty('save', True)
-        self.sig_table_modified.emit(self.property('node'), True)
+        if  modified:
+            self.setProperty('save', modified)
+            self.sig_table_modified.emit(self.property('node'), modified)
 
     # Fetch and display _node-data:
     def fetch(self, node: Node):
@@ -209,10 +208,7 @@ class Table(QTableWidget):
         :return:
         """
         self.setProperty('node', None)
-        self.setProperty('hmap', {})
-
         self.setProperty('save', False)
-        self.setProperty('hmap', {})
         self.setRowCount(0)
 
     # Assign selected cells:
@@ -251,29 +247,34 @@ class Table(QTableWidget):
         :return:
         """
 
-        print(f"Committing changes to node: {self.property('node').uid}")
-        node = self.property('node')
-        hmap = self.property('hmap')
-
-        print(node, hmap.keys())
-
-        # Abort if no _node has been set:
-        if node is None:    return
+        parameters = list()
 
         # Read tabular data and update the node's variables and parameters:
-        for row in self.property('hmap').keys():
+        for row in range(0, self.rowCount(), 3):
+            entity = self.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            eclass = entity.eclass
 
-            # Update the node's variable(s):
-            variable = hmap[row]
-            variable.symbol  = self.text_at(row, 0)
-            variable.info    = self.text_at(row, 2)
-            variable.units   = self.text_at(row, 3)
-            variable.value   = self.text_at(row, 5)
-            variable.minimum = self.text_at(row + 1, 5)
-            variable.maximum = self.text_at(row + 2, 5)
+            if  eclass == EntityClass.PAR:
+                entity.symbol  = self.text_at(row, 0)
+                entity.label   = self.text_at(row, 1)
+                entity.info    = self.text_at(row, 2)
+                entity.units   = self.text_at(row, 3)
+                entity.strid   = self.text_at(row, 4)
+                entity.value   = self.text_at(row, 5)
+                entity.minimum = self.text_at(row + 1, 5)
+                entity.maximum = self.text_at(row + 2, 5)
 
-            if  variable.connected and variable.conjugate:
-                variable.clone_into(variable.conjugate, exclude='symbol')
+            else:
+                entity.info = self.text_at(row, 2)
+                entity.units = self.text_at(row, 3)
+                entity.value = self.text_at(row, 5)
+                entity.minimum = self.text_at(row + 1, 5)
+                entity.maximum = self.text_at(row + 2, 5)
+
+                if  entity.connected:
+                    entity.clone_into(entity.conjugate())
+
+            self.property('node')[eclass][entity] = EntityState.ACTIVE
 
         # Notify manager:
         self.setProperty('save', False)

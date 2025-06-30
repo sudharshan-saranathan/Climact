@@ -10,6 +10,7 @@ from tabs.database.eqnlist import EqnList
 from tabs.database.table import Table
 from tabs.database.tree import Tree, SearchBar
 from tabs.schema.graph.node import Node
+from tabs.schema.graph.terminal import StreamTerminal
 
 class DataManager(QWidget):
     """
@@ -35,19 +36,22 @@ class DataManager(QWidget):
         self._sheets = Table(self, headers=['Symbol', 'Label', 'Description', 'Units', 'Category', 'Initial', 'Final', 'Model'])
 
         self._search = SearchBar(self)
-        self._search.setMinimumWidth(400)
+        self._search.setMinimumWidth(450)
 
         self._viewer = QGraphicsView(self)
+        self._viewer.horizontalScrollBar().setVisible(False)
+        self._viewer.verticalScrollBar().setVisible(False)
         self._viewer.setRenderHint(QPainter.Antialiasing)
         self._viewer.setEnabled(False)
 
         # Connect signals to slots:
         self._trview.sig_node_selected.connect(self.on_node_selected)
+        self._trview.sig_term_selected.connect(self.on_term_selected)
         self._search.editor.returnPressed.connect(lambda: self._trview.filter(self._search.editor.text()))
 
         # Layout:
         self._layout = QGridLayout(self)
-        self._layout.setContentsMargins(4, 4, 4, 4)
+        self._layout.setContentsMargins(2, 2, 2, 2)
         self._layout.setSpacing(2)
 
         # Customize the equation-editor:
@@ -109,3 +113,13 @@ class DataManager(QWidget):
         # Enable the equation-editor:
         self._eqlist.setEnabled(True)
         self._eqlist.node = node
+
+    # Tree-item selected:
+    def on_term_selected(self, term: StreamTerminal):
+
+        if  not (canvas := self.property('canvas')):
+            return
+
+        self._eqlist.clear()
+        self._sheets.setRowCount(0)
+        self._viewer.fitInView(term, Qt.AspectRatioMode.KeepAspectRatio)

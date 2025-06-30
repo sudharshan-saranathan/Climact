@@ -309,8 +309,8 @@ class JsonLib:
                 _var.create_stream(_var.strid)
                 _var.sig_item_updated.emit(_var)    # Emit signal to notify application of changes
 
-                # Add the variable to the node's database, and modify the node's equations to use the variable's new symbol:
-                _node[eclass, _var] = EntityState.ACTIVE
+                # Add the variable to the node's database and modify the node's equations to use the variable's new symbol:
+                _node[eclass][_var] = EntityState.ACTIVE
 
                 # Add action to batch:
                 batch.add_to_batch(CreateHandleAction(_node, _var))
@@ -326,7 +326,7 @@ class JsonLib:
                 JsonLib.json_to_entity(_par, EntityClass.PAR, par_json)
 
                 # Add parameter to _node's database:
-                _node[EntityClass.PAR, _par] = EntityState.ACTIVE
+                _node[EntityClass.PAR][_par] = EntityState.ACTIVE
 
             # Add equations(s):
             if node_json.get("equations") or []:

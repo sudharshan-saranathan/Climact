@@ -46,8 +46,8 @@ class Gui(QMainWindow):
         self._wstack = QStackedWidget(self)     # Main Widget #1 - Allows user to switch between different main widgets.
         self._tabber = Tabber(self._wstack)     # Main Widget #2 - Allows the user to create, edit, and manage multiple canvas tabs.
 
-        self._sheets = DataManager(self)   # Main Widget #3 - Allows the user to view and edit schematic data in a tabular format.
-        self._optima = Optimizer  (self)   # Main Widget #4 - Allows the user to set up and run constrained optimization problems.
+        self._sheets = DataManager(self)        # Main Widget #3 - Allows the user to view and edit schematic data in a tabular format.
+        self._optima = Optimizer  (self)        # Main Widget #4 - Allows the user to set up and run constrained optimization problems.
 
         # Add stack-widgets:
         self._wstack.addWidget(self._tabber)
@@ -111,5 +111,6 @@ class Gui(QMainWindow):
             return
 
         if  label == "Optima" and self._wstack.currentWidget() != self._optima:
+            self._optima.reload(self._tabber.canvas)
             self._wstack.setCurrentWidget(self._optima)
             return
