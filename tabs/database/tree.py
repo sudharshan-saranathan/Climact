@@ -5,7 +5,7 @@ import logging
 
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QIcon, QBrush
-from PyQt6.QtWidgets import QTreeWidget, QWidget, QHeaderView, QTreeWidgetItem, QFrame
+from PyQt6.QtWidgets import QToolButton, QLineEdit, QTreeWidget, QHBoxLayout, QGridLayout, QWidget, QHeaderView, QTreeWidgetItem, QFrame
 
 from custom import EntityClass, EntityState
 
@@ -14,6 +14,50 @@ from tabs.schema.graph.node import Node
 import qtawesome as qta
 
 from tabs.schema.graph.terminal import StreamTerminal
+
+class SearchBar(QFrame):
+    """
+    Search bar for the tree widget.
+    """
+    # Signals:
+    sig_search = pyqtSignal(str)
+
+    # Constructor:
+    def __init__(self, parent: QWidget | None):
+        super().__init__(parent)
+
+        # Style:
+        self.setObjectName("NodeSearchBar")
+        self.setStyleSheet(
+            "#NodeSearchBar {"
+            "background: transparent;"
+            "}"
+            "QLineEdit {"
+            "border: 1px solid #ccc;"
+            "}"
+            "QToolButton:hover {"
+            "background: #ffb947"
+            "}"
+        )
+
+        # Create a frame for the search bar:
+        self.editor = QLineEdit(self)
+        self.button = QToolButton(self)
+        self.shrink = QToolButton(self)
+        self.expand = QToolButton(self)
+
+        self.button.setEnabled(True)
+        self.button.setIcon(qta.icon('mdi.magnify', color='black'))
+        self.shrink.setIcon(qta.icon('mdi.chevron-up', color='black'))
+        self.expand.setIcon(qta.icon('mdi.chevron-down', color='black'))
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
+        layout.addWidget(self.button)
+        layout.addWidget(self.editor)
+        layout.addWidget(self.shrink)
+        layout.addWidget(self.expand)
 
 class Tree(QTreeWidget):
     """
@@ -46,6 +90,13 @@ class Tree(QTreeWidget):
 
         # Connect signals to slots:
         self.itemSelectionChanged.connect(self.on_item_selected)
+
+        # Searchbar:
+        layout = QGridLayout(self)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setRowStretch(0, 10)
+        layout.addWidget(search := SearchBar(self), 1, 0, Qt.AlignmentFlag.AlignBottom)
+        search.editor.returnPressed.connect(lambda: self.filter(search.editor.text()))
 
     # Add the canvas's nodes as top-level items in the tree:
     def add_node_item(self, node: Node):
@@ -127,6 +178,21 @@ class Tree(QTreeWidget):
             if  state == EntityState.ACTIVE:
                 self.add_term_item(term)
 
+    def filter(self, node: str):
+        """
+        Filter the tree items based on the search term.
+        :param node: Search term to filter nodes.
+        """
+
+        items = self.findItems(node, Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0)
+        print(items)
+        if  not len(items):
+            return
+
+        self.collapseAll()
+        self.expand(self.indexFromItem(items[0]))
+        items[0].setSelected(True)
+
     # Handle item selection:
     def on_item_selected(self):
         """
@@ -139,15 +205,6 @@ class Tree(QTreeWidget):
         item = items[0].data(0, Qt.ItemDataRole.UserRole)
         if  isinstance(item, Node):
             self.sig_node_selected.emit(item)
-
-        """
-        top_level_item = items[0]
-        if  top_level_item.parent() is None:  # Item is a top-level item:
-            self.sig_item_selected.emit(top_level_item.text(0), None)
-
-        else:
-            self.sig_item_selected.emit(top_level_item.parent().text(0), top_level_item.text(0))
-        """
 
     # Toggle modification status:
     def show_modification_status(self, node: Node, unsaved: bool):
@@ -164,8 +221,3 @@ class Tree(QTreeWidget):
         else:
             items[0].setIcon(0, QIcon("rss/icons/checked.png"))
             self.reload(self._canvas)
-
-
-
-
-
