@@ -64,7 +64,7 @@ class Gui(QMainWindow):
         self._navbar.sig_show_widget.connect(self.set_active_widget)
 
         # Connect the canvas's double-clicked signal:
-        self._tabber.canvas.sig_node_clicked.connect(lambda: self._navbar.select_action("Sheets"))
+        self._tabber.sig_node_clicked.connect(lambda: self._navbar.select_action("Sheets"))
 
         # Initialize menu:
         self._init_menubar()

@@ -1,58 +1,51 @@
+import logging
 import weakref
 
+import numpy as np
+import qtawesome as qta
+
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QtMsgType
-from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QColor
-from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox
+from PyQt6.QtGui import QShortcut, QKeySequence, QIcon, QColor, QBrush
+from PyQt6.QtWidgets import QMenu, QTableWidget, QWidget, QHeaderView, QTableWidgetItem, QInputDialog, QMessageBox, \
+    QLabel, QLineEdit, QComboBox
 
 from custom.dialog import Dialog
 from custom.entity import Entity, EntityClass, EntityState
-from tabs.schema.graph import Node, Handle
+from tabs.schema.graph.node import Node
+from tabs.schema.graph.handle import Handle
 
 class Table(QTableWidget):
-
+    """
+    Table widget to display the schema graph's variables and parameters.
+    """
     # Signals:
     sig_table_modified = pyqtSignal(Node, bool)
 
     # Initializer:
     def __init__(self, parent: QWidget | None, **kwargs):
-
-        # Initialize base-class:
         super().__init__(parent)
 
         # References and temporary objects:
-        self._node = None
-        self._hmap = dict()     # Handle reference, needed to push user-modifications to handle's data
-        self._pmap = dict()     # Params reference, needed to push user-modifications to param's  data
-        self._cmap = dict()     # Row reference, needed during copy-paste operations
-        self._unsaved = False
+        self.setProperty('node', None)      # Node reference.
+        self.setProperty('hmap', {})        # Hash-map to store variable-references.
+        self.setProperty('pmap', {})        # Hash-map to store parameter-references.
+        self.setProperty('save', False)     # Flag to indicate if the table has been modified.
 
         # Set headers:
-        self.verticalHeader().setFixedWidth(24)
-        self.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-
+        self.verticalHeader().setVisible(False)
         self.setColumnCount(len(kwargs.get("headers")))
         self.setHorizontalHeaderLabels(kwargs.get("headers"))
 
         # Adjust column sizes:
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
 
         # Install shortcuts:
-        shortcut_add_row = QShortcut(QKeySequence("Shift+="), self)
-        shortcut_del_row = QShortcut(QKeySequence("Delete" ), self)
-        shortcut_commit  = QShortcut(QKeySequence("Ctrl+Return"), self)
-
-        # Connect shortcuts:
-        shortcut_add_row.activated.connect(self.add_params)
-        shortcut_commit.activated .connect(self.commit)
+        shortcut_add_row = QShortcut(QKeySequence("Shift+="), self, lambda: self.add_entity(EntityClass.PAR))
+        shortcut_commit  = QShortcut(QKeySequence("Ctrl+Return"), self, self.commit)
 
         # Connect table's signals:
-        self.cellChanged.connect(self.on_data_changed)
+        self.cellChanged.connect(self.on_table_edited)
+        self.cellClicked.connect(lambda row, column: print(f"Cell clicked at row {row}, column {column}"))
 
         # Initialize menu:
         self._init_menu()
@@ -61,132 +54,112 @@ class Table(QTableWidget):
     def _init_menu(self):
 
         self._menu = QMenu()
-        _equal  = self._menu.addAction(QIcon("rss/icons/menu-equal.png"), "Assign", QKeySequence("Ctrl+Return"   ), self.assign)
-        _clear  = self._menu.addAction(QIcon("rss/icons/menu-clear.png"), "Clear" , QKeySequence("Ctrl+Backspace"), self.erase)
-        _delete = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", QKeySequence("Delete"), self.delete_row)
+        assign = self._menu.addAction(qta.icon('mdi.equal' , color='black'), "Assign", self.assign)
+        eraser = self._menu.addAction(qta.icon('mdi.eraser', color='darkred'), "Erase" , self.erase)
 
-        _equal.setIconVisibleInMenu(True)
-        _clear.setIconVisibleInMenu(True)
-        _delete.setIconVisibleInMenu(True)
+        assign.setIconVisibleInMenu(True)
+        eraser .setIconVisibleInMenu(True)
 
-        _equal.setShortcutVisibleInContextMenu(True)
-        _clear.setShortcutVisibleInContextMenu(True)
-        _delete.setShortcutVisibleInContextMenu(True)
-
-    # Context-menu event:
     def contextMenuEvent(self, event):
         self._menu.exec(event.globalPos())
 
     # Create row to display variable data:
-    def add_stream(self, handle: Handle):
+    def add_entity(self, eclass: EntityClass, entity: Entity | None = None):
+        """
+        Create a row in the table to display the variable's data.
 
-        # Call the base-class implementation first:
-        row = self.rowCount()
-        super().insertRow(row)
+        :param eclass: The class of the entity (variable or parameter).
+        :param entity: The variable to display.
+        """
 
-        # Create QTableWidgetItems:
-        symb_item = QTableWidgetItem(QIcon("rss/icons/variable.png"), handle.symbol)
-        symb_item.setFlags(symb_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-        symb_item.setData(Qt.ItemDataRole.UserRole, "Variable")
-        symb_item.setData(
-            Qt.ItemDataRole.BackgroundRole,
-            QColor(0x9AADBF) if handle.eclass == EntityClass.INP else QColor(0xFFA85C)
-        )
+        # Call super-class's method (see QTableWidget documentation) to insert a new row:
+        row_id = self.rowCount()
+        hmap   = self.property('hmap')
+        pmap   = self.property('pmap')
 
-        name_item = QTableWidgetItem(handle.info)                   # Name column
-        unit_item = QTableWidgetItem(handle.units)                  # Unit column
-        unit_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)    # Center-align units
+        self.insertRow(self.rowCount())
+        self.insertRow(self.rowCount())
+        self.insertRow(self.rowCount())
 
-        type_item = QTableWidgetItem(handle.strid)                  # String-ID column
-        type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)    # Center-align string-ID
+        # Fetch icon depending on the entity class:
+        icon    = qta.icon("mdi.alpha", color='black') if eclass == EntityClass.PAR else qta.icon("mdi.variable", color='black')
+        symbol  = str()      if entity is None else entity.symbol
+        label   = str()      if entity is None else entity.label
+        units   = str()      if entity is None else entity.units
+        info    = str()      if entity is None else entity.info
+        strid   = "Default"  if entity is None else entity.strid
+        value   = str()      if entity is None else entity.value
+        minimum = str()      if entity is None else entity.minimum
+        maximum = str()      if entity is None else entity.maximum
 
-        value_item = QTableWidgetItem(str(handle.value))            # Value column
-        value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)   # Center-align value
+        for row in range(3):
+            model = QComboBox(self)
+            model.addItems(["Constant", "Linear", "Power", "Sigmoid"])
+            self.setCellWidget(row_id + row, self.columnCount() - 1, model)  # Set the combo-box in the last column
 
-        sigma_item = QTableWidgetItem(str(handle.sigma))            # Sigma column
-        sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)   # Center-align sigma
+        # Create TableWidgetItem for the variable:
+        row_items = list()
+        row_items.append(item_0 := QTableWidgetItem(icon, symbol))  # Symbol
+        row_items.append(item_1 := QTableWidgetItem(label))         # Label
+        row_items.append(item_2 := QTableWidgetItem(info ))         # Info
+        row_items.append(item_3 := QTableWidgetItem(units))         # Units
+        row_items.append(item_4 := QTableWidgetItem(strid))         # Strid
+        row_items.append(item_vi := QTableWidgetItem(value))        # Value (Initial)
+        row_items.append(item_ni := QTableWidgetItem(minimum))      # Minimum (Initial)
+        row_items.append(item_mi := QTableWidgetItem(maximum))      # Maximum (Initial)
+        row_items.append(item_vf := QTableWidgetItem())             # Value (Final)
+        row_items.append(item_nf := QTableWidgetItem())             # Minimum (Final)
+        row_items.append(item_mf := QTableWidgetItem())             # Maximum (Final)
 
-        lower_item = QTableWidgetItem(str(handle.minimum))
-        lower_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        item_vi.setIcon(qta.icon("mdi.equal", color='black'))
+        item_vf.setIcon(qta.icon("mdi.equal", color='black'))
+        item_ni.setIcon(qta.icon("mdi.greater-than", color='#8AA1B1'))
+        item_nf.setIcon(qta.icon("mdi.greater-than", color='#8AA1B1'))
+        item_mi.setIcon(qta.icon("mdi.less-than", color='#8AA1B1'))
+        item_mf.setIcon(qta.icon("mdi.less-than", color='#8AA1B1'))
 
-        upper_item = QTableWidgetItem(str(handle.maximum))
-        upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Customize behavior for variables:
+        if  eclass == EntityClass.VAR:
+            hmap[row_id] = entity
+            item_4.setFlags(item_4.flags() & ~Qt.ItemFlag.ItemIsEditable)       # Make strid non-editable
+            item_1.setFlags(item_1.flags() & ~Qt.ItemFlag.ItemIsEditable)       # Make label non-editable
+            item_0.setFlags(item_0.flags() & ~Qt.ItemFlag.ItemIsEditable)       # Make symbol non-editable
 
-        inter_item = QTableWidgetItem()
-        inter_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Customize behavior for parameters:
+        if  eclass == EntityClass.PAR:
+            pmap[row_id] = entity
+            item_0.setFlags(item_0.flags() | Qt.ItemFlag.ItemIsEditable)        # Make parameter-symbols editable
 
-        auto_item = QTableWidgetItem()
-        auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        self.setProperty('hmap', hmap)
+        self.setProperty('pmap', pmap)
 
-        # Install cells:
-        self.setItem(row, 0, symb_item)
-        self.setItem(row, 1, name_item)
-        self.setItem(row, 2, unit_item)
-        self.setItem(row, 3, type_item)
-        self.setItem(row, 4, value_item)
-        self.setItem(row, 7, sigma_item)
-        self.setItem(row, 5, lower_item)
-        self.setItem(row, 6, upper_item)
-        self.setItem(row, 8, inter_item)
-        self.setItem(row, 9, auto_item)
+        # Center align all cells:
+        for column in range(0, 5):
+            row_items[column].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Store in hash-map:
-        self._hmap[row] = handle
+        # Install cells in the table:
+        self.setItem(row_id, 0, item_0)
+        self.setItem(row_id, 1, item_1)
+        self.setItem(row_id, 2, item_2)
+        self.setItem(row_id, 3, item_3)
+        self.setItem(row_id, 4, item_4)
+        self.setItem(row_id, 5, item_vi)
+        self.setItem(row_id + 1, 5, item_ni)
+        self.setItem(row_id + 2, 5, item_mi)
+        self.setItem(row_id, 6, item_vf)
+        self.setItem(row_id + 1, 6, item_nf)
+        self.setItem(row_id + 2, 6, item_mf)
 
-    # Create row for new parameter:
-    def add_params(self, entity: Entity = Entity()):
-
-        # Create parameter
-        row = self.rowCount()
-        super().insertRow(row)
-
-        # Create QTableWidgetItems:
-        symb_item = QTableWidgetItem(QIcon("rss/icons/parameter.png"), entity.symbol)
-        symb_item.setData(Qt.ItemDataRole.UserRole, "Parameter")
-
-        name_item = QTableWidgetItem(entity.info)
-        unit_item = QTableWidgetItem(entity.units)
-        unit_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        type_item = QTableWidgetItem(entity.strid)
-        type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        value_item = QTableWidgetItem(str(entity.value))
-        value_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        sigma_item = QTableWidgetItem(str(entity.sigma))
-        sigma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        lower_item = QTableWidgetItem(str(entity.minimum))
-        lower_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        upper_item = QTableWidgetItem(str(entity.maximum))
-        upper_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        inter_item = QTableWidgetItem()
-        inter_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        auto_item = QTableWidgetItem()
-        auto_item.setFlags(auto_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-
-        self.setItem(row, 0, symb_item)
-        self.setItem(row, 1, name_item)
-        self.setItem(row, 2, unit_item)
-        self.setItem(row, 3, type_item)
-        self.setItem(row, 4, value_item)
-        self.setItem(row, 7, sigma_item)
-        self.setItem(row, 5, lower_item)
-        self.setItem(row, 6, upper_item)
-        self.setItem(row, 8, inter_item)
-        self.setItem(row, 9, auto_item)
-
-        # Notify manager:
-        self._unsaved = True
-        self.sig_table_modified.emit(self._node(), self._unsaved)
+        # Span the first five columns across the rows:
+        for column in range(5):
+            self.setSpan(row_id, column, 3, 1)  # Span each cell in the first five columns across the row
 
     # Delete selected rows:
-    def delete_row(self):
-
+    def delete(self):
+        """
+        Delete all selected rows in the table.
+        :return:
+        """
         # Get all selected rows:
         rows = set([item.row() for item in self.selectedItems()])
 
@@ -196,77 +169,74 @@ class Table(QTableWidget):
             is_selected = True
             for column in range(self.columnCount()):
                 item = self.item(row, column)
-                if item:
+                if  item:
                     is_selected &= item.isSelected()
 
-            # Remove row if it is selected:
+            # Remove the row if it is selected:
             if is_selected: self.removeRow(row)
 
         # Notify manager:
-        self._unsaved = True
-        self.sig_table_modified.emit(self._node(), self._unsaved)
+        self.setProperty('save', True)
+        self.sig_table_modified.emit(self.property('node'), True)
 
     # Fetch and display _node-data:
     def fetch(self, node: Node):
+        """
+        Fetch the node's data and display it in the table.
+        :param node:
+        """
 
-        # Remove all rows, reset temporary objects:
         self.reset()
+        self.blockSignals(True)
+        self.setProperty('node', node)
 
-        # Store weak-reference and block signals:
-        self._node = weakref.ref(node)
-        self.blockSignals(True)             # Block signal (self.cellChanged()) from triggering slots when fetching _node data
-
-        # Abort if the _node is None:
-        if  self._node() is None:
-            return
-
-        # Display the _node's variables:
-        for variable, state in node[EntityClass.VAR].items():
-            print(variable, state)
-            if  state == EntityState.ACTIVE:
-                self.add_stream(variable)
+        for entity, state in node[EntityClass.VAR].items():
+            if state == EntityState.ACTIVE:
+                self.add_entity(EntityClass.VAR, entity)
 
         # Display the _node's parameters:
-        for parameter, state in node[EntityClass.PAR].items():
-            print(parameter, state)
-            if state == EntityState.ACTIVE:
-                self.add_params(parameter)
-
-        self.update()
+        for parameter in node[EntityClass.PAR]:
+            self.add_entity(EntityClass.PAR, parameter)
 
         # Unblock signals:
         self.blockSignals(False)
+        self.update()
 
     # Clear the table's contents:
     def reset(self):
-        self._node    = None
-        self._unsaved = False
+        """
+        Reset the table's contents, clearing all rows and temporary objects.
+        :return:
+        """
+        self.setProperty('node', None)
+        self.setProperty('hmap', {})
 
-        self._hmap.clear()
+        self.setProperty('save', False)
+        self.setProperty('hmap', {})
         self.setRowCount(0)
 
     # Assign selected cells:
-    @pyqtSlot(name="Table.assign")
+    @pyqtSlot(name="assign")
     def assign(self):
-        
+        """
+        Assign a value to each selected item in the table.
+        :return:
+        """
+        # Get an input value:
         value, code = QInputDialog.getText(self, "Assign", "Enter a value:")
-            
+
         # Abort if the user cancels the dialog:
         if not code: return
 
-        # Abort if the entered value is not a string, float, or int:
-        if not isinstance(value, str | float | int):
-            _error = Dialog(QtMsgType.QtCriticalMsg, "The entered value must be of type `str`, `float`, or `int`", QMessageBox.StandardButton.Ok)
-            _error.exec()
-            return
-
         # Assign the value to each selected item:
-        for item in self.selectedItems():
-            if item: item.setText(str(value))
+        [item.setText(str(value)) for item in self.selectedItems()]
 
     # Erase selected cells:
-    @pyqtSlot(name="Table.erase")
+    @pyqtSlot(name="erase")
     def erase(self):
+        """
+        Erase the text in each selected item in the table.
+        """
 
         # Get selected items:
         selected_items = self.selectedItems()
@@ -275,78 +245,54 @@ class Table(QTableWidget):
         for item in selected_items:
             item.setText("")
 
-    # Method to return unique column-values:
-    def unique(self, column: int):
-
-        if column >= self.columnCount():
-            return None
-
-        fields = set()
-        for row in range(self.rowCount()):
-            if self.item(row, column):
-                fields.add(self.item(row, column).text())
-
-        return fields
-
     def commit(self):
+        """
+        Commit the changes made in the table to the node's variables and parameters.
+        :return:
+        """
+
+        print(f"Committing changes to node: {self.property('node').uid}")
+        node = self.property('node')
+        hmap = self.property('hmap')
+
+        print(node, hmap.keys())
 
         # Abort if no _node has been set:
-        if self._node() is None: return
+        if node is None:    return
 
-        # Clear the _node's parameters and equations:
-        self._node()[EntityClass.PAR].clear()
-
-        # Save defined parameters:
-        for row in range(self.rowCount()):
+        # Read tabular data and update the node's variables and parameters:
+        for row in self.property('hmap').keys():
 
             # Update the node's variable(s):
-            if row in self._hmap.keys():
+            variable = hmap[row]
+            variable.symbol  = self.text_at(row, 0)
+            variable.info    = self.text_at(row, 2)
+            variable.units   = self.text_at(row, 3)
+            variable.value   = self.text_at(row, 5)
+            variable.minimum = self.text_at(row + 1, 5)
+            variable.maximum = self.text_at(row + 2, 5)
 
-                variable = self._hmap[row]
-                variable.symbol  = self.cell_data(row, 0)
-                variable.info    = self.cell_data(row, 1)
-                variable.units   = self.cell_data(row, 2)
-                variable.strid   = self.cell_data(row, 3)
-                variable.value   = self.cell_data(row, 4)
-                variable.sigma   = self.cell_data(row, 7)
-                variable.minimum = self.cell_data(row, 5)
-                variable.maximum = self.cell_data(row, 6)
-
-                if variable.connected and variable.conjugate:
-
-                    conjugate = variable.conjugate()
-                    conjugate.info    = self.cell_data(row, 1)
-                    conjugate.units   = self.cell_data(row, 2)
-                    conjugate.strid   = self.cell_data(row, 3)
-                    conjugate.value   = self.cell_data(row, 4)
-                    conjugate.sigma   = self.cell_data(row, 7)
-                    conjugate.minimum = self.cell_data(row, 5)
-                    conjugate.maximum = self.cell_data(row, 6)
-
-            # Update the node's parameters:
-            else:
-                entity = Entity()
-                entity.eclass  = EntityClass.PAR
-                entity.symbol  = self.cell_data(row, 0)
-                entity.info    = self.cell_data(row, 1)
-                entity.units   = self.cell_data(row, 2)
-                entity.strid   = self.cell_data(row, 3)
-                entity.value   = self.cell_data(row, 4)
-                entity.minimum = self.cell_data(row, 5)
-                entity.maximum = self.cell_data(row, 6)
-                entity.sigma   = self.cell_data(row, 7)
-
-                # Add parameter to dictionary:
-                self._node()[EntityClass.PAR, entity] = EntityState.ACTIVE
+            if  variable.connected and variable.conjugate:
+                variable.clone_into(variable.conjugate, exclude='symbol')
 
         # Notify manager:
-        self._unsaved = False
-        self.sig_table_modified.emit(self._node(), self._unsaved)
+        self.setProperty('save', False)
+        self.sig_table_modified.emit(self.property('node'), False)
 
-    def cell_data(self, row, column):
+    def text_at(self, row, column):
+        """
+        Fetch the text from a specific cell in the table.
+        :param row:
+        :param column:
+        """
         item = self.item(row, column)
         return item.text() if item else ""
 
-    def on_data_changed(self, row: int, column: int):
-        self._unsaved = True
-        self.sig_table_modified.emit(self._node(), self._unsaved)
+    def on_table_edited(self, row: int, column: int):
+        """
+        Event-handler for when a cell's data is changed.
+        :param row:
+        :param column:
+        """
+        self.setProperty('save', True)
+        self.sig_table_modified.emit(self.property('node'), True)

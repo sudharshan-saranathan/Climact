@@ -1,32 +1,41 @@
 import logging
 
-from PyQt6.QtWidgets import QWidget, QGridLayout
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QGridLayout, QGraphicsItem, QTextEdit, QLabel, QFormLayout, QLineEdit
 
+from custom import EntityClass, EntityState
 from tabs.schema.canvas import Canvas
 from tabs.database.eqnlist import EqnList
 from tabs.database.table import Table
 from tabs.database.tree import Tree
-from custom.entity import EntityState
+from tabs.schema.graph.node import Node
 
 class DataManager(QWidget):
-
+    """
+    DataManager class for managing database interactions and displaying data.
+    """
     # Initializer:
     def __init__(self, parent: QWidget | None):
-
-        # Initialize base-class:
         super().__init__(parent)
 
-        # Set properties:
-        self.setProperty("canvas", None)
-        self.setProperty("title" , "Node-data Manager")
-
         # Main-widgets:
-        self._eqns = EqnList(self)
-        self._tree = Tree(self)
-        self._data = Table(self, headers=['Symbol', 'Description', 'Units', 'Category', 'Value', 'Lower', 'Upper', 'Sigma', 'Interpolation', 'Auto'])
+        self._label = QLabel("Equations Editor (Right-click to add or remove equations)")
+        self._label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._label.setStyleSheet("QLabel {"
+                                  "margin: 2px;"
+                                  "padding: 4px;"
+                                  "background: #efefef;"
+                                  "border-radius: 4px;"
+                                  "border: 1px solid black;"
+                                  "}")
+
+        self._editor = QTextEdit(self)
+        self._eqlist = EqnList(self)
+        self._trview = Tree(self)
+        self._sheets = Table(self, headers=['Symbol', 'Label', 'Description', 'Units', 'Category', 'Initial (T0)', 'Final (t', 'Model'])
 
         # Connect signals to slots:
-        self._tree.sig_item_selected.connect(self.on_tree_item_selected)
+        self._trview.sig_node_selected.connect(self.on_node_selected)
 
         # Layout:
         self._layout = QGridLayout(self)
@@ -34,42 +43,57 @@ class DataManager(QWidget):
         self._layout.setSpacing(0)
 
         # Customize the equation-editor:
-        self._eqns.setFixedHeight(240)
-        self._eqns.setEnabled(False)
+        self._eqlist.setEnabled(False)
 
-        self._layout.addWidget(self._tree, 0, 0, 3, 1)
-        self._layout.addWidget(self._data, 0, 1, 2, 1)
-        self._layout.addWidget(self._eqns, 2, 1)
+        self._layout.addWidget(self._trview, 0, 0, 3, 1)
+        self._layout.addWidget(self._sheets, 0, 1, 1, 2)
+        self._layout.addWidget(self._label , 1, 1, 1, 2)
+        self._layout.addWidget(self._eqlist, 2, 1)
+        self._layout.setRowStretch(0, 4)
 
         # Connect signals:
-        self._data.sig_table_modified.connect(self._tree.show_modification_status)
+        self._sheets.sig_table_modified.connect(self._trview.show_modification_status)
 
     # Clear data:
     def clear(self):
-        self._data.reset()
-        self._eqns.clear()
+        """
+        Clear the data manager, resetting all views and spreadsheets.
+        :return:
+        """
+        self._sheets.reset()
+        self._eqlist.clear()
 
     # Reload data:
     def reload(self, canvas: Canvas):
+        """
+        Reload the data manager with a new canvas.
+        :param canvas:
+        """
 
-        # Store reference to the canvas:
-        self.setProperty("canvas", canvas)
-
-        # Reload tree:
-        self._tree.reload(canvas)
+        # Store canvas:
+        self.setProperty('canvas', canvas)
 
         # Reset spreadsheets and equation-viewer:
-        self._data.reset()
-        self._eqns.clear()
+        self._sheets.reset()
+        self._eqlist.clear()
+
+        # Reload tree:
+        self._trview.reload(canvas)
 
     # Tree-item selected:
-    def on_tree_item_selected(self, nuid: str, huid: str):
+    def on_node_selected(self, node: Node):
+        """
+        Handle the selection of a tree item.
+        :param node:
+        :return:
+        """
+        if  not (canvas := self.property('canvas')):
+            return
 
-        # Find the node by unique identifier (nuid):
-        for node, state in self.property("canvas").node_db.items():
-            if state and node.uid == nuid:
+        # Display data for node:
+        self._sheets.setRowCount(0)
+        self._sheets.fetch(node)
 
-                # Display data for _node:
-                self._data.fetch(node)
-                self._eqns.setEnabled(True)
-                self._eqns.node = node
+        # Enable the equation-editor:
+        self._eqlist.setEnabled(True)
+        self._eqlist.node = node

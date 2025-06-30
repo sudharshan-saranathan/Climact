@@ -16,7 +16,7 @@ from PyQt6.QtGui import (
 )
 
 # PyQt6.QtCore module:
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 
 # PyQt6.QtWidgets module:
 from PyQt6.QtWidgets import (
@@ -54,6 +54,9 @@ class Tabber(QTabWidget):
     - rename_tab():
         Renames the tab at the specified index with a new name provided by the user.
     """
+
+    # Signals:
+    sig_node_clicked = pyqtSignal()
 
     # Constants for the Tabber class:
     class Constants:
@@ -152,6 +155,7 @@ class Tabber(QTabWidget):
         # Connect the canvas's state change signal to update the tab icon:
         viewer.canvas.sig_schema_setup.connect(lambda file: self.rename_tab(self.currentIndex(), Path(file).stem))
         viewer.canvas.sig_canvas_state.connect(self.on_canvas_state_change)
+        viewer.canvas.sig_node_clicked.connect(self.sig_node_clicked.emit)
 
     # Method to close and remove a tab:
     def remove_tab(self, index: int):

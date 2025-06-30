@@ -41,33 +41,28 @@ class Entity(Stream):
         })
 
     # Clone this entity and return a reference:
-    def clone_into(self, _copied):
+    def clone_into(self, copied, **kwargs):
 
         # Copy this entity's attribute(s):
-        _copied.symbol  = self.symbol
-        _copied.eclass  = self.eclass
-        _copied.info    = self.info
-        _copied.units   = self.units
-        _copied.strid   = self.strid
-        _copied.color   = self.color
-        _copied.value   = self.value
-        _copied.sigma   = self.sigma
-        _copied.minimum = self.minimum
-        _copied.maximum = self.maximum
+        copied.symbol  = self.symbol    if 'exclude' in kwargs and "symbol" in kwargs.values() else copied.symbol
+        copied.eclass  = self.eclass
+        copied.info    = self.info
+        copied.units   = self.units
+        copied.strid   = self.strid
+        copied.value   = self.value
+        copied.sigma   = self.sigma
+        copied.minimum = self.minimum
+        copied.maximum = self.maximum
 
     # uid (datatype = str): Unique resource-identifier
     @property
     def uid(self)   -> str : return self._prop["uid"]
 
     @uid.setter
-    def uid(self, _uid: str):
-
-        # Validate input-type:
-        if not isinstance(_uid, str):
-            raise TypeError("Expected str")
+    def uid(self, uid: str):
 
         # Set UID:
-        self._prop["uid"] = _uid
+        self._prop["uid"] = uid
 
     # Info (datatype = str): Description of the entity
     @property

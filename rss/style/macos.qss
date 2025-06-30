@@ -452,11 +452,16 @@ QTableCornerButton::section {
 }
 
 QTableWidget::item {
-    color                   : black;
+    border          : none;
+    color           : black;
+}
+
+QTableWidget::item:hover {
+    background-color        : #efefef;
 }
 
 QTableWidget::item:selected, QTableView::item:selected {
-    border                  : none;
+    border                  : 1px solid black;
     background-color        : lightslategray;
     selection-color         : white;
 }
