@@ -99,7 +99,7 @@ class StreamTerminal(QGraphicsObject):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
-        # Create handle and position it:
+        # Create a new handle and position it:
         self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
         self.handle = Handle(_eclass, self.offset, "Resource", self)
         self.handle.contrast = True
