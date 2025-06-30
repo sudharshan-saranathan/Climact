@@ -32,7 +32,7 @@ class DataManager(QWidget):
         self._editor = QTextEdit(self)
         self._eqlist = EqnList(self)
         self._trview = Tree(self)
-        self._sheets = Table(self, headers=['Symbol', 'Label', 'Description', 'Units', 'Category', 'Initial (T0)', 'Final (t', 'Model'])
+        self._sheets = Table(self, headers=['Symbol', 'Label', 'Description', 'Units', 'Category', 'Initial', 'Final', 'Model'])
 
         # Connect signals to slots:
         self._trview.sig_node_selected.connect(self.on_node_selected)
