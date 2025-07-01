@@ -393,9 +393,6 @@ class Handle(QGraphicsObject, Entity):
         # Set stream:
         self.set_stream(stream)
 
-        # Notify application of stream-change:
-        self.sig_item_updated.emit(self)
-
     def set_stream(self, stream: Stream):
 
         # Set stream:
@@ -409,6 +406,9 @@ class Handle(QGraphicsObject, Entity):
         if  self.connected and self.eclass == EntityClass.OUT:
             self.connector().set_color (stream.color)
             self.conjugate().set_stream(stream)
+
+        # Notify application of stream-change:
+        self.sig_item_updated.emit(self)
 
     def set_editable(self):
 

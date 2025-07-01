@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QMenu
 )
 
-from custom  import EntityClass
+from custom  import *
 from util    import *
 from .handle import Handle
 
@@ -219,28 +219,29 @@ class StreamTerminal(QGraphicsObject):
             StreamTerminal: A new terminal with the same properties as the original terminal.
         """
 
-        _terminal = StreamTerminal(self._eclass, None)
-        _terminal.setPos(self.scenePos() + QPointF(25, 25))
-        _terminal.setSelected(True)
+        terminal = StreamTerminal(self.eclass, None)
+        terminal.setPos(self.scenePos() + QPointF(25, 25))
+        terminal.setSelected(True)
 
         # Create a hash-map entry:
-        Handle.cmap[self.handle] = _terminal.handle
+        Handle.cmap[self.handle] = terminal.handle
 
         # Copy attribute(s):
-        self.handle.clone_into(_terminal.handle)
+        self.handle.clone_into(terminal.handle)
         self.setSelected(False)
 
         # Emit the handle's signal to propagate it to the terminal:
-        _terminal.handle.sig_item_updated.emit(_terminal.handle)
+        terminal.handle.set_stream(Stream(self.handle.strid, self.handle.color))
 
         # Return reference:
-        return _terminal
+        return terminal
 
     @pyqtSlot(Handle)
     def on_handle_updated(self, handle):
         """
         Event handler for when the handle is updated.
         """
+        print(f"Terminal {self.uid} handle updated: {handle.color.name()}")
         self._style.background = self.handle.color
 
     # Properties -------------------------------------------------------------------------------------------------------

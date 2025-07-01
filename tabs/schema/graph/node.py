@@ -32,6 +32,22 @@ from util    import *
 from .anchor import Anchor
 from .handle import Handle
 
+# Node default configuration:
+nodeDefaults = {
+    "nuid"          : str(),
+    "name"          : "Node",
+    "spos"          : QPointF(0, 0),
+    "rect"          : QRectF(-100, -75, 200, 150),
+    "step"          : 50,
+    "normal-border" : QColor(0x000000),
+    "select-border" : QColor(0xf99c39),
+    "background"    : QColor(0xffffff),
+    "inp"           : dict(),
+    "out"           : dict(),
+    "par"           : dict(),
+    "equations"     : list()
+}
+
 # Node class:
 class Node(QGraphicsObject):
 
@@ -48,7 +64,7 @@ class Node(QGraphicsObject):
     class Attr:
         def __init__(self):
             self.rect  = QRectF(-100, -75, 200, 150)    # Default rectangle size of the node.
-            self.delta = 50                             # Default step-size for resizing the node.
+            self.step = 50                             # Default step-size for resizing the node.
 
     # Style:
     class Visual:
@@ -69,6 +85,10 @@ class Node(QGraphicsObject):
         super().setAcceptHoverEvents(True)
         super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+
+        # Node's properties:
+        for attr in nodeDefaults:
+            self.setProperty(attr, nodeDefaults[attr])
 
         # Initialize style and attrib:
         self.double_clicked = False             # Used to track when the node has been double-clicked
@@ -110,8 +130,8 @@ class Node(QGraphicsObject):
         shrink_button.moveBy(70, -65)
         delete_button.moveBy(86, -62)
 
-        expand_button.sig_button_clicked.connect(lambda: self.resize( self._attr.delta))
-        shrink_button.sig_button_clicked.connect(lambda: self.resize(-self._attr.delta))
+        expand_button.sig_button_clicked.connect(lambda: self.resize(self._attr.step))
+        shrink_button.sig_button_clicked.connect(lambda: self.resize(-self._attr.step))
         delete_button.sig_button_clicked.connect(self.sig_item_removed.emit)
 
         # Instantiate separator:
@@ -178,8 +198,8 @@ class Node(QGraphicsObject):
 
         # Additional actions:
         self._menu.addSeparator()
-        shrink_action = self._menu.addAction(QIcon("rss/icons/shrink.svg"), "Shrink", lambda: self.resize(-self._attr.delta))
-        expand_action = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize( self._attr.delta))
+        shrink_action = self._menu.addAction(QIcon("rss/icons/shrink.svg"), "Shrink", lambda: self.resize(-self._attr.step))
+        expand_action = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize(self._attr.step))
 
         self._menu.addSeparator()
         delete_action = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
