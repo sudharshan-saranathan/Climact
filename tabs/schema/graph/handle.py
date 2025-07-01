@@ -129,7 +129,7 @@ class Handle(QGraphicsObject, Entity):
         # Main menu actions:
         edit_action   = self._menu.addAction(qtawesome.icon("ph.pencil-simple", color='black'), "Edit Label", self.set_editable)
         unpair_action = self._menu.addAction(qtawesome.icon("ph.eject", color="green"), "Unpair", self.unpair)
-        delete_action = self._menu.addAction(qtawesome.icon("ph.trash", color="red"), "Delete", self.sig_item_removed.emit)
+        delete_action = self._menu.addAction(qtawesome.icon("ph.trash", color="red"), "Delete", lambda: self.sig_item_removed.emit(self))
 
         edit_action.setIconVisibleInMenu(True)
         delete_action.setIconVisibleInMenu(True)
@@ -339,7 +339,7 @@ class Handle(QGraphicsObject, Entity):
         self.conjugate = weakref.ref(conjugate)
         self.connector = weakref.ref(connector)
 
-        # Change background color to red:
+        # Change the background color to red:
         self._styl.bg_active = self._styl.bg_paired
 
     def free(self, delete_connector = False):
