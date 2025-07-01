@@ -296,8 +296,13 @@ class Handle(QGraphicsObject, Entity):
 
         # Set attribute(s):
         copied.rename(self.label)
-        copied.setPos(self.pos())
         copied.sig_item_updated.emit(copied)
+
+        if 'exclude' in kwargs and 'position' in kwargs.get('exclude'):
+            return
+
+        else:
+            copied.setPos(self.pos())
 
     def unpair(self):
         """
@@ -313,21 +318,20 @@ class Handle(QGraphicsObject, Entity):
         # Initiate unpairing through stack-manager:
         logging.info("Unpairing handle")
 
-    def rename(self, _label: str):
+    def rename(self, label: str):
         """
         Rename the handle's label.
 
         Parameters:
-            _label (str): The new label for the handle.
+            label (str): The new label for the handle.
         Returns: None
         """
 
-        self._prop["label"] = _label
+        self._prop["label"] = label
         self._label.setPlainText(self.label)
 
         if (
             self.conjugate and
-            self.conjugate() and
             self.eclass == EntityClass.OUT
         ):
             self.conjugate().rename(self.label)

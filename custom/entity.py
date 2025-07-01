@@ -45,7 +45,7 @@ class Entity(Stream):
 
         # Copy this entity's attribute(s):
         copied.symbol  = self.symbol    if 'exclude' in kwargs and "symbol" in kwargs.values() else copied.symbol
-        copied.eclass  = self.eclass
+        copied.eclass  = self.eclass    if 'exclude' in kwargs and "eclass" in kwargs.values() else copied.eclass
         copied.info    = self.info
         copied.units   = self.units
         copied.strid   = self.strid

@@ -272,7 +272,7 @@ class Table(QTableWidget):
                 entity.maximum = self.text_at(row + 2, 5)
 
                 if  entity.connected:
-                    entity.clone_into(entity.conjugate())
+                    entity.clone_into(entity.conjugate(), exclude=['symbol', 'eclass', 'position'])
 
             self.property('node')[eclass][entity] = EntityState.ACTIVE
 
