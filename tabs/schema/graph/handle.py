@@ -285,19 +285,19 @@ class Handle(QGraphicsObject, Entity):
     # 6. set_editable           Make the handle's label temporarily editable.
     # ------------------------------------------------------------------------------------------------------------------
 
-    def clone_into(self, _copied):
+    def clone_into(self, copied, **kwargs):
 
         # Call super-class implementation:
-        super().clone_into(_copied)
+        super().clone_into(copied)
 
         # Set additional attribute(s):
-        _copied.contrast = self.contrast
-        _copied.offset   = self.offset
+        copied.contrast = self.contrast
+        copied.offset   = self.offset
 
-        # Rename, set position, then emit signal:
-        _copied.rename(self.label)
-        _copied.setPos(self.pos())
-        _copied.sig_item_updated.emit(_copied)
+        # Set attribute(s):
+        copied.rename(self.label)
+        copied.setPos(self.pos())
+        copied.sig_item_updated.emit(copied)
 
     def unpair(self):
         """
@@ -331,6 +331,16 @@ class Handle(QGraphicsObject, Entity):
             self.eclass == EntityClass.OUT
         ):
             self.conjugate().rename(self.label)
+
+    def pair(self, conjugate: 'Handle', connector: 'Connector'):
+
+        # Store reference(s) and
+        self.connected = conjugate is not None and connector is not None
+        self.conjugate = weakref.ref(conjugate)
+        self.connector = weakref.ref(connector)
+
+        # Modify appearance based on pairing-state:
+        self._styl.bg_active = self._styl.bg_paired if self.connected else self._styl.bg_normal
 
     def lock(self, conjugate, connector):
 

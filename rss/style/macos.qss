@@ -1,5 +1,4 @@
 * {
-    font        : 13pt "Trebuchet MS";
 	border      : none;
 	background  : white;
 }
