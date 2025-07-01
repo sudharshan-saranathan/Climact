@@ -137,6 +137,7 @@ class JsonLib:
             # JSON-composite:
             node_object = {
                 "node-title"    : _item.title,                      # Node's title
+                "node-color"    : _item._style.background.name(),   # Node's background color
                 "node-height"   : _item.boundingRect().height(),    # Node's height
                 "node-scenepos" : {                                 # Node's scene-position
                     "x": _item.scenePos().x(),
@@ -259,6 +260,7 @@ class JsonLib:
         for node_json in root.get("NODES") or []:
 
             height = node_json.get("node-height")
+            color  = node_json.get("node-color")
             title  = node_json.get("node-title")
             npos   = QPointF(node_json.get("node-scenepos").get("x"),
                             node_json.get("node-scenepos").get("y")
@@ -270,7 +272,8 @@ class JsonLib:
                 False   # Do not create a corresponding action
             )
 
-            _node.resize(int(height) - 150)                     # Adjust _node's height
+            _node.resize(int(height) - 150)                    # Adjust _node's height
+            _node._style.background = QColor(color)
             canvas.node_db[_node] = EntityState.ACTIVE         # Add node to canvas' database:
             canvas.addItem(_node)                              # Add node to canvas
 

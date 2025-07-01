@@ -9,6 +9,7 @@ from PyQt6.QtGui import (
     QColor,
     QBrush
 )
+
 from PyQt6.QtCore import (
     Qt,
     QRectF,
@@ -202,6 +203,7 @@ class Node(QGraphicsObject):
         expand_action = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize(self._attr.step))
 
         self._menu.addSeparator()
+        print_action  = self._menu.addAction("Print Info", self.on_print_info)
         delete_action = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
 
         # Make icons visible:
@@ -604,6 +606,10 @@ class Node(QGraphicsObject):
 
         color = QColorDialog.getColor(self._style.background, None, "Select Background Color")
         self._style.background = color if color.isValid() else self._style.background
+
+    def on_print_info(self):
+        for handle, state in self._data[EntityClass.INP]:
+            print(handle.label, state)
 
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description
