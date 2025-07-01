@@ -278,9 +278,6 @@ class Handle(QGraphicsObject, Entity):
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
     # 1. unpair                 Unpair this handle from its conjugate.
-    # 2. rename                 Rename the handle's label.
-    # 3. lock                   Lock handle to a conjugate and connector.   
-    # 4. free                   Free handle from its conjugate and connector.
     # 5. set_stream             Set the stream of the handle.
     # 6. set_editable           Make the handle's label temporarily editable.
     # ------------------------------------------------------------------------------------------------------------------
@@ -371,7 +368,7 @@ class Handle(QGraphicsObject, Entity):
         self.conjugate = None
         self.connector = None
 
-        # Change background color to normal:
+        # Change the background color to normal:
         self._styl.bg_active = self._styl.bg_normal
 
         # Make item immovable again:
@@ -442,7 +439,7 @@ class Handle(QGraphicsObject, Entity):
         # Set stream:
         self.set_stream(_stream)
 
-        # If the menu is open, update the sub-menu:
+        # If the menu is open, update the submenu:
         if  self._menu.isVisible(): self._menu.close()
 
     @property

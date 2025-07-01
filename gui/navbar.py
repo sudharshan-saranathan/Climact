@@ -26,13 +26,14 @@ class NavBar(QToolBar):
         self.setOrientation(Qt.Orientation.Vertical)
 
         # Actions:
-        self._import_schematic = self.addAction(QIcon("rss/icons/json.png"), "Open")          # Action for importing a schematic from a JSON file
+        self._import_schematic = self.addAction(QIcon("rss/icons/json.png"), "Open")            # Action for importing a schematic from a JSON file
         self._export_schematic = self.addAction(QIcon("rss/icons/floppy.png"), "Save")          # Action for saving a schematic to a JSON file
         self._switch_to_canvas = self.addAction(QIcon("rss/icons/hammer.png"), "Canvas")        # Action for switching to the canvas tab
-        self._switch_to_sheets = self.addAction(QIcon("rss/icons/excel.png") , "Sheets")          # Action for switching to the data tab
+        self._switch_to_sheets = self.addAction(QIcon("rss/icons/excel.png") , "Sheets")        # Action for switching to the data tab
         self._switch_to_script = self.addAction(QIcon("rss/icons/charts.png"), "Script")        # Action for switching to the script tab
         self._switch_to_optima = self.addAction(QIcon("rss/icons/python.png"), "Optima")        # Action for switching to the optimization tab
-        self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")     # Action for toggling the AI assistant on and off
+        self._stream_configure = self.addAction(QIcon("rss/icons/weight.png"), "Configure")  # Action for configuring streams
+        self._toggle_assistant = self.addAction(QIcon("rss/icons/assistant.png"), "Assistant")  # Action for toggling the AI assistant on and off
         self._template_library = self.addAction(QIcon("rss/icons/components.png"), "Library")   # Action for opening the template library
 
         # Save actions in a list for easy access:
@@ -66,6 +67,7 @@ class NavBar(QToolBar):
         self._switch_to_canvas.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_canvas.text()))
         self._switch_to_sheets.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_sheets.text()))
         self._switch_to_optima.triggered.connect(lambda: self.sig_show_widget.emit(self._switch_to_optima.text()))
+        self._stream_configure.triggered.connect(lambda: self.sig_show_widget.emit(self._stream_configure.text()))
         self._toggle_assistant.triggered.connect(lambda: self.sig_show_widget.emit(self._toggle_assistant.text()))
 
     # Activate a specific action by name:

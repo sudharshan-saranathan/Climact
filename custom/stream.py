@@ -15,15 +15,15 @@ from PyQt6.QtCore import pyqtSignal
 class Stream:
 
     # Instance initializer:
-    def __init__(self, _strid: str, _color: QColor | Qt.GlobalColor):
-
-        # Validate input types:
-        if not isinstance(_strid, str):                         raise TypeError("Expected str")
-        if not isinstance(_color, QColor | Qt.GlobalColor):     raise TypeError("Expected QColor or Qt.GlobalColor")
+    def __init__(self, strid: str, color: QColor | Qt.GlobalColor, units: str | None = None):
 
         # Store stream-ID and color:
-        self._strid = _strid
-        self._color = _color
+        self._strid = strid
+        self._color = color
+        self._units = units
+
+        # Additional user-defined properties:
+        self._prop = {}
 
     # Properties:
     @property # FlowStream-ID (datatype = str): A unique identifier

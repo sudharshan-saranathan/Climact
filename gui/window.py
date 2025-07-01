@@ -117,3 +117,7 @@ class Gui(QMainWindow):
             self._optima.reload(self._tabber.canvas)
             self._wstack.setCurrentWidget(self._optima)
             return
+
+        if  label == "Configure" and self._wstack.currentWidget() == self._tabber:
+            self._tabber.canvas.open_stream_config()
+            return

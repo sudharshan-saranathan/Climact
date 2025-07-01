@@ -825,6 +825,15 @@ class Canvas(QGraphicsScene):
 
         return None
 
+    def open_stream_config(self):
+        """
+        Opens the stream-management configuration utility.
+        :return:
+        """
+        config = StreamConfig(self.type_db, self.views()[0])
+        config.setModal(True)  # Make the dialog modal
+        config.open()
+
     def clear(self):
         """
         Clears the canvas after user confirmation. This action cannot be undone.

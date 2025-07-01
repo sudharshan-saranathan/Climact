@@ -128,6 +128,8 @@ class Tree(QTreeWidget):
             item.setSelected(True)
             node.double_clicked = False  # Reset the double-clicked flag
 
+        return item
+
     # Add the canvas's terminals as top-level items in the tree:
     def add_term_item(self, term: StreamTerminal):
         """
@@ -148,6 +150,8 @@ class Tree(QTreeWidget):
         for column in range(1, 6):
             item.setTextAlignment(column, Qt.AlignmentFlag.AlignCenter)
 
+        return item
+
     # Reload
     def reload(self, canvas: Canvas):
         """
@@ -165,9 +169,10 @@ class Tree(QTreeWidget):
                 self.add_node_item(node)
                 node.double_clicked = False
 
+        self.addTopLevelItem(stream_item := QTreeWidgetItem(["Stream", "", "", "", ""]))
         for term, state in self._canvas.term_db.items():
             if  state == EntityState.ACTIVE:
-                self.add_term_item(term)
+                item = self.add_term_item(term)
 
     def filter(self, node: str):
         """
