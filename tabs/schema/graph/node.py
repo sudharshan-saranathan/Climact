@@ -95,7 +95,7 @@ class Node(QGraphicsObject):
         self.double_clicked = False             # Used to track when the node has been double-clicked
         self._style = self.Visual()             # Instantiate the node's style
         self._nuid  = kwargs.get("uid", None)   # Unique identifier for the node, defaults to `None`.
-        self._spos  = spos                      # Used to track and emit signal if the _node has been moved
+        self._spos  = spos                      # Used to track and emit signal if the node has been moved
         self._attr  = self.Attr()               # Instantiate the node's attribute
         self._data  = dict({
             EntityClass.INP:    dict(),         # Dictionary for input variable(s)
@@ -104,7 +104,7 @@ class Node(QGraphicsObject):
             EntityClass.EQN:    list()          # List of equations
         })
 
-        # Label to display the _node's unique identifier:
+        # Label to display the node's unique identifier:
         self._label = Label(self, self._nuid,
                             font=QFont("Trebuchet MS", 10),
                             width=50,
@@ -443,8 +443,7 @@ class Node(QGraphicsObject):
         """
         Resizes the node in discrete steps.
 
-        Args:
-            delta (int) : Increment or decrement step-size.
+        :param delta: The amount by which to resize the node. Positive values increase the height, negative values decrease it.
         """
 
         # Set a minimum node-height:
@@ -526,7 +525,7 @@ class Node(QGraphicsObject):
         _handle.sig_item_cleared.connect(self.on_handle_cleared)
         _handle.sig_item_removed.connect(self.on_handle_removed)
 
-        # Add the handle to the _node's database:
+        # Add the handle to the node's database:
         self[_eclass][_handle] = EntityState.ACTIVE
 
         # Return reference to handle:
@@ -546,7 +545,7 @@ class Node(QGraphicsObject):
         # Create a unique handle-identifier:
         prefix = "P" if _eclass == EntityClass.OUT else "R"
         id_set = {
-            int(handle.symbol[1:])         # Get the _node's currently used symbols
+            int(handle.symbol[1:])         # Get the node's currently used symbols
             for handle, state in self[_eclass].items()
             if  state
         }
@@ -576,11 +575,11 @@ class Node(QGraphicsObject):
 
         # Create a new handle at the anchor's position:
         _eclass = _anchor.stream()                          # Get anchor's stream (EntityClass.INP or EntityClass.OUT)
-        _coords = self.mapFromItem(_anchor, _coords)        # Map coordinate to _node's coordinate-system
+        _coords = self.mapFromItem(_anchor, _coords)        # Map coordinate to node's coordinate-system
         _handle = self.create_handle(_eclass, _coords)
         _handle.sig_item_clicked.emit(_handle)              # Emit signal to begin transient-connection.
 
-        # Enter handle into the _node's database:
+        # Enter the handle into the node's database:
         self[_eclass, _handle] = EntityState.ACTIVE         # Set state `EntityState.ACTIVE`
 
         # Notify application of state-change:
@@ -589,7 +588,7 @@ class Node(QGraphicsObject):
     
     # Triggered when a handle is removed:
     def on_handle_removed(self, _handle: Handle):
-        # Create an undoable remove-action and notify actions-manager:
+        # Create an undoable remove-action and notify the actions-manager:
         self.sig_exec_actions.emit(RemoveHandleAction(self, _handle))
 
     # Triggered when a handle is cleared:
@@ -602,20 +601,22 @@ class Node(QGraphicsObject):
         self.sig_exec_actions.emit(_action)
 
     # Change background color:
-    def on_set_color(self):
-
-        color = QColorDialog.getColor(self._style.background, None, "Select Background Color")
+    def on_set_color(self, color: QColor | None = None):
+        color = color or QColorDialog.getColor(self._style.background, None, "Select Background Color")
         self._style.background = color if color.isValid() else self._style.background
 
     def on_print_info(self):
-        for handle, state in self._data[EntityClass.INP]:
-            print(handle.label, state)
+        for item in self._data[EntityClass.INP]:
+            print(f"Input: {item.symbol} {item.isVisible()} ({self._data[EntityClass.INP][item]})")
+
+        for item in self._data[EntityClass.OUT]:
+            print(f"Input: {item.symbol} {item.isVisible()} ({self._data[EntityClass.OUT][item]})")
 
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. uid                   The _node's unique identifier.
-    # 2. name                  The _node's name.
+    # 1. uid                   The node's unique identifier.
+    # 2. name                  The node's name.
     # ------------------------------------------------------------------------------------------------------------------
     
     @property

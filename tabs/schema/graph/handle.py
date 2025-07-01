@@ -243,6 +243,8 @@ class Handle(QGraphicsObject, Entity):
         """
         If the handle is paired, toggle-on the handle's movable-flag. Otherwise, emit the `sig_item_clicked` signal.
         """
+        from tabs.schema.graph.terminal import StreamTerminal
+
         # First, clear selections in the scene:
         self.scene().clearSelection()
 
@@ -250,7 +252,8 @@ class Handle(QGraphicsObject, Entity):
         if event.button() == Qt.MouseButton.LeftButton:
 
             if  self.connected: # Toggle-on movable-flag:
-                self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
+                if not isinstance(self.parentItem(), StreamTerminal):
+                    self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
 
             else: # Emit signal to begin transient-connection:
                 self.sig_item_clicked.emit(self)

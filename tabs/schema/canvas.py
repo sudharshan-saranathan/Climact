@@ -724,10 +724,14 @@ class Canvas(QGraphicsScene):
                    if   _name == str() or not isinstance(_name, str) \
                    else _name, True
 
+        json = JsonLib.encode(self)
+        file = open(_name, "w+")
+        file.write(json)
+
         try:
-            json = JsonLib.encode(self)
-            file = open(_name, "w+")
-            file.write(json)
+            # json = JsonLib.encode(self)
+            # file = open(_name, "w+")
+            # file.write(json)
 
             # Notify application of state-change:
             self.state = SaveState.EXPORTED

@@ -2,7 +2,7 @@ import json
 import logging
 
 from PyQt6.QtCore import QPointF
-from PyQt6.QtGui import QTransform
+from PyQt6.QtGui import QTransform, QColor
 from PyQt6.QtWidgets import QGraphicsObject, QMessageBox
 
 from tabs.schema import graph
@@ -30,42 +30,44 @@ class JsonLib:
     """
 
     @staticmethod
-    def entity_to_json(_entity: Entity, _eclass: EntityClass):
+    def entity_to_json(entity: Entity, eclass: EntityClass):
 
         # Determine prefix:
-        if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
+        if  eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
             prefix = "variable"
-        elif _eclass == EntityClass.PAR:
-            prefix = "parameter"
+
+        elif eclass == EntityClass.PAR:
+             prefix = "parameter"
+
         else:
             logging.warning(f"Expected argument of type `EntityClass`, skipping JSON!")
             return None
 
         # Create JSON-object:
         entity_obj = {
-                    f"{prefix}-eclass"   : _entity.eclass.name,
-                    f"{prefix}-symbol"   : _entity.symbol,
-                    f"{prefix}-label"    : _entity.label,
-                    f"{prefix}-units"    : _entity.units, 
-                    f"{prefix}-strid"    : _entity.strid,
-                    f"{prefix}-info"     : _entity.info,
-                    f"{prefix}-value"    : _entity.value,
-                    f"{prefix}-sigma"    : _entity.sigma,
-                    f"{prefix}-minimum"  : _entity.minimum,
-                    f"{prefix}-maximum"  : _entity.maximum,
+                    f"{prefix}-eclass"   : entity.eclass.name,
+                    f"{prefix}-symbol"   : entity.symbol,
+                    f"{prefix}-label"    : entity.label,
+                    f"{prefix}-units"    : entity.units,
+                    f"{prefix}-strid"    : entity.strid,
+                    f"{prefix}-info"     : entity.info,
+                    f"{prefix}-value"    : entity.value,
+                    f"{prefix}-sigma"    : entity.sigma,
+                    f"{prefix}-minimum"  : entity.minimum,
+                    f"{prefix}-maximum"  : entity.maximum,
                 }
         
         # For variables, add coordinates relative to _node and canvas:
-        if _eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
+        if eclass in [EntityClass.INP, EntityClass.OUT, EntityClass.VAR]:
             
             entity_obj.update({
                 f"{prefix}-position" : {            # Position relative to _node
-                    "x": _entity.pos().x(),         
-                    "y": _entity.pos().y()
+                    "x": entity.pos().x(),
+                    "y": entity.pos().y()
                 },
                 f"{prefix}-scenepos" : {            # Position relative to canvas
-                    "x": _entity.scenePos().x(),
-                    "y": _entity.scenePos().y()
+                    "x": entity.scenePos().x(),
+                    "y": entity.scenePos().y()
                 }
             })
 
@@ -76,7 +78,7 @@ class JsonLib:
     def json_to_entity(
         entity: Entity,        # Entity object to be updated.
         eclass: EntityClass,   # Entity's class
-        jsdict: json,          # JSON-dictionary containing entity's attributes.
+        jsdict: json,          # JSON-dictionary containing the entity's attributes.
         symbol: bool = True    # Whether to set the symbol from the JSON code
     ):
 
@@ -103,45 +105,45 @@ class JsonLib:
         entity.maximum = jsdict.get(f"{prefix}-maximum")
 
     @staticmethod
-    def serialize(_item: QGraphicsObject):
+    def serialize(item: QGraphicsObject):
         """
         Serializes a single `QGraphicsObject` to a JSON object.
 
         Args:
-            _item (QGraphicsObject): The `QGraphicsObject` to serialize.
+            item (QGraphicsObject): The `QGraphicsObject` to serialize.
 
         Returns:
             dict: A JSON-object containing the item's serialized attributes and children.
         """
 
         # If the instance is a _node, serialize the _node's variables, parameters, and equations:
-        if isinstance(_item, graph.Node):
+        if isinstance(item, graph.Node):
 
             # Construct a list of the _node's active variables:
             variables = [
                 JsonLib.entity_to_json(entity, EntityClass.VAR)
-                for entity, state in _item[EntityClass.VAR].items()
+                for entity, state in item[EntityClass.VAR].items()
                 if  state == EntityState.ACTIVE
             ]
 
             # Construct a list of the _node's active parameters:
             parameters = [
                 JsonLib.entity_to_json(entity, EntityClass.PAR)
-                for entity, state in _item[EntityClass.PAR].items()
+                for entity, state in item[EntityClass.PAR].items()
                 if  state == EntityState.ACTIVE
             ]
 
             # Create a list of equations:
-            equations = _item[EntityClass.EQN]
+            equations = item[EntityClass.EQN]
 
             # JSON-composite:
             node_object = {
-                "node-title"    : _item.title,                      # Node's title
-                "node-color"    : _item._style.background.name(),   # Node's background color
-                "node-height"   : _item.boundingRect().height(),    # Node's height
+                "node-title"    : item.title,                      # Node's title
+                "node-color"    : item._style.background.name(),   # Node's background color
+                "node-height"   : item.boundingRect().height(),    # Node's height
                 "node-scenepos" : {                                 # Node's scene-position
-                    "x": _item.scenePos().x(),
-                    "y": _item.scenePos().y()
+                    "x": item.scenePos().x(),
+                    "y": item.scenePos().y()
                 },
                 "parameters"  : parameters,                         # Node's active parameters
                 "variables"   : variables,                          # Node's active variables
@@ -152,16 +154,16 @@ class JsonLib:
             return node_object
 
         # If the instance is a terminal, serialize the terminal's attributes:
-        if isinstance(_item, graph.StreamTerminal):
+        if isinstance(item, graph.StreamTerminal):
 
             # Create JSON-object:
             stream_obj = {
-                "terminal-eclass"   : _item.handle.eclass.name,
-                "terminal-label"    : _item.handle.label,
-                "terminal-strid"    : _item.handle.strid,
+                "terminal-eclass"   : item.handle.eclass.name,
+                "terminal-label"    : item.handle.label,
+                "terminal-strid"    : item.handle.strid,
                 "terminal-scenepos" : {
-                    "x": _item.scenePos().x(),
-                    "y": _item.scenePos().y()
+                    "x": item.scenePos().x(),
+                    "y": item.scenePos().y()
                 }
             }
 
@@ -169,23 +171,23 @@ class JsonLib:
             return stream_obj
 
         # If the instance is a connector, serialize the connector's attributes:
-        if isinstance(_item, graph.Connector):
+        if  isinstance(item, graph.Connector):
 
             # Create JSON-object:
             connection_obj = {
-                "origin-parent-uid" : _item.origin.parentItem().uid,
-                "origin-eclass"     : _item.origin.eclass.name,
-                "origin-label"      : _item.origin.label,
+                "origin-parent-uid" : item.origin.parentItem().uid,
+                "origin-eclass"     : item.origin.eclass.name,
+                "origin-label"      : item.origin.label,
                 "origin-scenepos"   : {
-                    "x": _item.origin.scenePos().x(),
-                    "y": _item.origin.scenePos().y()
+                    "x": item.origin.scenePos().x(),
+                    "y": item.origin.scenePos().y()
                 },
-                "target-parent-uid" : _item.target.parentItem().uid,
-                "target-eclass"     : _item.target.eclass.name,
-                "target-label"      : _item.target.label,
+                "target-parent-uid" : item.target.parentItem().uid,
+                "target-eclass"     : item.target.eclass.name,
+                "target-label"      : item.target.label,
                 "target-scenepos": {
-                    "x": _item.target.scenePos().x(),
-                    "y": _item.target.scenePos().y()
+                    "x": item.target.scenePos().x(),
+                    "y": item.target.scenePos().y()
                 }
             }
 
@@ -273,7 +275,7 @@ class JsonLib:
             )
 
             _node.resize(int(height) - 150)                    # Adjust _node's height
-            _node._style.background = QColor(color)
+            _node.on_set_color(QColor(color))                  # Set the node's color
             canvas.node_db[_node] = EntityState.ACTIVE         # Add node to canvas' database:
             canvas.addItem(_node)                              # Add node to canvas
 

@@ -169,10 +169,9 @@ class Tree(QTreeWidget):
                 self.add_node_item(node)
                 node.double_clicked = False
 
-        self.addTopLevelItem(stream_item := QTreeWidgetItem(["Stream", "", "", "", ""]))
         for term, state in self._canvas.term_db.items():
             if  state == EntityState.ACTIVE:
-                item = self.add_term_item(term)
+                self.add_term_item(term)
 
     def filter(self, node: str):
         """
