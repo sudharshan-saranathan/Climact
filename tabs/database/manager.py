@@ -39,6 +39,7 @@ class DataManager(QWidget):
         self._search.setMinimumWidth(450)
 
         self._viewer = QGraphicsView(self)
+        self._viewer.setStyleSheet("QGraphicsView {border: 1px solid black;}")
         self._viewer.horizontalScrollBar().setVisible(False)
         self._viewer.verticalScrollBar().setVisible(False)
         self._viewer.setRenderHint(QPainter.Antialiasing)

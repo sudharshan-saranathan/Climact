@@ -78,7 +78,8 @@ class Canvas(QGraphicsScene):
         Type_db (set): Set of defined stream types (e.g., Mass, Energy).
     """
 
-    # Signals:
+    # Signals:s
+    sig_show_message = pyqtSignal(str)          # Emitted when the canvas is modified.
     sig_node_clicked = pyqtSignal()             # Emitted when an item is double-clicked.
     sig_item_created = pyqtSignal()             # Emitted when a new item is created.
     sig_item_removed = pyqtSignal()             # Emitted when an item is removed.
@@ -277,6 +278,7 @@ class Canvas(QGraphicsScene):
 
         # Store the cursor position in scene-coordinates:
         self._cpos = event.scenePos()  # Update the cursor position in scene-coordinates.
+        self.sig_show_message.emit(f"X: {self._cpos.x():.2f}, Y: {self._cpos.y():.2f}")
 
     def mouseReleaseEvent(self, event):
         """
@@ -403,6 +405,7 @@ class Canvas(QGraphicsScene):
 
         # Notify application of state-change:
         self.sig_canvas_state.emit(SaveState.MODIFIED)
+        self.sig_show_message.emit(f"Created node ({_node.uid}) at {_node.scenePos().x():.2f}, {_node.scenePos().y():.2f}")
 
         # Return reference to newly created _node:
         return _node
@@ -410,7 +413,7 @@ class Canvas(QGraphicsScene):
     def connect_node_signals(self, _node: Node):
 
         # Type-check:
-        if not isinstance(_node, Node): raise TypeError(f"Argument `_node` must be of type `Node`")
+        if not isinstance(_node, Node): raise TypeError(f"Argument `node` must be of type `Node`")
 
         # Connect the _node's signals to appropriate slots:
         _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
@@ -420,39 +423,17 @@ class Canvas(QGraphicsScene):
         _node.sig_handle_clicked.connect(self.begin_transient)
 
     def create_terminal(self,
-                        _eclass: EntityClass,       # EntityClass (INP or OUT), see custom/entity.py.
-                        _coords: QPointF = None,    # Position of the terminal (in scene-coordinates).
-                        _flag  : bool = True        # Should the action be pushed to the undo-stack?
+                        eclass: EntityClass,  # EntityClass (INP or OUT), see custom/entity.py.
+                        coords: QPointF = None,  # Position of the terminal (in scene-coordinates).
+                        flag  : bool = True  # Should the action be pushed to the undo-stack?
                         ):
         """
         Create a new terminal and add it to the scene.
-
-        Args:
-            _eclass (EntityClass): EntityClass (INP or OUT), see custom/entity.py.
-            _coords (QPointF): Scene-position of the terminal.
-            _flag (bool, optional): Whether to push this action to the undo-stack (default: True).
-
-        Returns:
-            _terminal (StreamTerminal): Reference to the newly created terminal
         """
-        # Type-check input args:
-        if  not isinstance(_flag, bool):
-            logging.info(f"Invalid arg-type: {type(_flag)}")
-            return None
-
-        if  _eclass not in [EntityClass.INP, EntityClass.OUT]:
-            logging.info(f"Invalid arg-type: {type(_eclass)}")
-            return None
-
-        # If the input coordinate is `None`, use the cursor position:
-        if _coords is None:   _coords = self._cpos
-
-        # Debugging:
-        logging.info(f"Creating new terminal at {_coords}")
 
         # Create a new terminal and position it:
-        _terminal = StreamTerminal(_eclass, None)
-        _terminal.setPos(_coords)
+        _terminal = StreamTerminal(eclass, None)
+        _terminal.setPos(coords or self._cpos)
         _terminal.handle.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
         _terminal.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
         _terminal.sig_item_removed.connect(self.on_item_removed)
@@ -462,10 +443,12 @@ class Canvas(QGraphicsScene):
         self.addItem(_terminal)
 
         # If the flag is set, create the corresponding action and push it to the undo-stack:
-        if _flag: self.manager.do(CreateStreamAction(self, _terminal))
+        if flag: self.manager.do(CreateStreamAction(self, _terminal))
 
         # Set state-variable:
         self.sig_canvas_state.emit(SaveState.MODIFIED)
+        self.sig_show_message.emit(f"Created terminal ({_terminal.uid}) at {coords.x():.2f}, {coords.y():.2f}")
+        logging.info(f"Creating new terminal at {coords}")
 
         # Return terminal:
         return _terminal

@@ -336,7 +336,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical{
 }
 
 QGraphicsView {
-    border                  : 1px solid black;
+    border-top              : 1px solid black;
     background              : transparent;
 }
 

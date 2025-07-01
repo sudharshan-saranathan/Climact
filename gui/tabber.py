@@ -40,6 +40,7 @@ class Tabber(QTabWidget):
 
     # Signals:
     sig_node_clicked = pyqtSignal()
+    sig_show_message = pyqtSignal(str)
 
     # Constants for the Tabber class:
     class Constants:
@@ -139,6 +140,7 @@ class Tabber(QTabWidget):
         viewer.canvas.sig_schema_setup.connect(lambda file: self.rename_tab(self.currentIndex(), Path(file).stem))
         viewer.canvas.sig_canvas_state.connect(self.on_canvas_state_change)
         viewer.canvas.sig_node_clicked.connect(self.sig_node_clicked.emit)
+        viewer.canvas.sig_show_message.connect(self.sig_show_message.emit)
 
     # Method to close and remove a tab:
     def remove_tab(self, index: int):
