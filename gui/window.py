@@ -12,10 +12,12 @@ from PyQt6.QtCore import (
     pyqtSignal
 )
 from PyQt6.QtWidgets import (
+    QLabel,
+    QStatusBar,
     QMainWindow,
     QMessageBox,
     QApplication,
-    QStackedWidget, QStatusBar
+    QStackedWidget
 )
 
 from dataclasses   import dataclass
@@ -43,12 +45,16 @@ class Gui(QMainWindow):
 
         # Widgets:
         self._navbar = NavBar(self)             # Navigation bar that contains icon-buttons for switching between the main widgets.
-        self._wstack = QStackedWidget(self)     # Main Widget #1 - Allows user to switch between different main widgets.
+        self._wstack = QStackedWidget(self)     # Main Widget #1 - Allows the user to switch between different main widgets.
         self._tabber = Tabber(self._wstack)     # Main Widget #2 - Allows the user to create, edit, and manage multiple canvas tabs.
 
         self._sheets = DataManager(self)        # Main Widget #3 - Allows the user to view and edit schematic data in a tabular format.
         self._optima = Optimizer  (self)        # Main Widget #4 - Allows the user to set up and run constrained optimization problems.
-        self._status = QStatusBar (self)
+
+        # Status bar:
+        self._status = QStatusBar (self)                    # Status bar for displaying notifications.
+        self._status.setContentsMargins(4, 0, 4, 0)         # Add left and right margins.
+        self._status.addPermanentWidget(QLabel("Climact"))  # Add a permanent label to the status bar.
 
         # Add stack-widgets:
         self._wstack.addWidget(self._tabber)

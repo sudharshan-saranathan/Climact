@@ -314,6 +314,7 @@ class Handle(QGraphicsObject, Entity):
 
         # Emit signal to disconnect handle:
         self.sig_item_cleared.emit(self)
+        self.sig_item_updated.emit(self)
 
         # Initiate unpairing through stack-manager:
         logging.info("Unpairing handle")
@@ -329,12 +330,14 @@ class Handle(QGraphicsObject, Entity):
 
         self._prop["label"] = label
         self._label.setPlainText(self.label)
+        self.sig_item_updated.emit(self)
 
         if (
             self.conjugate and
             self.eclass == EntityClass.OUT
         ):
             self.conjugate().rename(self.label)
+            self.conjugate().sig_item_updated.emit(self.conjugate())
 
     def pair(self, conjugate: 'Handle', connector: 'Connector'):
 
@@ -355,6 +358,7 @@ class Handle(QGraphicsObject, Entity):
 
         # Change the background color to red:
         self._styl.bg_active = self._styl.bg_paired
+        self.sig_item_updated.emit(self)
 
     def free(self, delete_connector = False):
 
@@ -376,6 +380,7 @@ class Handle(QGraphicsObject, Entity):
 
         # Make item immovable again:
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
+        self.sig_item_updated.emit(self)
 
     def on_stream_selected(self):
 

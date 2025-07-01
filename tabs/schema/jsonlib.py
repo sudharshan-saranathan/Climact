@@ -405,7 +405,6 @@ class JsonLib:
 
             # If an exception occurs, print error:
             except Exception as exception:
-
                 logging.exception(f"Connector creation skipped due to an exception: {exception}")
 
         # Execute batch:

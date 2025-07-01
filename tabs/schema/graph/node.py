@@ -54,18 +54,18 @@ class Node(QGraphicsObject):
 
     # Signals:
     sig_exec_actions = pyqtSignal(AbstractAction)   # Emitted to execute actions and push them to the undo/redo stack.
-    sig_item_updated = pyqtSignal()         # Emitted when the node has been updated (e.g., renamed, resized, etc.).
-    sig_item_removed = pyqtSignal()         # Emitted when the user deletes the node (e.g., via context-menu).
-    sig_item_clicked = pyqtSignal()         # Emitted when the node is double-clicked.
-    sig_handle_clicked = pyqtSignal(Handle) # Emitted when a handle is clicked, signals the scene to begin a transient connection.
-    sig_handle_updated = pyqtSignal(Handle) # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
-    sig_handle_removed = pyqtSignal(Handle) # Emitted when the user deletes a handle (e.g., via context-menu).
+    sig_item_updated = pyqtSignal()                 # Emitted when the node has been updated (e.g., renamed, resized, etc.).
+    sig_item_removed = pyqtSignal()                 # Emitted when the user deletes the node (e.g., via context-menu).
+    sig_item_clicked = pyqtSignal()                 # Emitted when the node is double-clicked.
+    sig_handle_clicked = pyqtSignal(Handle)         # Emitted when a handle is clicked, signals the scene to begin a transient connection.
+    sig_handle_updated = pyqtSignal(Handle)         # Emitted when a handle is updated (e.g., renamed, recategorized, etc.).
+    sig_handle_removed = pyqtSignal(Handle)         # Emitted when the user deletes a handle (e.g., via context-menu).
 
     # Default Attributes:
     class Attr:
         def __init__(self):
-            self.rect  = QRectF(-100, -75, 200, 150)    # Default rectangle size of the node.
-            self.step = 50                             # Default step-size for resizing the node.
+            self.rect  = QRectF(-100, -75, 200, 150)        # Default rectangle size of the node.
+            self.step = 50                                  # Default step-size for resizing the node.
 
     # Style:
     class Visual:
@@ -117,6 +117,7 @@ class Node(QGraphicsObject):
                             width=120,
                             align=Qt.AlignmentFlag.AlignCenter,
                             editable=True)
+        self._title.sig_text_changed.connect(self.sig_item_updated.emit)  # Emit signal when the title is changed
 
         # Position labels:
         self._label.setPos(-98, -72)
@@ -513,23 +514,24 @@ class Node(QGraphicsObject):
         """
 
         # Instantiate a new handle:
-        _handle = Handle(_eclass,
+        handle = Handle(_eclass,
                          _coords,
                          self.create_huid(_eclass),
                          self
                         )
 
         # Connect handle's signals to the node's slots:
-        _handle.sig_item_clicked.connect(self.sig_handle_clicked.emit)
-        _handle.sig_item_updated.connect(self.sig_handle_updated.emit)
-        _handle.sig_item_cleared.connect(self.on_handle_cleared)
-        _handle.sig_item_removed.connect(self.on_handle_removed)
+        handle.sig_item_clicked.connect(self.sig_handle_clicked.emit)
+        handle.sig_item_updated.connect(self.sig_handle_updated.emit)
+        handle.sig_item_cleared.connect(self.on_handle_cleared)
+        handle.sig_item_removed.connect(self.on_handle_removed)
+        handle.sig_item_updated.connect(self.sig_item_updated.emit)
 
         # Add the handle to the node's database:
-        self[_eclass][_handle] = EntityState.ACTIVE
+        self[_eclass][handle] = EntityState.ACTIVE
 
         # Return reference to handle:
-        return _handle 
+        return handle
 
     def create_huid(self, _eclass: EntityClass):
         """
