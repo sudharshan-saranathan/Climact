@@ -37,23 +37,6 @@ from tabs.schema.canvas import SaveState
 
 # Class Tabber: A custom QTabWidget for managing multiple Viewer tabs.
 class Tabber(QTabWidget):
-    """
-    This class inherits from QTabWidget and provides functionality to switch between different widgets.
-
-    Class Methods:
-    --------------
-    - contextMenuEvent():
-        Creates a context menu when the user right-clicks on a tab, allowing them to rename or delete the tab.
-
-    - create_tab():
-        Creates a new tab with a Viewer widget and sets it as the current tab.
-
-    - remove_tab():
-        Removes a tab at the specified index.
-
-    - rename_tab():
-        Renames the tab at the specified index with a new name provided by the user.
-    """
 
     # Signals:
     sig_node_clicked = pyqtSignal()
@@ -218,13 +201,8 @@ class Tabber(QTabWidget):
         :param clear: If True, clears the current canvas before importing.
         """
 
-        if not bool(project):
-            project, _ = QFileDialog.getOpenFileName(
-                self,
-                "Import Project",
-                "",
-                "Climact Project Files (*.json);;All Files (*)"
-            )
+        if  not bool(project):
+            project, _ = QFileDialog.getOpenFileName(self,  "Import Project", "", "Climact Project Files (*.json);;All Files (*)")
 
         # Get the current widget and import the project:
         viewer = self.currentWidget()
@@ -256,14 +234,11 @@ class Tabber(QTabWidget):
 
         :param state: The current state of the canvas.
         """
-        if state == SaveState.EXPORTED:
+        if  state == SaveState.EXPORTED:
             self.setTabIcon(self.currentIndex(), qta.icon('ph.check-circle', color='lightgreen'))
 
         elif state == SaveState.MODIFIED:
             self.setTabIcon(self.currentIndex(), qta.icon('ph.warning', color='orange'))
-
-        elif state == SaveState.ERROR:
-            self.setTabIcon(self.currentIndex(), qta.icon('ph.warning', color='red'))
 
     @property
     def canvas(self):

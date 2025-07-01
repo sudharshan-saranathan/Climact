@@ -1,6 +1,10 @@
 import qtawesome as qta
+import types
+import dataclasses
+
 from PyQt6.QtGui import (
     QPen,
+    QFont,
     QIcon,
     QColor,
     QBrush
@@ -20,6 +24,7 @@ from PyQt6.QtWidgets import (
     QGraphicsObject,
     QGraphicsLineItem
 )
+
 from actions import *
 from custom  import *
 from util    import *
@@ -27,9 +32,8 @@ from util    import *
 from .anchor import Anchor
 from .handle import Handle
 
+# Node class:
 class Node(QGraphicsObject):
-    """
-    """
 
     # Signals:
     sig_exec_actions = pyqtSignal(AbstractAction)   # Emitted to execute actions and push them to the undo/redo stack.
@@ -47,61 +51,48 @@ class Node(QGraphicsObject):
             self.delta = 50                             # Default step-size for resizing the node.
 
     # Style:
-    class Style:
+    class Visual:
         def __init__(self):
-            self.pen_border = QPen(Qt.GlobalColor.black, 2.0)   # Default border pen for the node.
-            self.pen_select = QPen(QColor(0xf99c39), 2.0)       # Pen used when the node is selected.
-            self.background = Qt.GlobalColor.white              # Default background color of the node.
+            self.pen_border = QPen(QColor(0x000000), 2.0)   # Default border pen for the node.
+            self.pen_select = QPen(QColor(0xf99c39), 2.0)   # Pen used when the node is selected.
+            self.background = QColor(0xffffff)              # Default background color of the node.
 
     # Initializer:
-    def __init__(self, 
-                 _name  : str,
-                 _spos  : QPointF, 
-                 _parent: QGraphicsItem | None = None,
-                 **kwargs
-                ):
-        """
-        Instantiate a new _node with the given name, coordinates, and parent.
+    def __init__(self,
+                 name  : str,
+                 spos  : QPointF,
+                 parent: QGraphicsItem | None = None,
+                 **kwargs):
 
-        :param: _name  (str)            : The name of the node (displayed at the top in an editable text-box).
-        :param: _spos  (QPointF)        : The position of the node (in scene-coordinates).
-        :param: _parent(QGraphicsItem)  : The node's parent item (usually `None`).
-        """
-
-        # Validate argument(s):
-        if not isinstance(_name, str):      raise TypeError("Expected argument of type `str`")
-        if not isinstance(_spos, QPointF):  raise TypeError("Expected argument of type `QPoint`")
-
-        # Initialize super-class:
-        super().__init__(_parent)
+        # Initialize base-class and customize behavior:
+        super().__init__(parent)
+        super().setAcceptHoverEvents(True)
+        super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
         # Initialize style and attrib:
-        self.double_clicked = False     # Used to track when the node has been double-clicked
-        self._nuid = str()              # The _node's unique ID
-        self._spos = _spos              # Used to track and emit signal if the _node has been moved
-        self._styl = self.Style()       # Instantiate the _node's style
-        self._attr = self.Attr()        # Instantiate the _node's attribute
-        self._data = dict({
-            EntityClass.INP:    dict(), # Dictionary for input variable(s)
-            EntityClass.OUT:    dict(), # Dictionary for output variable(s)
-            EntityClass.PAR:    dict(), # Dictionary for parameters
-            EntityClass.EQN:    list()  # List of equations
+        self.double_clicked = False             # Used to track when the node has been double-clicked
+        self._style = self.Visual()             # Instantiate the node's style
+        self._nuid  = kwargs.get("uid", None)   # Unique identifier for the node, defaults to `None`.
+        self._spos  = spos                      # Used to track and emit signal if the _node has been moved
+        self._attr  = self.Attr()               # Instantiate the node's attribute
+        self._data  = dict({
+            EntityClass.INP:    dict(),         # Dictionary for input variable(s)
+            EntityClass.OUT:    dict(),         # Dictionary for output variable(s)
+            EntityClass.PAR:    dict(),         # Dictionary for parameters
+            EntityClass.EQN:    list()          # List of equations
         })
 
-        # Customize behaviour:
-        self.setAcceptHoverEvents(True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-
         # Label to display the _node's unique identifier:
-        self._label = Label(self, self._nuid, 
-                            width=60,
+        self._label = Label(self, self._nuid,
+                            font=QFont("Trebuchet MS", 10),
+                            width=50,
                             color=QColor(0xadadad), 
                             align=Qt.AlignmentFlag.AlignLeft,
                             editable=False)
 
-        # Label to display the _node's name:
-        self._title = Label(self, _name,
+        # Label to display the node's name:
+        self._title = Label(self, name,
                             width=120,
                             align=Qt.AlignmentFlag.AlignCenter,
                             editable=True)
@@ -111,21 +102,21 @@ class Node(QGraphicsObject):
         self._title.setPos(-60, -72)
 
         # Header-buttons:
-        _expand = Button("rss/icons/expand.svg", self)
-        _shrink = Button("rss/icons/shrink.svg", self)
-        _remove = Button("rss/icons/delete.svg", self)
+        expand_button = Button("rss/icons/expand.svg", self)
+        shrink_button = Button("rss/icons/shrink.svg", self)
+        delete_button = Button("rss/icons/delete.svg", self)
 
-        _expand.moveBy(70, -59)
-        _shrink.moveBy(70, -65)
-        _remove.moveBy(86, -62)
+        expand_button.moveBy(70, -59)
+        shrink_button.moveBy(70, -65)
+        delete_button.moveBy(86, -62)
 
-        _expand.sig_button_clicked.connect(lambda: self.resize( self._attr.delta))
-        _shrink.sig_button_clicked.connect(lambda: self.resize(-self._attr.delta))
-        _remove.sig_button_clicked.connect(self.sig_item_removed.emit)
+        expand_button.sig_button_clicked.connect(lambda: self.resize( self._attr.delta))
+        shrink_button.sig_button_clicked.connect(lambda: self.resize(-self._attr.delta))
+        delete_button.sig_button_clicked.connect(self.sig_item_removed.emit)
 
         # Instantiate separator:
-        _hline = QGraphicsLineItem(QLineF(-96, 0, 96, 0), self)
-        _hline.moveBy(0, -48)
+        hline = QGraphicsLineItem(QLineF(-96, 0, 96, 0), self)
+        hline.moveBy(0, -48)
 
         self._divider = QGraphicsLineItem(QLineF(0, -40, 0, 68), self)
         self._divider.setPen(QPen(Qt.GlobalColor.gray, 0.5))
@@ -145,9 +136,6 @@ class Node(QGraphicsObject):
         self._menu = QMenu()
         self._init_menu()
 
-        # Process keyword-arguments:
-        if "uid" in kwargs:    self.uid = kwargs.get("uid")
-
     def __getitem__(self, eclass: EntityClass):
         """
         Returns a dictionary or list depending on the entity sought:
@@ -160,7 +148,7 @@ class Node(QGraphicsObject):
                     _tuple: tuple,
                     _value: EntityState | str | list):
         """
-        Sets the state of an entity belonging to the _node.
+        Sets the state of an entity belonging to the node.
         """
 
         # Validate argument(s):
@@ -182,29 +170,27 @@ class Node(QGraphicsObject):
     def _init_menu(self):
         """
         Adds actions to the context menu and connects them to appropriate slots.
-
-        Returns: 
-            None
         """
 
-        # Add actions to menu:
-        _template = self._menu.addAction("Save as Template", lambda: print("Save as Template"))
-        _bg_color = self._menu.addAction(qta.icon("ph.palette", color='lightblue'), "Set Color", self.on_set_color)
+        # Add actions to the menu:
+        template_action = self._menu.addAction(qta.icon("ph.floppy-disk", color="black"), "Save to Library", lambda: print("Save to Library"))
+        bg_color_action = self._menu.addAction(qta.icon("mdi.palette", color='blue'), "Set Background", self.on_set_color)
 
         # Additional actions:
         self._menu.addSeparator()
-        _expand = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize( self._attr.delta))
-        _shrink = self._menu.addAction(QIcon("rss/icons/shrink.svg"), "Shrink", lambda: self.resize(-self._attr.delta))
+        expand_action = self._menu.addAction(QIcon("rss/icons/expand.svg"), "Expand", lambda: self.resize( self._attr.delta))
+        shrink_action = self._menu.addAction(QIcon("rss/icons/shrink.svg"), "Shrink", lambda: self.resize(-self._attr.delta))
 
-        # Additional actions:
         self._menu.addSeparator()
-        _close = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
+        delete_action = self._menu.addAction(QIcon("rss/icons/menu-delete.png"), "Delete", self.sig_item_removed.emit)
 
         # Make icons visible:
-        _bg_color.setIconVisibleInMenu(True)
-        _expand.setIconVisibleInMenu(True)
-        _shrink.setIconVisibleInMenu(True)
-        _close.setIconVisibleInMenu(True)
+        template_action.setIconVisibleInMenu(True)
+        bg_color_action.setIconVisibleInMenu(True)
+
+        expand_action.setIconVisibleInMenu(True)
+        shrink_action.setIconVisibleInMenu(True)
+        delete_action.setIconVisibleInMenu(True)
 
     # Re-implemented methods -------------------------------------------------------------------------------------------
     # Name                      Description
@@ -218,29 +204,28 @@ class Node(QGraphicsObject):
         Re-implementation of QGraphicsObject.boundingRect().
 
         Returns:
-            QRectF: The bounding rectangle of the _node.
+            QRectF: The bounding rectangle of the node.
         """
 
         # Return bounding-rectangle:
         return self._attr.rect
 
-    def paint(self, _painter, _option, _widget = ...):
+    def paint(self, painter, option, widget = ...):
         """
         Re-implementation of QGraphicsObject.paint().
 
-        Args:
-            _painter (QPainter) : The painter object.
-            _option (QStyleOptionGraphicsItem) : The option object.
-            _widget (QWidget) : The widget object.
+        :param painter: QPainter instance used to draw the node.
+        :param option:  Painting options, managed by Qt.
+        :param widget:  Optional widget to paint on, defaults to `...` (not used here).
         """
 
         # Select different pens for selected and unselected states:
-        _pen = self._styl.pen_select if self.isSelected() else self._styl.pen_border
+        pen_active = self._style.pen_select if self.isSelected() else self._style.pen_border
                  
         # Draw border:
-        _painter.setPen(_pen)
-        _painter.setBrush(QBrush(QColor(self._styl.background)))
-        _painter.drawRoundedRect(self._attr.rect, 12, 6)
+        painter.setPen(pen_active)
+        painter.setBrush(QBrush(QColor(self._style.background)))
+        painter.drawRoundedRect(self._attr.rect, 8, 8)
 
     def itemChange(self, change, value):
 
@@ -270,16 +255,15 @@ class Node(QGraphicsObject):
     # Event-handlers ---------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. hoverEnterEvent        Triggered when the mouse enters the _node.
-    # 2. hoverLeaveEvent        Triggered when the mouse leaves the _node.
+    # 1. hoverEnterEvent        Triggered when the mouse enters the node.
+    # 2. hoverLeaveEvent        Triggered when the mouse leaves the node.
     # ------------------------------------------------------------------------------------------------------------------
 
     def contextMenuEvent(self, event):
         """
         Triggered when the context menu is requested.
 
-        Args:
-            event (QContextMenuEvent) : Context-menu event, instantiated by Qt.
+        :param event: Context menu event, triggered and managed by Qt.
         """
 
         # Forward event to super-class:
@@ -293,7 +277,7 @@ class Node(QGraphicsObject):
 
     def hoverEnterEvent(self, event):
         """
-        Triggered when the mouse enters the _node.
+        Triggered when the mouse enters the node.
 
         Args:
             event (QHoverEvent) : Hover event, triggered and managed by Qt.
@@ -303,7 +287,7 @@ class Node(QGraphicsObject):
     
     def hoverLeaveEvent(self, event):
         """
-        Triggered when the mouse leaves the _node.
+        Triggered when the mouse leaves the node.
 
         Args:
             event (QHoverEvent) : Hover event, triggered and managed by Qt.
@@ -322,19 +306,19 @@ class Node(QGraphicsObject):
         # Forward event to super-class:
         super().mouseReleaseEvent(event)
         
-        # If the _node has been moved, notify canvas:
+        # If the node has been moved, notify canvas:
         if  self.scenePos() != self._spos:
             self.sig_item_updated.emit()
 
     def mouseDoubleClickEvent(self, event):
         self.double_clicked = True
-        self.sig_item_clicked.emit()  # Emit signal when the _node is double-clicked
+        self.sig_item_clicked.emit()  # Emit signal when the node is double-clicked
 
     # User-defined methods ---------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
-    # 1. clone                  Duplicates the _node.
-    # 2. resize                 Resizes the _node in discrete steps.
+    # 1. clone                  Duplicates the node.
+    # 2. resize                 Resizes the node in discrete steps.
     # 3. create_handle          Creates a new handle.
     # 4. create_huid            Creates a unique identifier for each handle.
     # 5. on_anchor_clicked      Triggered when an anchor is clicked.
@@ -349,31 +333,31 @@ class Node(QGraphicsObject):
         transformed = list()
         node_prefix = self.uid
 
-        _vars = [
+        variables = [
             variable for variable, state in self[EntityClass.VAR].items()
             if state == EntityState.ACTIVE
         ]
 
-        _pars = [
+        parameters = [
             parameter for parameter, state in self[EntityClass.PAR].items()
             if state == EntityState.ACTIVE
         ]
 
-        _eqns = self._data[EntityClass.EQN].copy()
+        equations = self._data[EntityClass.EQN].copy()
 
         # Create a dictionary of symbol-replacements:
         replacements  = dict()
 
         # Variable symbols (R00, P00, ...) are replaced with connector symbols (X0, X1, ...)
-        for var in _vars:
+        for var in variables:
             replacements[var.symbol] = var.connector().symbol if var.connected else None
 
-        # Parameters symbols are prefixed with the _node's UID:
-        for par in _pars:
+        # Parameter-symbols are prefixed with the node's UID:
+        for par in parameters:
             replacements[par.symbol] = f"{node_prefix}_{par.symbol}"
 
         # Modify all equations:
-        for equation in _eqns:
+        for equation in equations:
             tokens = equation.split(' ')
             update = [replacements.get(token, token) for token in tokens]
 
@@ -384,69 +368,69 @@ class Node(QGraphicsObject):
 
     def clone(self, **kwargs):
         """
-        Create an identical copy of this _node.
+        Create an identical copy of this node.
 
         Returns:
-            Node: A new _node with the same properties as the original _node.
+            Node: A new node with the same properties as the original node.
         """
 
-        # Instantiate a new _node:
-        _node = Node(self._title.toPlainText(),
+        # Instantiate a new node:
+        node = Node(self._title.toPlainText(),
                      self.scenePos() + QPointF(25, 25),
                      self.parentItem()
                      )
 
-        # Adjust _node-height:
-        _diff = self.boundingRect().height() - _node.boundingRect().height()
-        _node.resize(_diff)
-        _node.setSelected(self.isSelected())
+        # Adjust node-height:
+        diff = self.boundingRect().height() - node.boundingRect().height()
+        node.resize(diff)
+        node.setSelected(self.isSelected())
 
         # Construct lists of active data:
         _var_active = [_variable  for _variable , _state in self[EntityClass.VAR].items() if _state == EntityState.ACTIVE]
         _par_active = [_parameter for _parameter, _state in self[EntityClass.PAR].items() if _state == EntityState.ACTIVE]
 
-        # Copy this _node's variable(s):
+        # Copy this node's variable(s):
         for _entity in _var_active:
 
             # Instantiate new handle and copy attribute(s):
-            _copied = _node.create_handle(_entity.eclass,_entity.pos())
+            _copied = node.create_handle(_entity.eclass,_entity.pos())
             _entity.clone_into(_copied)
 
-            # Add copied variable to the _node's registry:
-            _node[_entity.eclass][_copied] = EntityState.ACTIVE
+            # Add copied variable to the node's registry:
+            node[_entity.eclass][_copied] = EntityState.ACTIVE
             Handle.cmap[_entity] = _copied
 
-        # Copy this _node's parameter(s):
+        # Copy this node's parameter(s):
         for _entity in _par_active:
             _copied = Entity()              # Instantiate a new entity
             _entity.clone_into(_copied)     # Copy attributes into the new entity
 
-            # Add copied variable to the _node's registry:
-            _node[_entity.eclass][_copied] = EntityState.ACTIVE
+            # Add copied variable to the node's registry:
+            node[_entity.eclass][_copied] = EntityState.ACTIVE
 
-        # Deselect this _node:
+        # Deselect this node:
         self.setSelected(False)
 
         # Process keyword-args:
-        if "set_uid" in kwargs: _node.uid = kwargs.get("set_uid")
+        if "set_uid" in kwargs: node.uid = kwargs.get("set_uid")
 
-        # Return reference to the created _node:
-        return _node
+        # Return reference to the created node:
+        return node
 
     def resize(self, delta: int | float):
         """
-        Resizes the _node in discrete steps.
+        Resizes the node in discrete steps.
 
         Args:
             delta (int) : Increment or decrement step-size.
         """
 
-        # Set a minimum _node-height:
+        # Set a minimum node-height:
         if delta < 0 and self._attr.rect.height() < 200:
             QApplication.beep()
             return
 
-        # Resize _node, adjust contents:
+        # Resize node, adjust contents:
         self._attr.rect.adjust(0, 0, 0, delta)
         self._anchor_inp.resize(delta)
         self._anchor_out.resize(delta)
@@ -500,7 +484,7 @@ class Node(QGraphicsObject):
 
         Args:
             _eclass (EntityClass): The stream-direction of the new handle (INP or OUT).
-            _coords (QPointF)    : The coordinates of the new handle (must be in the _node's coordinate-system).
+            _coords (QPointF)    : The coordinates of the new handle (must be in the node's coordinate-system).
             _clone (Handle)      : If provided, the created handle will be a clone of this handle
 
         Returns:
@@ -514,13 +498,13 @@ class Node(QGraphicsObject):
                          self
                         )
 
-        # Connect handle's signals to the _node's slots:
+        # Connect handle's signals to the node's slots:
         _handle.sig_item_clicked.connect(self.sig_handle_clicked.emit)
         _handle.sig_item_updated.connect(self.sig_handle_updated.emit)
         _handle.sig_item_cleared.connect(self.on_handle_cleared)
         _handle.sig_item_removed.connect(self.on_handle_removed)
 
-        # Add handle to the _node's database:
+        # Add the handle to the _node's database:
         self[_eclass][_handle] = EntityState.ACTIVE
 
         # Return reference to handle:
@@ -598,9 +582,9 @@ class Node(QGraphicsObject):
     # Change background color:
     def on_set_color(self):
 
-        color = QColorDialog.getColor(self._styl.background, None, "Select Background Color")
+        color = QColorDialog.getColor(self._style.background, None, "Select Background Color")
 
-        self._styl.background = color if color.isValid() else self._styl.background
+        self._style.background = color if color.isValid() else self._style.background
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import logging
 import weakref
 
+import qtawesome
 from PyQt6.QtCore import (
     pyqtSignal,
     QPointF,
@@ -59,34 +60,23 @@ class Handle(QGraphicsObject, Entity):
 
     # Initializer:
     def __init__(self,
-                 _eclass: EntityClass,
-                 _coords: QPointF,
-                 _symbol: str,
-                 _parent: QGraphicsObject | None = None
-                ):
-        """
-        Initialize a new handle with given entity-class, coordinates, and symbol.
+                 eclass: EntityClass,
+                 coords: QPointF,
+                 symbol: str,
+                 parent: QGraphicsObject | None = None):
 
-        Parameters:
-            _symbol (str): Symbol of the handle.
-            _coords (QPointF): Coordinates of the handle.
-            _eclass (EntityClass): Entity class of the handle (see `custom/entity.py`).
-            _parent (QGraphicsObject, optional): Parent object of the handle (default: None).
-        """
-
-        # Validate coordinate and symbol:
-        if not isinstance(_symbol, str):                        raise TypeError("Expected argument `_symbol` of type `str`")
-        if not isinstance(_coords, QPointF):                    raise TypeError("Expected argument `_coords` of type `QPointF`")
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]:   raise ValueError("Invalid entity class")
-
-        # Initialize base-class:
-        super().__init__(_parent)
+        # Initialize base-class and customize behavior:
+        super().__init__(parent)
+        super().setPos(coords)
+        super().setAcceptHoverEvents(True)
+        super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
         # Display handle's symbol and customize:
-        self._label = Label(self, _symbol,
-                            align=Qt.AlignmentFlag.AlignRight if _eclass == EntityClass.OUT else Qt.AlignmentFlag.AlignLeft,
+        self._label = Label(self, symbol,
+                            align=Qt.AlignmentFlag.AlignRight if eclass == EntityClass.OUT else Qt.AlignmentFlag.AlignLeft,
                             editable=False)
-        self._label.setPos(7.5 if _eclass == EntityClass.INP else -self._label.textWidth() - 7.5, -12.5)
+
+        self._label.setPos(7.5 if eclass == EntityClass.INP else -self._label.textWidth() - 7.5, -12.5)
         self._label.sig_text_changed.connect(self.rename)
 
         # Attrib (Must be defined after `_label`):
@@ -94,11 +84,11 @@ class Handle(QGraphicsObject, Entity):
         self._styl = self.Style()
         self._huid = random_id(prefix='H')
 
-        self.contrast = False # Flag to determine whether handle's text-color should contrast its stream-color
-        self.offset = _coords.toPoint().x()
-        self.eclass = _eclass
-        self.symbol = _symbol
-        self.label  = _symbol
+        self.contrast = False # Flag to determine whether the handle's text-color should contrast its stream-color
+        self.offset = coords.toPoint().x()
+        self.eclass = eclass
+        self.symbol = symbol
+        self.label  = symbol
 
         # Connection status:
         self.connected = False
@@ -119,11 +109,6 @@ class Handle(QGraphicsObject, Entity):
         self._hint.setPen(QPen())
         self._hint.hide()
 
-        # Behaviour:
-        self.setPos(_coords)
-        self.setAcceptHoverEvents(True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
         # Initialize menu:
         self._init_menu()
 
@@ -131,31 +116,25 @@ class Handle(QGraphicsObject, Entity):
     def _init_menu(self):
         """
         Initializes the context menu for the handle.
-
-        Parameters: None
-        Returns: None
         """
 
         # Initialize menu:
         self._menu = QMenu()
-        decision = self._menu.addAction("Decision Variable")
-        decision.triggered.connect(lambda: self.set_decision(decision.isChecked()))
+        decision = self._menu.addAction("Decision Variable", lambda: self.set_decision(decision.isChecked()))
         decision.setCheckable(True)
 
         self._menu.addSeparator()
         self._subm = self._menu.addMenu("Stream")
 
         # Main menu actions:
-        edit_action = self._menu.addAction("Edit Label")
-        edit_action.triggered.connect(self.set_editable)
-        edit_action.setObjectName("Edit Label")
+        edit_action   = self._menu.addAction(qtawesome.icon("ph.pencil-simple", color='black'), "Edit Label", self.set_editable)
+        unpair_action = self._menu.addAction(qtawesome.icon("ph.eject", color="green"), "Unpair", self.unpair)
+        delete_action = self._menu.addAction(qtawesome.icon("ph.trash", color="red"), "Delete", self.sig_item_removed.emit)
 
-        unpair_action = self._menu.addAction("Unpair")
-        unpair_action.triggered.connect(self.unpair)
+        edit_action.setIconVisibleInMenu(True)
+        delete_action.setIconVisibleInMenu(True)
+        unpair_action.setIconVisibleInMenu(True)
         unpair_action.setObjectName("Unpair")
-
-        delete_action = self._menu.addAction("Delete")
-        delete_action.triggered.connect(lambda: self.sig_item_removed.emit(self))
 
         # Sub-menu customization:
         widget = QLineEdit()
@@ -166,7 +145,7 @@ class Handle(QGraphicsObject, Entity):
         self._prompt.setDefaultWidget(widget)
         self._prompt.setObjectName("Prompt")
 
-        # Add actions to sub-menu:
+        # Add actions to the submenu:
         self._subm.addAction(self._prompt)
         self._subm.addSeparator()
 
@@ -183,22 +162,29 @@ class Handle(QGraphicsObject, Entity):
         """
         Re-implementation of `QGraphicsObject.boundingRect`. The returned rectangle is larger than the handle's actual size,
         to allow for a hover-indicator.
-
-        Returns:
-            QRectF: The bounding rectangle of the handle.
         """
-
         return QRectF(-2.0 * self.Attr.size, -2.0 * self.Attr.size, 4.0 * self.Attr.size, 4.0 * self.Attr.size)
 
     def paint(self, painter, option, widget = ...):
+        """
+        Re-implementation of `QGraphicsObject.paint`. This method is responsible for drawing the handle on the canvas.
+        :param painter:
+        :param option:
+        :param widget:
+        :return:
+        """
+
         painter.setPen(self._styl.pen_border)
         painter.setBrush(self._styl.bg_active)
         painter.drawEllipse(self._attr.rect)
 
     def itemChange(self, change, value):
 
-        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.sig_item_shifted.emit(self)
+        if (
+            change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged and
+            self.connected and self.connector
+        ):
+            self.connector().redraw()
 
         return value
     
@@ -215,7 +201,7 @@ class Handle(QGraphicsObject, Entity):
 
     def contextMenuEvent(self, event):
 
-        # Enable/disable actions based on handle's state:
+        # Enable/disable actions based on the handle's state:
         unpair = self._menu.findChild(QAction, name="Unpair")
         unpair.setEnabled(self.connected)
 
@@ -228,7 +214,7 @@ class Handle(QGraphicsObject, Entity):
         # Sort menu-actions by label:
         menu_actions.sort(key=lambda x: x.label)
             
-        # Add streams dynamically to sub-menu:
+        # Add streams dynamically to the submenu:
         for action in menu_actions:
             self._subm.addAction(action)
             action.triggered.connect(self.on_stream_selected)
@@ -237,7 +223,7 @@ class Handle(QGraphicsObject, Entity):
         self._menu.popup(QCursor.pos())
         self._menu.exec()
 
-        # Remove all QActions from the sub-menu, leave the QWidgetAction as is:
+        # Remove all QActions from the submenu, leave the QWidgetAction as is:
         for action in menu_actions: self._subm.removeAction(action)
 
     def hoverEnterEvent(self, event):
@@ -255,12 +241,12 @@ class Handle(QGraphicsObject, Entity):
 
     def mousePressEvent(self, event):
         """
-        If handle is paired, toggle-on the handle's movable-flag. Otherwise, emit the `sig_item_clicked` signal.
-
-        Parameters:
-            event (QGraphicsSceneMouseEvent): Mouse-press event, instantiated by Qt.
+        If the handle is paired, toggle-on the handle's movable-flag. Otherwise, emit the `sig_item_clicked` signal.
         """
+        # First, clear selections in the scene:
+        self.scene().clearSelection()
 
+        # If the left mouse button is pressed:
         if event.button() == Qt.MouseButton.LeftButton:
 
             if  self.connected: # Toggle-on movable-flag:
@@ -384,37 +370,34 @@ class Handle(QGraphicsObject, Entity):
 
         # Validate signal-emitter:
         if (
-            not isinstance(_action := self.sender(), StreamMenuAction) or
-            not isinstance(_canvas := self.scene() , Canvas)
-        ): 
+            not isinstance(action := self.sender(), StreamMenuAction) or
+            not isinstance(canvas := self.scene() , Canvas)
+        ):
             return
 
         # Get stream-id:
-        _stream = _action.label
-        _stream = _canvas.find_stream(_stream)
+        stream = action.label
+        stream = canvas.find_stream(stream, create = True)      # Find the stream, create a new one if it doesn't exist.
 
         # Set stream:
-        self.set_stream(_stream)
+        self.set_stream(stream)
 
         # Notify application of stream-change:
         self.sig_item_updated.emit(self)
 
-    def set_stream(self, _stream: Stream):
-
-        # Validate input:
-        if not isinstance(_stream, Stream): return
+    def set_stream(self, stream: Stream):
 
         # Set stream:
-        self.strid = _stream.strid
-        self.color = _stream.color
+        self.strid = stream.strid
+        self.color = stream.color
 
         # Change the color only if the `contrast` flag is set:
         if self.contrast:   self._label.setDefaultTextColor(anti_color(self.color))
 
         # If the handle is paired, update conjugate and connector:
         if  self.connected and self.eclass == EntityClass.OUT:
-            self.connector().set_color (_stream.color)
-            self.conjugate().set_stream(_stream)
+            self.connector().set_color (stream.color)
+            self.conjugate().set_stream(stream)
 
     def set_editable(self):
 

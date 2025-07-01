@@ -45,7 +45,6 @@ class Viewer(QGraphicsView):
     """
 
     # Signals:
-    sig_has_changed = pyqtSignal(bool)
     sig_json_loaded = pyqtSignal(str)
 
     # Zoom-attrib:
@@ -91,12 +90,9 @@ class Viewer(QGraphicsView):
         self._zoom.max = max_zoom if isinstance(max_zoom, float) else self._zoom.max
 
         # Initialize Canvas (QGraphicsScene derivative)
-        self.closed = False
-        self.state  = SaveState.MODIFIED
         self.canvas = Canvas(QRectF(0, 0, x_bounds, y_bounds), self)
         self.setScene(self.canvas)
 
-        self.canvas.sig_canvas_state.connect(self.update_state)
         self.canvas.sig_schema_setup.connect(self.sig_json_loaded)
         logging.info(f"Canvas [UID = {self.canvas.uid}] initialized.")
 
@@ -167,16 +163,12 @@ class Viewer(QGraphicsView):
                 logging.critical(exception)
                 return
 
-            self.state = SaveState.MODIFIED
             self.canvas.sig_canvas_state.emit(SaveState.MODIFIED)
-
-    # Register the canvas' saved/unsaved state:
-    def update_state(self, state: SaveState):   self.state = state
 
     # Handle key-press events:
     def keyPressEvent(self, event):
 
-        # Call super-class implementation, return if event is accepted:
+        # Call super-class implementation, return if the event is accepted:
         super().keyPressEvent(event)
         if event.isAccepted():
             return
@@ -190,7 +182,7 @@ class Viewer(QGraphicsView):
     # Handle key-release events:
     def keyReleaseEvent(self, event):
 
-        # Call super-class implementation, return if event is accepted:
+        # Call super-class implementation, return if the event is accepted:
         super().keyReleaseEvent(event)
         if event.isAccepted():
             return
@@ -202,4 +194,4 @@ class Viewer(QGraphicsView):
     # Handle scroll-events:
     def wheelEvent(self, event):
         delta = event.angleDelta().y()
-        self.zoom(float(delta))         # Zoom by desired amount
+        self.zoom(float(delta))         # Zoom by the desired amount

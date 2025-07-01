@@ -17,38 +17,26 @@ class Anchor(QGraphicsObject):
     # Default Attribute(s):
     class Attr:
         def __init__(self):
-            self.dims  = QLineF( 0, -40,  0,  68)
-            self.rect  = QRectF(-5, -40, 10, 108)
+            self.dims = QLineF( 0, -40,  0,  64)
+            self.rect = QRectF(-5, -40, 10, 104)
 
     # Default anchor style:
     class Style:
-        pen_default = QPen(QColor(0x006d8f), 3.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        pen_default = QPen(QColor(0x006d8f), 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         background  = QColor(0xffffff)
 
     # Initializer:
-    def __init__(self, 
-                _eclass: EntityClass, 
-                _parent: QGraphicsItem
-                ):
-        """
-        Initialize a new anchor.
-
-        Args:
-            _eclass (EntityClass)   : Anchor's entity-class (i.e. `EntityClass.INP` or `EntityClass.OUT`)
-            _parent (QGraphicsItem) : The parent item of the anchor.
-        """
-
-        # Validate arguments:
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]:
-            raise ValueError("Expected `EntityClass.INP` or `EntityClass.OUT` for argument `_eclass`")
+    def __init__(self,
+                 eclass: EntityClass,
+                 parent: QGraphicsItem):
 
         # Initialize super-class:
-        super().__init__(_parent)
+        super().__init__(parent)
 
         # Attrib:
         self._attr   = self.Attr()
         self._style  = self.Style()
-        self._stream = _eclass
+        self._stream = eclass
 
         # Initialize hint:
         self._hint = QGraphicsEllipseItem(QRectF(-2.5, -2.5, 5.0, 5.0), self)

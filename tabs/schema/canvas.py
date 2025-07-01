@@ -83,8 +83,8 @@ class Canvas(QGraphicsScene):
     sig_item_created = pyqtSignal()             # Emitted when a new item is created.
     sig_item_removed = pyqtSignal()             # Emitted when an item is removed.
     sig_canvas_reset = pyqtSignal()             # Emitted when the canvas is reset.
-    sig_canvas_state = pyqtSignal(SaveState)    # Emitted when the canvas's state changes.
     sig_schema_setup = pyqtSignal(str)          # Emitted when a JSON schematic is loaded.
+    sig_canvas_state = pyqtSignal(SaveState)    # Emitted when the canvas's state changes.
 
     # Placeholder-connector:
     class Transient:
@@ -101,20 +101,10 @@ class Canvas(QGraphicsScene):
 
     # CANVAS (Initializers) --------------------------------------------------------------------------------------------
     # Instance initializer:
-    def __init__(self,
-                 _bounds: QRectF,
-                 _parent: QObject | None = None
-                 ):
-        """
-        Initialize the canvas with a given rectangular boundary and optional parent
-
-        Parameters:
-            _bounds (QRectF): The initial dimensions of the scene
-            _parent (QObject, optional): Optional parent QObject (default: None)
-        """
+    def __init__(self, bounds: QRectF, parent: QObject | None = None):
 
         # Initialize super-class:
-        super().__init__(_bounds, _parent)
+        super().__init__(bounds, parent)
 
         # Initialize actions-manager:
         self.actions = BatchActions([])
@@ -122,7 +112,7 @@ class Canvas(QGraphicsScene):
 
         # Convenience variables:
         self._ntot = 0
-        self._rect = _bounds
+        self._rect = bounds
         self._cpos = QPointF()
         self._conn = Canvas.Transient()
         self.state = SaveState.MODIFIED
@@ -384,27 +374,23 @@ class Canvas(QGraphicsScene):
     # ------------------------------------------------------------------------------------------------------------------
 
     # Create a new node and add it to the scene:
-    def create_node(self, 
-                   _name: str = "Node", 
-                   _cpos: QPointF | None = None,
-                   _push: bool = True
-                   ):
+    def create_node(self,
+                    name: str = "Node",
+                    cpos: QPointF | None = None,
+                    push: bool = True
+                    ):
         """
         Create a new _node and add it to the canvas.
-        :param _name: Name of the node to be created. Default is "Node".
-        :param _cpos: Position of the node in scene-coordinates. If `None`, the last-displayed position of the context menu is used.
-        :param _push: Whether to push the creation action to the undo-stack. Default is `True`.
+        :param name: Name of the node to be created. Default is "Node".
+        :param cpos: Position of the node in scene-coordinates. If `None`, the last-displayed position of the context menu is used.
+        :param push: Whether to push the creation action to the undo-stack. Default is `True`.
         :return:
         """
 
-        # If the input coordinate is `None`, use the context menu's last-displayed position:
-        if _cpos is None:   _cpos = self._cpos
-
         # Create a new _node and assign a unique-identifier:
         _node = Node(
-            _name,
-            _cpos,
-            None,
+            name,
+            cpos or self._cpos,
             uid = self.create_nuid()
         )
 
@@ -413,7 +399,7 @@ class Canvas(QGraphicsScene):
         self.addItem(_node)
 
         # Push to undo stack (if required):
-        if _push:   self.manager.do(CreateNodeAction(self, _node))
+        if push:   self.manager.do(CreateNodeAction(self, _node))
 
         # Notify application of state-change:
         self.sig_canvas_state.emit(SaveState.MODIFIED)
@@ -830,28 +816,23 @@ class Canvas(QGraphicsScene):
         ):
             self.delete_items({item: True})  # Delete item
     
-    def find_stream(self, _strid: str, _create: bool = True):
+    def find_stream(self, strid: str, create: bool = False):
         """
         Find a stream by its name. If the stream does not exist, create it (optional)
-
-        Args:
-            _strid (str): The name of the stream to find.
-            _create (bool): If True, create the stream if it does not exist.
-
-        Returns:
-            Stream: The stream with the given name (see custom/stream.py).
+        :param strid: Name of the stream to find.
+        :param create: If True, create the stream if it does not exist. Default is True.
         """
 
-        # Search database:
-        _stream= next((stream for stream in self.type_db if stream.strid == _strid), None)
+        strid  = strid.replace("<b>", "").replace("</b>", "").strip()
+        stream = next((stream for stream in self.type_db if stream.strid == strid), None)
 
         # If the stream does not exist and `_create` is True, create it:
-        if  _stream is None and _create:
-            _stream = Stream(_strid, QColor(random_hex()))
-            self.type_db.add(_stream)
+        if  stream is None and create:
+            stream = Stream(strid, QColor(random_hex()))
+            self.type_db.add(stream)
 
         # Return stream:
-        return _stream
+        return stream
 
     def find_node(self, _uid: str):
 

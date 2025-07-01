@@ -67,8 +67,8 @@ class Connector(QGraphicsObject):
     # Style:
     class Style:
         def __init__(self):
-            self.pen_border = QPen(Qt.GlobalColor.darkGray, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-            self.pen_select = QPen(Qt.GlobalColor.darkGray, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            self.pen_border = QPen(Qt.GlobalColor.darkGray, 1.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            self.pen_select = QPen(Qt.GlobalColor.darkGray, 1.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
 
     # Initializer:
     def __init__(self, 
@@ -106,8 +106,8 @@ class Connector(QGraphicsObject):
         self._is_obsolete = False
 
         # Direction arrows:
-        self._dir_w = load_svg("rss/icons/direction.svg", 20)
-        self._dir_e = load_svg("rss/icons/direction.svg", 20)
+        self._dir_w = load_svg("rss/icons/direction.svg", 14)
+        self._dir_e = load_svg("rss/icons/direction.svg", 14)
 
         self._dir_w.setParentItem(self)
         self._dir_e.setParentItem(self)
@@ -141,13 +141,13 @@ class Connector(QGraphicsObject):
         self.target.lock(self.origin, self)
 
         # Connect handles' signals to slots:
-        self.origin.sig_item_updated.connect(self.on_origin_updated)    # Emit signal to notify application that origin is now connected
+        self.origin.sig_item_updated.connect(self.on_origin_updated)    # Emit signal to notify the application that origin is now connected
         self.origin.sig_item_shifted.connect(self.redraw)               # Connect origin's `sig_item_shifted` signal to `redraw`
         self.target.sig_item_shifted.connect(self.redraw)               # Connect target's `sig_item_shifted` signal to `redraw`
 
-        # If either of the handles are destroyed, set obsolete:
-        self.origin.destroyed.connect(self.set_obsolete)                # If origin handle is destroyed, set connector obsolete
-        self.target.destroyed.connect(self.set_obsolete)                # If target handle is destroyed, set connector obsolete 
+        # If either of the handles is destroyed, set obsolete:
+        self.origin.destroyed.connect(self.set_obsolete)                # If the origin handle is destroyed, make the connector obsolete
+        self.target.destroyed.connect(self.set_obsolete)                # If the target handle is destroyed, make the connector obsolete
 
         # Assign origin's data to target:
         if _overwrite:
@@ -202,7 +202,7 @@ class Connector(QGraphicsObject):
         if self._is_obsolete:
             return
 
-        self._styl.pen_border = QPen(self.origin.color, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        self._styl.pen_border = QPen(self.origin.color, 1.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         if  self.origin.connected:
             self.target.strid = self.origin.strid
             self.target.color = self.origin.color
@@ -242,7 +242,7 @@ class Connector(QGraphicsObject):
     def redraw(self, handle: Handle | None = None):
 
         # Null-check:
-        if self._is_obsolete:
+        if  self._is_obsolete:
             print("Connector.redraw(): Reference(s) obsolete. Aborting!")
             return
 
@@ -324,8 +324,8 @@ class Connector(QGraphicsObject):
         self._attr.path.clear()
         self._attr.path.moveTo(opos)
 
-        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 8, opos.y() - 10)
-        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 8, tpos.y() - 10)
+        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 7, opos.y() - 7)
+        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 7, tpos.y() - 7)
 
         # If the origin is to the left of the target, draw the path accordingly:
         if opos.x() < tpos.x():
