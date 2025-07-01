@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication
 class ActionsManager:
 
     # Undo-actions limit:
-    MAX_UNDO = 3
+    MAX_UNDO = 32
 
     # Initializer:
     def __init__(self):

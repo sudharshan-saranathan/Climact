@@ -725,9 +725,9 @@ class Canvas(QGraphicsScene):
                    else _name, True
 
         try:
-            _json = JsonLib.encode(self)
-            _file = open(_name, "w+")
-            _file.write(_json)
+            json = JsonLib.encode(self)
+            file = open(_name, "w+")
+            file.write(json)
 
             # Notify application of state-change:
             self.state = SaveState.EXPORTED

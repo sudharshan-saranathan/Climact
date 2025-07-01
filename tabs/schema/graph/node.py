@@ -603,8 +603,8 @@ class Node(QGraphicsObject):
     def on_set_color(self):
 
         color = QColorDialog.getColor(self._style.background, None, "Select Background Color")
-
         self._style.background = color if color.isValid() else self._style.background
+
     # Properties -------------------------------------------------------------------------------------------------------
     # Name                      Description
     # ------------------------------------------------------------------------------------------------------------------
