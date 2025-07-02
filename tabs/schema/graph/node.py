@@ -136,13 +136,6 @@ class Node(QGraphicsObject):
         shrink_button.sig_button_clicked.connect(lambda: self.resize(-self._attr.step))
         delete_button.sig_button_clicked.connect(self.sig_item_removed.emit)
 
-        # Instantiate separator:
-        hline = QGraphicsLineItem(QLineF(-96, 0, 96, 0), self)
-        hline.moveBy(0, -48)
-
-        self._divider = QGraphicsLineItem(QLineF(0, -40, 0, 68), self)
-        self._divider.setPen(QPen(Qt.GlobalColor.gray, 0.5))
-
         # Instantiate anchors:
         self._anchor_inp = Anchor(EntityClass.INP, self)
         self._anchor_out = Anchor(EntityClass.OUT, self)
@@ -220,13 +213,6 @@ class Node(QGraphicsObject):
     # ------------------------------------------------------------------------------------------------------------------
 
     def boundingRect(self):
-        """
-        Re-implementation of QGraphicsObject.boundingRect().
-
-        Returns:
-            QRectF: The bounding rectangle of the node.
-        """
-
         # Return bounding-rectangle:
         return self._attr.rect
 
@@ -240,12 +226,21 @@ class Node(QGraphicsObject):
         """
 
         # Select different pens for selected and unselected states:
-        pen_active = self._style.pen_select if self.isSelected() else self._style.pen_border
+        pen = self._style.pen_select if self.isSelected() else self._style.pen_border
                  
-        # Draw border:
-        painter.setPen(pen_active)
+        # Draw the node's border:
+        painter.setPen(pen)
         painter.setBrush(QBrush(QColor(self._style.background)))
         painter.drawRoundedRect(self._attr.rect, 8, 8)
+
+        # Draw the separators:
+        pen = QPen(Qt.GlobalColor.black, 1.0)
+        painter.setPen(pen)
+        painter.drawLine(QPointF(-100, -48), QPointF(100, -48))                                 # Top separator
+
+        pen = QPen(Qt.GlobalColor.gray, 0.5)
+        painter.setPen(pen)
+        painter.drawLine(QPointF(   0, -48), QPointF(0, self._attr.rect.bottom()))              # Vertical separator
 
     def itemChange(self, change, value):
 
@@ -406,27 +401,27 @@ class Node(QGraphicsObject):
         node.setSelected(self.isSelected())
 
         # Construct lists of active data:
-        _var_active = [_variable  for _variable , _state in self[EntityClass.VAR].items() if _state == EntityState.ACTIVE]
-        _par_active = [_parameter for _parameter, _state in self[EntityClass.PAR].items() if _state == EntityState.ACTIVE]
+        active_vars = [_variable  for _variable , _state in self[EntityClass.VAR].items() if _state == EntityState.ACTIVE]
+        active_pars = [_parameter for _parameter, _state in self[EntityClass.PAR].items() if _state == EntityState.ACTIVE]
 
         # Copy this node's variable(s):
-        for _entity in _var_active:
+        for  entity in active_vars:
 
             # Instantiate new handle and copy attribute(s):
-            _copied = node.create_handle(_entity.eclass,_entity.pos())
-            _entity.clone_into(_copied)
+            copied = node.create_handle(entity.eclass,entity.pos())
+            entity.clone_into(copied)
 
             # Add copied variable to the node's registry:
-            node[_entity.eclass][_copied] = EntityState.ACTIVE
-            Handle.cmap[_entity] = _copied
+            node[entity.eclass][copied] = EntityState.ACTIVE
+            Handle.cmap[entity] = copied
 
         # Copy this node's parameter(s):
-        for _entity in _par_active:
-            _copied = Entity()              # Instantiate a new entity
-            _entity.clone_into(_copied)     # Copy attributes into the new entity
+        for entity in active_pars:
+            copied = Entity()              # Instantiate a new entity
+            entity.clone_into(copied)     # Copy attributes into the new entity
 
             # Add copied variable to the node's registry:
-            node[_entity.eclass][_copied] = EntityState.ACTIVE
+            node[entity.eclass][copied] = EntityState.ACTIVE
 
         # Deselect this node:
         self.setSelected(False)
@@ -453,9 +448,6 @@ class Node(QGraphicsObject):
         self._attr.rect.adjust(0, 0, 0, delta)
         self._anchor_inp.resize(delta)
         self._anchor_out.resize(delta)
-
-        self._divider.setLine(self._anchor_inp.line)
-        self._divider.setX(0)
         self.update()
 
         # Notify application of state-change:

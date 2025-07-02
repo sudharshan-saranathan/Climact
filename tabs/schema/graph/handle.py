@@ -54,7 +54,7 @@ class Handle(QGraphicsObject, Entity):
     class Style:
         def __init__(self):
             self.pen_border = QPen(Qt.GlobalColor.black, 1.0)
-            self.bg_normal  = QBrush(Qt.GlobalColor.green)
+            self.bg_normal  = QBrush(QColor(0xcfffb3))
             self.bg_paired  = QBrush(QColor(0xff3a35))
             self.bg_active  = self.bg_normal
 
@@ -352,7 +352,7 @@ class Handle(QGraphicsObject, Entity):
         self.connector = weakref.ref(connector)
 
         # Change the background color to red:
-        self._styl.bg_active = self._styl.bg_paired
+        self._styl.bg_active = QColor(self.color)
         self.sig_item_updated.emit(self)
 
     def free(self, delete_connector = False):
@@ -407,6 +407,7 @@ class Handle(QGraphicsObject, Entity):
             self.conjugate().set_stream(stream)
 
         # Notify application of stream-change:
+        self._styl.bg_active = stream.color
         self.sig_item_updated.emit(self)
 
     def set_editable(self):

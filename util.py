@@ -99,27 +99,12 @@ def str_to_float(arg: str):
     except ValueError:  return None
 
 # Scale an SVG to a specific width:
-def load_svg(_file: str, _width: int):
+def load_svg(file: str, width: int):
     """
     Loads an SVG-icon and rescales it to a specific width.
-
-    Args:
-        _file (str): The path to the SVG-icon.
-        _width (int): The width to rescale the SVG to.
-
-    Returns:
-        QGraphicsSvgItem: The rescaled SVG-icon.
     """
-
-    # Validate argument(s):
-    if (
-        not isinstance(_file , str) or
-        not isinstance(_width, int)
-    ):
-        return None
-
     # Load SVG-icon and rescale:
-    _svg = QGraphicsSvgItem(_file)
-    _svg.setScale(float(_width / _svg.boundingRect().width()))  # Rescale the SVG
+    svg = QGraphicsSvgItem(file)
+    svg.setScale(float(width / svg.boundingRect().width()))         # Rescale the SVG
 
-    return _svg
+    return svg

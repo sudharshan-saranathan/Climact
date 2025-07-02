@@ -42,6 +42,8 @@ from enum    import Enum
 from custom  import *
 from actions import *
 
+from tabs.schema.graph.folder import Folder
+
 # Enum for SaveState:
 class SaveState(Enum):
     EXPORTED = 0
@@ -133,7 +135,7 @@ class Canvas(QGraphicsScene):
         self.type_db = set()   # List of defined stream-types (e.g., Mass, Energy, Electricity, etc.)
 
         # Add default streams:
-        self.type_db.add(Stream("Default", Qt.GlobalColor.darkGray))        # Default
+        self.type_db.add(Stream("Generic", Qt.GlobalColor.darkGray))        # Default
         self.type_db.add(Stream("Energy", QColor("#F6AE2D"), units="kJ"))   # Energy
         self.type_db.add(Stream("Power", QColor("#474973"), units="kW"))    # Power
         self.type_db.add(Stream("Mass", QColor("#028CB6"), units="kg"))     # Mass
@@ -186,7 +188,7 @@ class Canvas(QGraphicsScene):
         # Group and Clear actions:
         self._menu.addSeparator()
         _find  = self._menu.addAction(qta.icon("mdi.magnify", color="yellow"), "Find Items", QKeySequence("Ctrl+F"), self.find_items)
-        _group = self._menu.addAction(qta.icon("mdi.layers", color="teal"), "Group Items", QKeySequence("Ctrl+G"), lambda: print(f"Grouping selected items"))
+        _group = self._menu.addAction(qta.icon("mdi.layers", color="teal"), "Group Items", QKeySequence("Ctrl+G"), self.group_items)
         _clear = self._menu.addAction(qta.icon("mdi.eraser", color="darkred"), "Clear Scene", QKeySequence("Ctrl+E"), self.clear)
         _exit  = self._menu.addAction(qta.icon("mdi.power", color="black"), "Quit" , QKeySequence.StandardKey.Quit,  QApplication.quit)
 
@@ -627,6 +629,15 @@ class Canvas(QGraphicsScene):
 
         # Notify application of state-change:
         self.sig_canvas_state.emit(SaveState.MODIFIED)
+
+    def group_items(self):
+
+        items = self.selectedItems()
+        group = Folder(items)
+        group.setPos(self._cpos)  # Set the position of the group to the current cursor position
+
+        self.addItem(group)  # Add the group to the canvas
+
 
     def select_items(self, _items_dict: dict = None):
         """

@@ -4,7 +4,11 @@ from PyQt6.QtCore import (Qt,
                           QPointF,
                           pyqtSignal)
 
-from PyQt6.QtGui import QPen, QColor
+from PyQt6.QtGui import (
+    QPen,
+    QBrush,
+    QColor
+)
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject, QGraphicsEllipseItem
 
 from custom import EntityClass
@@ -22,8 +26,7 @@ class Anchor(QGraphicsObject):
 
     # Default anchor style:
     class Style:
-        pen_default = QPen(QColor(0x006d8f), 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-        background  = QColor(0xffffff)
+        background = QPen(QColor(0x006d8f), 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
 
     # Initializer:
     def __init__(self,
@@ -38,11 +41,9 @@ class Anchor(QGraphicsObject):
         self._style  = self.Style()
         self._stream = eclass
 
-        # Initialize hint:
-        self._hint = QGraphicsEllipseItem(QRectF(-2.5, -2.5, 5.0, 5.0), self)
-        self._hint.setBrush(Qt.GlobalColor.green)
-        self._hint.setPen(QColor(0x0))
-        self._hint.hide()
+        # Flags for drawing the hint:
+        self._hpos = QPointF()
+        self._hint = False
 
         # Item-behaviour:
         self.setAcceptHoverEvents(True)
@@ -53,8 +54,15 @@ class Anchor(QGraphicsObject):
 
     # Event-handler for paint-event:
     def paint(self, painter, option, widget = ...):
-        painter.setPen(self._style.pen_default)
+        painter.setPen(self._style.background)
         painter.drawLine(self._attr.dims)
+
+        if self._hint:
+            pen = QPen(QColor(0x00), 0.75)
+            brs = QBrush(QColor(0xcfffb3))
+            painter.setPen  (pen)
+            painter.setBrush(brs)
+            painter.drawEllipse(QRectF(-2.5, -2.5 + self._hpos.y(), 5.0, 5.0))
 
     # Returns the anchor's stream:
     def stream(self):
@@ -68,19 +76,21 @@ class Anchor(QGraphicsObject):
     def hoverEnterEvent(self, event):
         super().hoverEnterEvent(event)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._hint.setPos(0, event.pos().y())
-        self._hint.show()
 
-    # Moves handle-hint with the cursor:
+        self._hint = True
+        self._hpos = QPointF(0, event.pos().y())
+
+    # Moves the handle-hint with the cursor:
     def hoverMoveEvent(self, event):
         super().hoverMoveEvent(event)
-        self._hint.setPos(0, event.pos().y())
+        self._hpos = QPointF(0, event.pos().y())
+        self.update()
 
     # Hides the handle-hint on hover-leave:
     def hoverLeaveEvent(self, event):
         super().hoverLeaveEvent(event)
         self.unsetCursor()
-        self._hint.hide()
+        self._hint = False
 
     # Event-handler for mouse-clicks:
     def mousePressEvent(self, event):
