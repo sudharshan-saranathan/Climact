@@ -410,17 +410,14 @@ class Canvas(QGraphicsScene):
         # Return reference to newly created _node:
         return _node
 
-    def connect_node_signals(self, _node: Node):
-
-        # Type-check:
-        if not isinstance(_node, Node): raise TypeError(f"Argument `node` must be of type `Node`")
+    def connect_node_signals(self, node: Node):
 
         # Connect the _node's signals to appropriate slots:
-        _node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
-        _node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
-        _node.sig_exec_actions.connect(self.manager.do)
-        _node.sig_item_removed.connect(self.on_item_removed)
-        _node.sig_handle_clicked.connect(self.begin_transient)
+        node.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+        node.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+        node.sig_exec_actions.connect(self.manager.do)
+        node.sig_item_removed.connect(self.on_item_removed)
+        node.sig_handle_clicked.connect(self.begin_transient)
 
     def create_terminal(self,
                         eclass: EntityClass,  # EntityClass (INP or OUT), see custom/entity.py.
@@ -587,39 +584,39 @@ class Canvas(QGraphicsScene):
         # Execute:
         if batch.size():    self.manager.do(batch)
 
-    def paste_item(self, 
-                  _item: QGraphicsObject,   # Item to be pasted.
-                  _stack: bool = False      # Should the action be pushed to the undo-stack?
-                  ):
+    def paste_item(self,
+                   item: QGraphicsObject,  # Item to be pasted.
+                   stack: bool = False  # Should the action be pushed to the undo-stack?
+                   ):
         """
         Paste a _node or a terminal item onto the canvas.
 
         Args:
-            _item (QGraphicsObject): The item to be pasted.
-            _stack (bool):
+            item (QGraphicsObject): The item to be pasted.
+            stack (bool):
         """
 
         # Find the item's type:
-        if isinstance(_item, Node):
-            _item.uid = self.create_nuid()
-            _item.sig_item_removed.connect(self.on_item_removed)
-            _item.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
-            _item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
-            _item.sig_exec_actions.connect(self.manager.do)
-            _item.sig_handle_clicked.connect(self.begin_transient)
-            self.node_db[_item] = EntityState.ACTIVE
+        if isinstance(item, Node):
+            item.uid = self.create_nuid()
+            item.sig_item_removed.connect(self.on_item_removed)
+            item.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            item.sig_exec_actions.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            item.sig_exec_actions.connect(self.manager.do)
+            item.sig_handle_clicked.connect(self.begin_transient)
+            self.node_db[item] = EntityState.ACTIVE
 
-        elif isinstance(_item, StreamTerminal):
-            _item.handle.sig_item_clicked.connect(self.begin_transient)
-            _item.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
-            _item.sig_item_removed.connect(self.on_item_removed)
-            self.term_db[_item] = EntityState.ACTIVE
+        elif isinstance(item, StreamTerminal):
+            item.handle.sig_item_clicked.connect(self.begin_transient)
+            item.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED))
+            item.sig_item_removed.connect(self.on_item_removed)
+            self.term_db[item] = EntityState.ACTIVE
 
         # Add item to canvas:
-        self.addItem(_item)
+        self.addItem(item)
 
         # If `_stack` is True, create the corresponding action and forward it to the stack-manager:
-        if _stack:
+        if stack:
             # TODO: Push action to undo-stack
             pass
 
@@ -637,19 +634,16 @@ class Canvas(QGraphicsScene):
             if  item in self.items() and state      # if they belong to the canvas and are visible/enabled
         ]
 
-    def delete_items(self, _items: set | list):
+    def delete_items(self, items: set | dict | list):
         """
         Deletes items from the canvas using undoable batch-actions.
-
-        Args:
-            _items (set): Set of items (nodes and terminals) to delete.
         """
 
         # Create batch-commands:
         batch = BatchActions([])
 
         # Delete items in the dictionary:
-        for item in _items:
+        for item in items:
 
             if  isinstance(item, Node) and self.node_db[item]:
                 batch.add_to_batch(RemoveNodeAction(self, item))
@@ -709,36 +703,32 @@ class Canvas(QGraphicsScene):
     # Method to encode the schematic to a JSON string and save it to a file:
     @pyqtSlot()
     @pyqtSlot(str)
-    def export_schema(self, _name: str = str()):
+    def export_schema(self, name: str = str()):
         """
         Export the canvas's contents (schematic) as a JSON file.
 
-        :param: _name (str): The name of the file to export the schematic to.
+        :param: name (str): The name of the file to export the schematic to.
         """
 
         # Get a new filename if `_export_name` is empty:
-        _name, _ = QFileDialog.getSaveFileName(None,
+        name, _ = QFileDialog.getSaveFileName(None,
                                                "Select save-file",
                                                ".", "JSON (*.json)"
-                                               ) \
-                   if   _name == str() or not isinstance(_name, str) \
-                   else _name, True
-
-        json = JsonLib.encode(self)
-        file = open(_name, "w+")
-        file.write(json)
+                                              ) \
+                   if name == str() or not isinstance(name, str) \
+                   else name, True
 
         try:
-            # json = JsonLib.encode(self)
-            # file = open(_name, "w+")
-            # file.write(json)
+            json = JsonLib.encode(self)
+            file = open(_name, "w+")
+            file.write(json)
 
             # Notify application of state-change:
             self.state = SaveState.EXPORTED
             self.sig_canvas_state.emit(self.state)
 
             # Return the file name to indicate success:
-            return _name
+            return name
 
         except Exception as exception:
 
@@ -754,19 +744,12 @@ class Canvas(QGraphicsScene):
     def begin_transient(self, _handle: Handle):
         """
         Activate the transient-connector.
-
-        Args:
-            _handle (Handle): Emitter of the signal (tabs/schema/graph/handle.py).
-
-        Returns: 
-            None
         """
 
         # Abort-conditions:
         if (
             self._conn.active or                # If the transient-connector is already active.
-            self._conn.origin or                # If the origin-handle is already connected.
-            not isinstance(_handle, Handle)     # If the signal-emitter is not a Handle.
+            self._conn.origin                   # If a transient is already being drawn.
         ):
             return
         
@@ -795,13 +778,7 @@ class Canvas(QGraphicsScene):
 
         # Get signal-emitter:
         item = self.sender()
-       
-        # Validate signal-emitter:
-        if (
-            isinstance(item, QGraphicsObject) and
-            item.scene() == self
-        ):
-            self.delete_items({item: True})  # Delete item
+        self.delete_items({item})  # Delete item
     
     def find_stream(self, strid: str, create: bool = False):
         """
@@ -879,4 +856,4 @@ class Canvas(QGraphicsScene):
 
     # Unique ID setter:
     @uid.setter
-    def uid(self, value: str):   self.setObjectName(value if isinstance(value, str) else self.uid)
+    def uid(self, value: str):   self.setObjectName(value)

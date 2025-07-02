@@ -71,32 +71,15 @@ class Connector(QGraphicsObject):
             self.pen_select = QPen(Qt.GlobalColor.darkGray, 1.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
 
     # Initializer:
-    def __init__(self, 
-                _symbol: str, 
-                _origin: Handle | None = None, 
-                _target: Handle | None = None, 
-                _overwrite: bool = True, 
-                _parent: QGraphicsObject | None = None):
-
-        """
-        Initialize a new connector.
-
-        Parameters:
-            _symbol (str): Symbol of the connector.
-            _origin (Handle): Origin handle (default: None).
-            _target (Handle): Target handle (default: None).
-            _overwrite (bool): Overwrite the target handle's data with the origin handle's data (default: True).
-            _parent (QGraphicsObject, optional): Parent object of the connector (default: None).
-        """
-
-        # Validate arguments:
-        if not isinstance(_symbol, str): raise TypeError("Expected argument `_symbol` of type `str`")
-        if not isinstance(_origin, Handle | None): raise TypeError(f"Expected argument `_origin` of type `Handle`")
-        if not isinstance(_target, Handle | None): raise TypeError(f"Expected argument `_target` of type `Handle`")
-        if not isinstance(_overwrite, bool): raise TypeError("Expected argument `_overwrite` of type `bool`")
+    def __init__(self,
+                 symbol: str,
+                 origin: Handle | None = None,
+                 target: Handle | None = None,
+                 overwrite: bool = True,
+                 parent: QGraphicsObject | None = None):
 
         # Initialize base-class:
-        super().__init__(_parent)
+        super().__init__(parent)
 
         # Attrib:
         self._cuid = random_id(length=4, prefix='C')
@@ -117,24 +100,24 @@ class Connector(QGraphicsObject):
 
         # Return if `origin` or `target` is None:
         if (
-            _origin is None or 
-            _target is None
+            origin is None or
+            target is None
         ):  
             return
 
         # Abort-conditions:
-        if _origin == _target:                           raise ValueError("Origin and target handles must be different")
-        if _origin.eclass == EntityClass.PAR:            raise ValueError("Origin handle must be of INP/OUT stream")
-        if _target.eclass == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
-        if _origin.eclass == _target.eclass:             raise ValueError("Origin and target handles must be of different streams")
-        if _origin.parentItem() == _target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
+        if origin == target:                           raise ValueError("Origin and target handles must be different")
+        if origin.eclass == EntityClass.PAR:            raise ValueError("Origin handle must be of INP/OUT stream")
+        if target.eclass == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
+        if origin.eclass == target.eclass:             raise ValueError("Origin and target handles must be of different streams")
+        if origin.parentItem() == target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
 
         # Initialize bubble-label and direction-arrows:
-        self._text  = BubbleLabel(_symbol, self)
+        self._text  = BubbleLabel(symbol, self)
 
         # Store references:
-        self.origin = _origin if _origin.eclass == EntityClass.OUT else _target
-        self.target = _target if _target.eclass == EntityClass.INP else _origin
+        self.origin = origin if origin.eclass == EntityClass.OUT else target
+        self.target = target if target.eclass == EntityClass.INP else origin
 
         # Setup references in handles:
         self.origin.lock(self.target, self)
@@ -150,7 +133,7 @@ class Connector(QGraphicsObject):
         self.target.destroyed.connect(self.set_obsolete)                # If the target handle is destroyed, make the connector obsolete
 
         # Assign origin's data to target:
-        if _overwrite:
+        if overwrite:
             
             self.target.strid   = self.origin.strid     # Copy stream ID
             self.target.color   = self.origin.color     # Copy color
@@ -160,7 +143,7 @@ class Connector(QGraphicsObject):
             self.target.minimum = self.origin.minimum   # Copy minimum
             self.target.maximum = self.origin.maximum   # Copy maximum
 
-        # Notify application that the target handle has been updated:
+        # Notify the application that the target handle has been updated:
         self.target.rename(self.origin.label)
         self.target.sig_item_updated.emit(self.target)                  # Emit signal to notify application that `target` has been updated
 
@@ -210,13 +193,6 @@ class Connector(QGraphicsObject):
 
     def draw(self, opos: QPointF, tpos: QPointF, geometry: PathGeometry):
 
-        if (
-            not isinstance(opos, QPointF) or
-            not isinstance(tpos, QPointF)
-        ):
-            print(f"Connector.draw(): [ERROR] Expected arguments of type QPointF")
-            return
-
         # Reset path:
         self.prepareGeometryChange()        # Required to trigger repainting when the path changes
         self._attr.path.clear()             # Clear the path
@@ -257,9 +233,6 @@ class Connector(QGraphicsObject):
     def set_relevant(self)  -> None:    self._is_obsolete = False
 
     def set_color(self, _color: QColor):
-
-        # Validate input:
-        if not isinstance(_color, QColor): return
 
         # Change pen-color:
         self._styl.pen_border.setColor(_color)

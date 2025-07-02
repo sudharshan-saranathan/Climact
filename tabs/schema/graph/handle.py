@@ -387,13 +387,6 @@ class Handle(QGraphicsObject, Entity):
         # Import Canvas:
         from tabs.schema.canvas import Canvas
 
-        # Validate signal-emitter:
-        if (
-            not isinstance(action := self.sender(), StreamMenuAction) or
-            not isinstance(canvas := self.scene() , Canvas)
-        ):
-            return
-
         # Get stream-id:
         stream = action.label
         stream = canvas.find_stream(stream, create = True)      # Find the stream, create a new one if it doesn't exist.

@@ -173,9 +173,6 @@ class Node(QGraphicsObject):
         Sets the state of an entity belonging to the node.
         """
 
-        # Validate argument(s):
-        if not isinstance(_tuple, tuple): raise TypeError("Expected argument of type `tuple`")
-
         # Resolve tuple:
         eclass, entity = _tuple
 
@@ -487,10 +484,6 @@ class Node(QGraphicsObject):
         :param: _newsym (str): The new symbol to replace the old one with
         """
 
-        # Validate argument(s):
-        if not isinstance(_oldsym, str): raise TypeError("Expected argument of type `str`")
-        if not isinstance(_newsym, str): raise TypeError("Expected argument of type `str`")
-
         # Replace old symbol with new symbol in equations:
         for i, equation in enumerate(self._data[EntityClass.EQN]):
             if _oldsym in equation:
@@ -541,9 +534,6 @@ class Node(QGraphicsObject):
             str: The unique identifier for the handle.
         """
 
-        # Validate argument(s):
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]: raise ValueError("Expected argument: `EntityClass.INP` or `EntityClass.OUT`")
-
         # Create a unique handle-identifier:
         prefix = "P" if _eclass == EntityClass.OUT else "R"
         id_set = {
@@ -563,29 +553,27 @@ class Node(QGraphicsObject):
         return prefix + str(min(reusable)).zfill(2)
 
     # Triggered when an anchor is clicked:
-    def on_anchor_clicked(self, _coords: QPointF):
+    def on_anchor_clicked(self, coords: QPointF):
         """
         Triggered when an anchor is clicked.
 
         :param: _coords (QPointF): The coordinates where the anchor was clicked, in scene-coordinates.
         """
 
-        # Validate argument(s):
-        _anchor = self.sender()
-        if not isinstance(_coords, QPointF): raise TypeError("Expected argument of type `QPointF`")
-        if not isinstance(_anchor, Anchor) : raise TypeError("Expected signal-emitter of type `Anchor`")
+        # Get the anchor that was clicked:
+        anchor = self.sender()
+        eclass = anchor.stream()
 
         # Create a new handle at the anchor's position:
-        _eclass = _anchor.stream()                          # Get anchor's stream (EntityClass.INP or EntityClass.OUT)
-        _coords = self.mapFromItem(_anchor, _coords)        # Map coordinate to node's coordinate-system
-        _handle = self.create_handle(_eclass, _coords)
-        _handle.sig_item_clicked.emit(_handle)              # Emit signal to begin transient-connection.
+        coords = self.mapFromItem(anchor, coords)        # Map coordinate to node's coordinate-system
+        handle = self.create_handle(eclass, coords)
+        handle.sig_item_clicked.emit(handle)              # Emit signal to begin transient-connection.
 
         # Enter the handle into the node's database:
-        self[_eclass, _handle] = EntityState.ACTIVE         # Set state `EntityState.ACTIVE`
+        self[eclass, handle] = EntityState.ACTIVE         # Set state `EntityState.ACTIVE`
 
         # Notify application of state-change:
-        self.sig_exec_actions.emit(CreateHandleAction(self, _handle))
+        self.sig_exec_actions.emit(CreateHandleAction(self, handle))
         self.sig_item_updated.emit()
     
     # Triggered when a handle is removed:
