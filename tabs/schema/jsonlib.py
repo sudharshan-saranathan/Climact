@@ -262,7 +262,7 @@ class JsonLib:
         for node_json in root.get("NODES") or []:
 
             height = node_json.get("node-height")
-            color  = node_json.get("node-color")
+            color  = node_json.get("node-color") or 0xffffff
             title  = node_json.get("node-title")
             npos   = QPointF(node_json.get("node-scenepos").get("x"),
                             node_json.get("node-scenepos").get("y")

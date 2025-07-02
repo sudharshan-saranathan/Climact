@@ -432,26 +432,28 @@ class Canvas(QGraphicsScene):
         """
 
         # Create a new terminal and position it:
-        _terminal = StreamTerminal(eclass, None)
-        _terminal.setPos(coords or self._cpos)
-        _terminal.handle.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
-        _terminal.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
-        _terminal.sig_item_removed.connect(self.on_item_removed)
+        coords = coords or self._cpos
+        terminal = StreamTerminal(eclass, None)
+        terminal.setPos(coords)
+
+        terminal.handle.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
+        terminal.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
+        terminal.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
-        self.term_db[_terminal] = EntityState.ACTIVE
-        self.addItem(_terminal)
+        self.term_db[terminal] = EntityState.ACTIVE
+        self.addItem(terminal)
 
         # If the flag is set, create the corresponding action and push it to the undo-stack:
-        if flag: self.manager.do(CreateStreamAction(self, _terminal))
+        if flag: self.manager.do(CreateStreamAction(self, terminal))
 
         # Set state-variable:
         self.sig_canvas_state.emit(SaveState.MODIFIED)
-        self.sig_show_message.emit(f"Created terminal ({_terminal.uid}) at {coords.x():.2f}, {coords.y():.2f}")
+        self.sig_show_message.emit(f"Created terminal ({terminal.uid}) at {coords.x():.2f}, {coords.y():.2f}")
         logging.info(f"Creating new terminal at {coords}")
 
         # Return terminal:
-        return _terminal
+        return terminal
 
     def create_cuid(self):
         """

@@ -3,8 +3,8 @@
 # GitHub    : https://github.com/sudharshan-saranathan/climact
 # Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
 #-----------------------------------------------------------------------------------------------------------------------
-
 import logging
+import dataclasses
 from json import JSONDecodeError
 
 from PyQt6.QtGui import (
@@ -41,29 +41,22 @@ from .canvas  import Canvas, SaveState
 
 # Class: Viewer
 class Viewer(QGraphicsView):
-    """
-    """
 
     # Signals:
     sig_json_loaded = pyqtSignal(str)
 
     # Zoom-attrib:
-    @dataclass()
     class Zoom:
         def __init__(self):
             self.exp = 1.1
             self.val = 1.0
-            self.max = 4.0
+            self.max = 5.0
             self.min = 0.2
 
     # Initializer:
     def __init__(self, _parent: QWidget | None, **kwargs):
         """
         Initializes the Viewer class.
-
-        Args:
-            parent (QWidget | None): The parent widget.
-            **kwargs: Keyword arguments.
         """
 
         # Initialize base-class:
@@ -104,16 +97,16 @@ class Viewer(QGraphicsView):
         logging.info(f"Gemini AI-assistant initialized.")
 
         # Layout to manage widgets:
-        _layout = QVBoxLayout(self)
-        _layout.setSpacing(0)
-        _layout.setContentsMargins(4, 4, 16, 16)
-        _layout.addWidget(self._gemini, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-        _layout.insertStretch(0, 10)
+        layout = QVBoxLayout(self)
+        layout.setSpacing(0)
+        layout.setContentsMargins(4, 4, 16, 16)
+        layout.addWidget(self._gemini, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+        layout.insertStretch(0, 10)
 
         # Action shortcuts:
-        shortcut_ctrl_n = QShortcut(QKeySequence("Ctrl+N"), self)
-        shortcut_term_i = QShortcut(QKeySequence("Ctrl+["), self)
-        shortcut_term_o = QShortcut(QKeySequence("Ctrl+]"), self)
+        shortcut_ctrl_n = QShortcut(QKeySequence("Ctrl+N"), self, self.canvas.create_node)
+        shortcut_term_i = QShortcut(QKeySequence("Ctrl+["), self, lambda: self.canvas.create_terminal(EntityClass.OUT))
+        shortcut_term_o = QShortcut(QKeySequence("Ctrl+]"), self, lambda: self.canvas.create_terminal(EntityClass.INP))
         shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self)
         shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
         shortcut_ctrl_f = QShortcut(QKeySequence.StandardKey.Find, self, self.canvas.find_items, context=Qt.ShortcutContext.WidgetWithChildrenShortcut)
@@ -123,9 +116,6 @@ class Viewer(QGraphicsView):
         shortcut_delete = QShortcut(QKeySequence.StandardKey.Delete, self)
 
         # Connect action shortcuts:
-        shortcut_ctrl_n.activated.connect(self.canvas.create_node)
-        shortcut_term_i.activated.connect(lambda: self.canvas.create_terminal(EntityClass.OUT))
-        shortcut_term_o.activated.connect(lambda: self.canvas.create_terminal(EntityClass.INP))
         shortcut_ctrl_z.activated.connect(self.canvas.manager.undo)
         shortcut_ctrl_r.activated.connect(self.canvas.manager.redo)
         shortcut_ctrl_c.activated.connect(self.canvas.store)
