@@ -18,6 +18,7 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtCore import (
     Qt,
+    QRect,
     QRectF,
     QPointF,
     QObject,
@@ -283,7 +284,7 @@ class Canvas(QGraphicsScene):
         Re-implementation of QGraphicsScene.mouseReleaseEvent(). If a connection was being drawn when this event is 
         triggered, and if certain conditions are met, this method will create a new target-handle and establish a 
         connection between the origin and target handles. The method includes various checks to prevent logically
-        invalid connections (such as from one _node or handle to itself).
+        invalid connections (such as from one node or handle to itself).
         
         :param: event (QGraphicsSceneMouseEvent): Event instance, internally propagated by Qt.
         """
@@ -298,32 +299,32 @@ class Canvas(QGraphicsScene):
             return
 
         # Define convenience variables:
-        _tpos = event.scenePos()                    # Release-position in scene-coordinates.
-        _node = self._conn.origin().parentItem()    # Origin handle's parent item (could be a _node or a terminal).
+        tpos = event.scenePos()                    # Release-position in scene-coordinates.
+        node = self._conn.origin().parentItem()    # Origin handle's parent item (could be a node or a terminal).
 
         # Find the QGraphicsObject at the cursor's click-position:
-        _item = self.itemAt(event.scenePos(), QTransform())
+        item = self.itemAt(event.scenePos(), QTransform())
 
         # If the item below the cursor is an anchor, create a new handle at the target anchor:
-        if isinstance(_item, Anchor):
+        if isinstance(item, Anchor):
 
-            # Verify that the target anchor's parent _node is different from the origin handle's parent _node:
+            # Verify that the target anchor's parent node is different from the origin handle's parent node:
             if (
-                _node == _item.parentItem() or
-                _item.stream() == self._conn.origin().eclass
+                node == item.parentItem() or
+                item.stream() == self._conn.origin().eclass
             ):
-                self.reset_transient()
                 super().mouseReleaseEvent(event)
+                self.reset_transient()
                 return
 
             # Create a new handle at the target anchor:
-            _apos = _item.mapFromScene(_tpos)       # Convert scene-coordinates to anchor-coordinates.
-            _apos = QPointF(0, _apos.y())           # Set x-coordinate to 0.
-            _item.sig_item_clicked.emit(_apos)      # Emit signal to create a new handle.
+            apos = item.mapFromScene(tpos)      # Convert scene-coordinates to anchor-coordinates.
+            apos = QPointF(0, apos.y())         # Set x-coordinate to 0.
+            item.sig_item_clicked.emit(apos)    # Emit signal to create a new handle.
 
         # Define convenience variables:
         origin = self._conn.origin()               # Origin handle is set in `self.begin_transient()`
-        target = self.itemAt(_tpos, QTransform())  # This should return the new handle created at the target anchor.
+        target = self.itemAt(tpos, QTransform())  # This should return the new handle created at the target anchor.
 
         # Abort-conditions:
         if (
@@ -419,36 +420,35 @@ class Canvas(QGraphicsScene):
 
     def create_terminal(self,
                         eclass: EntityClass,  # EntityClass (INP or OUT), see custom/entity.py.
-                        coords: QPointF = None,  # Position of the terminal (in scene-coordinates).
+                        coords: QPointF = None,  # Position of the term (in scene-coordinates).
                         flag  : bool = True  # Should the action be pushed to the undo-stack?
                         ):
         """
-        Create a new terminal and add it to the scene.
+        Create a new term and add it to the scene.
         """
 
-        # Create a new terminal and position it:
-        coords = coords or self._cpos
-        terminal = StreamTerminal(eclass, None)
-        terminal.setPos(coords)
+        # Create a new term and position it:
+        cpos = coords or self._cpos
+        term = StreamTerminal(eclass, None)
+        term.setPos(cpos)
 
-        terminal.handle.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
-        terminal.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
-        terminal.sig_item_removed.connect(self.on_item_removed)
+        term.handle.sig_item_clicked.connect(self.begin_transient, Qt.ConnectionType.UniqueConnection)
+        term.handle.sig_item_updated.connect(lambda: self.sig_canvas_state.emit(SaveState.MODIFIED), Qt.ConnectionType.UniqueConnection)
+        term.sig_item_removed.connect(self.on_item_removed)
 
         # Add item to canvas:
-        self.term_db[terminal] = EntityState.ACTIVE
-        self.addItem(terminal)
+        self.term_db[term] = EntityState.ACTIVE
+        self.addItem(term)
 
         # If the flag is set, create the corresponding action and push it to the undo-stack:
-        if flag: self.manager.do(CreateStreamAction(self, terminal))
+        if flag: self.manager.do(CreateStreamAction(self, term))
 
         # Set state-variable:
         self.sig_canvas_state.emit(SaveState.MODIFIED)
-        self.sig_show_message.emit(f"Created terminal ({terminal.uid}) at {coords.x():.2f}, {coords.y():.2f}")
-        logging.info(f"Creating new terminal at {coords}")
+        self.sig_show_message.emit(f"Created term ({term.uid}) at {cpos.x():.2f}, {cpos.y():.2f}")
 
-        # Return terminal:
-        return terminal
+        # Return term:
+        return term
 
     def create_cuid(self):
         """
@@ -777,6 +777,9 @@ class Canvas(QGraphicsScene):
         self._conn.origin = None
         self._conn.target = None
         self._conn.connector.clear()
+
+        # Update the full viewport:
+        self.update(self.sceneRect())
 
     def on_item_removed(self):
         """

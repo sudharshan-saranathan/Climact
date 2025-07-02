@@ -84,6 +84,7 @@ class Node(QGraphicsObject):
         # Initialize base-class and customize behavior:
         super().__init__(parent)
         super().setAcceptHoverEvents(True)
+        super().setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         super().setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 

@@ -52,6 +52,7 @@ class Viewer(QGraphicsView):
 
         # Initialize base-class:
         super().__init__(_parent)
+        super().setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.MinimalViewportUpdate)
         super().setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
         # Assign keyword keys:
