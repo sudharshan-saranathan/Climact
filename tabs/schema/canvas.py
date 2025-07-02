@@ -720,7 +720,7 @@ class Canvas(QGraphicsScene):
 
         try:
             json = JsonLib.encode(self)
-            file = open(_name, "w+")
+            file = open(name, "w+")
             file.write(json)
 
             # Notify application of state-change:

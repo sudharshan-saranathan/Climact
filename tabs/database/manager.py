@@ -98,18 +98,13 @@ class DataManager(QWidget):
 
     # Tree-item selected:
     def on_node_selected(self, node: Node):
-        """
-        Handle the selection of a tree item.
-        :param node:
-        :return:
-        """
-        if  not (canvas := self.property('canvas')):
-            return
 
         # Display data for node:
+        node.setSelected(True)
         self._sheets.setRowCount(0)
         self._sheets.fetch(node)
         self._viewer.fitInView(node, Qt.AspectRatioMode.KeepAspectRatio)
+        self._viewer.scale(0.6, 0.6)
 
         # Enable the equation-editor:
         self._eqlist.setEnabled(True)
@@ -118,9 +113,9 @@ class DataManager(QWidget):
     # Tree-item selected:
     def on_term_selected(self, term: StreamTerminal):
 
-        if  not (canvas := self.property('canvas')):
-            return
-
+        # Display data for terminal:
+        term.setSelected(True)
         self._eqlist.clear()
         self._sheets.setRowCount(0)
         self._viewer.fitInView(term, Qt.AspectRatioMode.KeepAspectRatio)
+        self._viewer.scale(0.6, 0.6)
