@@ -241,3 +241,6 @@ class StreamTerminal(QGraphicsObject):
 
     @property
     def eclass(self): return self._eclass
+
+    @property
+    def title(self): return self.handle.label

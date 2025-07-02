@@ -116,6 +116,7 @@ class Viewer(QGraphicsView):
         shortcut_term_o = QShortcut(QKeySequence("Ctrl+]"), self)
         shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self)
         shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self)
+        shortcut_ctrl_f = QShortcut(QKeySequence.StandardKey.Find, self, self.canvas.find_items, context=Qt.ShortcutContext.WidgetWithChildrenShortcut)
         shortcut_ctrl_c = QShortcut(QKeySequence.StandardKey.Copy, self)
         shortcut_ctrl_z = QShortcut(QKeySequence.StandardKey.Undo, self)
         shortcut_ctrl_r = QShortcut(QKeySequence.StandardKey.Redo, self)

@@ -104,7 +104,7 @@ class DataManager(QWidget):
         self._sheets.setRowCount(0)
         self._sheets.fetch(node)
         self._viewer.fitInView(node, Qt.AspectRatioMode.KeepAspectRatio)
-        self._viewer.scale(0.6, 0.6)
+        self._viewer.scale(0.8, 0.8)
 
         # Enable the equation-editor:
         self._eqlist.setEnabled(True)
@@ -118,4 +118,4 @@ class DataManager(QWidget):
         self._eqlist.clear()
         self._sheets.setRowCount(0)
         self._viewer.fitInView(term, Qt.AspectRatioMode.KeepAspectRatio)
-        self._viewer.scale(0.6, 0.6)
+        self._viewer.scale(0.8, 0.8)

@@ -185,6 +185,7 @@ class Canvas(QGraphicsScene):
 
         # Group and Clear actions:
         self._menu.addSeparator()
+        _find  = self._menu.addAction(qta.icon("mdi.magnify", color="yellow"), "Find Items", QKeySequence("Ctrl+F"), self.find_items)
         _group = self._menu.addAction(qta.icon("mdi.layers", color="teal"), "Group Items", QKeySequence("Ctrl+G"), lambda: print(f"Grouping selected items"))
         _clear = self._menu.addAction(qta.icon("mdi.eraser", color="darkred"), "Clear Scene", QKeySequence("Ctrl+E"), self.clear)
         _exit  = self._menu.addAction(qta.icon("mdi.power", color="black"), "Quit" , QKeySequence.StandardKey.Quit,  QApplication.quit)
@@ -198,6 +199,7 @@ class Canvas(QGraphicsScene):
         _exit.setIconVisibleInMenu(True)
         _tout.setIconVisibleInMenu(True)
         _tinp.setIconVisibleInMenu(True)
+        _find.setIconVisibleInMenu(True)
         _clone.setIconVisibleInMenu(True)
         _paste.setIconVisibleInMenu(True)
         _select.setIconVisibleInMenu(True)
@@ -211,6 +213,7 @@ class Canvas(QGraphicsScene):
         _save.setShortcutVisibleInContextMenu(True)
         _undo.setShortcutVisibleInContextMenu(True)
         _redo.setShortcutVisibleInContextMenu(True)
+        _find.setShortcutVisibleInContextMenu(True)
 
         _select.setShortcutVisibleInContextMenu(True)
         _delete.setShortcutVisibleInContextMenu(True)
@@ -798,14 +801,6 @@ class Canvas(QGraphicsScene):
         # Return stream:
         return stream
 
-    def find_node(self, _uid: str):
-
-        for _node in self.node_db.keys():
-            if self.node_db[_node] and _uid == _node.uid:
-                return _node
-
-        return None
-
     def open_stream_config(self):
         """
         Opens the stream-management configuration utility.
@@ -814,6 +809,55 @@ class Canvas(QGraphicsScene):
         config = StreamConfig(self.type_db, self.views()[0])
         config.setModal(True)  # Make the dialog modal
         config.open()
+
+    def find_items(self):
+        """
+        Finds an item in the canvas by its name or identifier.
+        """
+        usr_input = Getter("Search Item",
+                           "Enter the item's identifier:",
+                           self.views()[0],
+                           Qt.WindowType.Popup)
+        usr_input.open()
+
+        # Connect the finished signal to set the tab text:
+        usr_input.finished.connect(
+            lambda: self.highlight(usr_input.text())
+            if usr_input.result() and usr_input.text() else None
+        )
+
+    def highlight(self, identifier: str):
+        """
+        Searches for an item in the canvas by its identifier.
+        :param identifier: The identifier of the item to search for.
+        """
+        # First, deselect all items:
+        self.clearSelection()
+
+        # Search for the item in the node database:
+        for node, state in self.node_db.items():
+            if (
+                state == EntityState.ACTIVE and
+                node.title == identifier
+            ):
+                node.setSelected(True)
+                view = self.views()[0]
+                view.centerOn(node.scenePos())
+                return
+
+        # Search for the item in the terminal database:
+        for term, state in self.term_db.items():
+            if (
+                state == EntityState.ACTIVE and
+                term.title == identifier
+            ):
+                term.setSelected(True)
+                view = self.views()[0]
+                view.centerOn(term.scenePos())
+                return
+
+        # If no item is found, print a message:
+        print(f"No item found with identifier '{identifier}'.")
 
     def clear(self):
         """
