@@ -9,7 +9,7 @@ from tabs.schema import graph
 from custom      import *
 from actions     import *
 
-class JsonLib:
+class JsonIO:
     """
     Class for serializing and deserializing schematics (nodes and connectors)
     to and from JSON format for the canvas-based process modeling application.
@@ -121,14 +121,14 @@ class JsonLib:
 
             # Construct a list of the _node's active variables:
             variables = [
-                JsonLib.entity_to_json(entity, EntityClass.VAR)
+                JsonIO.entity_to_json(entity, EntityClass.VAR)
                 for entity, state in item[EntityClass.VAR].items()
                 if  state == EntityState.ACTIVE
             ]
 
             # Construct a list of the _node's active parameters:
             parameters = [
-                JsonLib.entity_to_json(entity, EntityClass.PAR)
+                JsonIO.entity_to_json(entity, EntityClass.PAR)
                 for entity, state in item[EntityClass.PAR].items()
                 if  state == EntityState.ACTIVE
             ]
@@ -211,9 +211,9 @@ class JsonLib:
         )
 
         # Fetch serialized JSON objects for each item-type:
-        node_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.Node)]
-        conn_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.Connector)]
-        term_array = [JsonLib.serialize(item) for item in total_items_list if isinstance(item, graph.StreamTerminal)]
+        node_array = [JsonIO.serialize(item) for item in total_items_list if isinstance(item, graph.Node)]
+        conn_array = [JsonIO.serialize(item) for item in total_items_list if isinstance(item, graph.Connector)]
+        term_array = [JsonIO.serialize(item) for item in total_items_list if isinstance(item, graph.StreamTerminal)]
 
         # Initialize JSON objects:
         schematic = {
@@ -302,7 +302,7 @@ class JsonLib:
                 _var = _node.create_handle(eclass, hpos)
 
                 # Read other attribute(s):
-                JsonLib.json_to_entity(
+                JsonIO.json_to_entity(
                     _var,
                     eclass,
                     var_json,
@@ -328,7 +328,7 @@ class JsonLib:
                 _par.eclass = EntityClass.PAR
 
                 # Read other attribute(s):
-                JsonLib.json_to_entity(_par, EntityClass.PAR, par_json)
+                JsonIO.json_to_entity(_par, EntityClass.PAR, par_json)
 
                 # Add parameter to _node's database:
                 _node[EntityClass.PAR][_par] = EntityState.ACTIVE

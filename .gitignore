@@ -11,6 +11,7 @@
 .Thumbs.db
 
 # Ignore schematic save directories:
-library/save/
-library/systems/
-library/components/
+models
+library/save
+library/systems
+library/components

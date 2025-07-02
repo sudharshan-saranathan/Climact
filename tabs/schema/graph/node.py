@@ -40,9 +40,9 @@ nodeDefaults = {
     "spos"          : QPointF(0, 0),
     "rect"          : QRectF(-100, -75, 200, 150),
     "step"          : 50,
-    "normal-border" : QColor(0x000000),
-    "select-border" : QColor(0xf99c39),
-    "background"    : QColor(0xffffff),
+    "normal-border" : 0x0,
+    "select-border" : 0xf99c39,
+    "background"    : 0xffffff,
     "inp"           : dict(),
     "out"           : dict(),
     "par"           : dict(),
@@ -89,7 +89,7 @@ class Node(QGraphicsObject):
 
         # Node's properties:
         for attr in nodeDefaults:
-            self.setProperty(attr, nodeDefaults[attr])
+            self.setProperty(attr,kwargs.get(attr, None) or nodeDefaults[attr])
 
         # Initialize style and attrib:
         self.double_clicked = False             # Used to track when the node has been double-clicked
@@ -104,23 +104,12 @@ class Node(QGraphicsObject):
             EntityClass.EQN:    list()          # List of equations
         })
 
-        # Label to display the node's unique identifier:
-        self._label = Label(self, self._nuid,
-                            font=QFont("Trebuchet MS", 10),
-                            width=50,
-                            color=QColor(0xadadad), 
-                            align=Qt.AlignmentFlag.AlignLeft,
-                            editable=False)
-
         # Label to display the node's name:
         self._title = Label(self, name,
                             width=120,
                             align=Qt.AlignmentFlag.AlignCenter,
                             editable=True)
         self._title.sig_text_changed.connect(self.sig_item_updated.emit)  # Emit signal when the title is changed
-
-        # Position labels:
-        self._label.setPos(-98, -72)
         self._title.setPos(-60, -72)
 
         # Header-buttons:
@@ -227,20 +216,24 @@ class Node(QGraphicsObject):
 
         # Select different pens for selected and unselected states:
         pen = self._style.pen_select if self.isSelected() else self._style.pen_border
-                 
+
         # Draw the node's border:
         painter.setPen(pen)
         painter.setBrush(QBrush(QColor(self._style.background)))
         painter.drawRoundedRect(self._attr.rect, 8, 8)
 
+        # Show the node's UID:
+        painter.setPen(QPen(Qt.GlobalColor.lightGray, 1.0))
+        painter.drawText(QPointF(-90, -56, ), self._nuid)
+
         # Draw the separators:
         pen = QPen(Qt.GlobalColor.black, 1.0)
         painter.setPen(pen)
-        painter.drawLine(QPointF(-100, -48), QPointF(100, -48))                                 # Top separator
+        painter.drawLine(QPointF(-98, -48), QPointF(98, -48))                                 # Top separator
 
         pen = QPen(Qt.GlobalColor.gray, 0.5)
         painter.setPen(pen)
-        painter.drawLine(QPointF(   0, -48), QPointF(0, self._attr.rect.bottom()))              # Vertical separator
+        painter.drawLine(QPointF(0, -46), QPointF(0, self._attr.rect.bottom() - 2))              # Vertical separator
 
     def itemChange(self, change, value):
 

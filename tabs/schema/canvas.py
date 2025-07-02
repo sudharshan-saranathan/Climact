@@ -35,7 +35,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .graph   import *
-from .jsonlib import JsonLib
+from .jsonio import JsonIO
 
 from util    import random_id, random_hex
 from enum    import Enum
@@ -244,12 +244,6 @@ class Canvas(QGraphicsScene):
     def contextMenuEvent(self, event):
         """
         Opens the canvas's context-menu when the user right-clicks on the canvas.
-
-        Args: 
-            event (QGraphicsSceneContextMenuEvent): Event instance, internally propagated and managed by Qt.
-
-        Returns: 
-        None
         """
 
         # Call super-class implementation first:
@@ -282,8 +276,7 @@ class Canvas(QGraphicsScene):
                                       )
 
         # Store the cursor position in scene-coordinates:
-        self._cpos = event.scenePos()  # Update the cursor position in scene-coordinates.
-        self.sig_show_message.emit(f"X: {self._cpos.x():.2f}, Y: {self._cpos.y():.2f}")
+        self._cpos = event.scenePos()
 
     def mouseReleaseEvent(self, event):
         """
@@ -707,7 +700,7 @@ class Canvas(QGraphicsScene):
             code = json_str.read()
             
         # Decode JSON-string:
-        json = JsonLib.decode(code, self, True)
+        json = JsonIO.decode(code, self, True)
 
         # Notify application of state-change:
         self.sig_schema_setup.emit(file)
@@ -735,7 +728,7 @@ class Canvas(QGraphicsScene):
                    else name, True
 
         try:
-            json = JsonLib.encode(self)
+            json = JsonIO.encode(self)
             file = open(name, "w+")
             file.write(json)
 

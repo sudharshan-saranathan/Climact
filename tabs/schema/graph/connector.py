@@ -89,8 +89,8 @@ class Connector(QGraphicsObject):
         self._is_obsolete = False
 
         # Direction arrows:
-        self._dir_w = load_svg("rss/icons/direction.svg", 14)
-        self._dir_e = load_svg("rss/icons/direction.svg", 14)
+        self._dir_w = load_svg("rss/icons/arrow.svg", 24)
+        self._dir_e = load_svg("rss/icons/arrow.svg", 24)
 
         self._dir_w.setParentItem(self)
         self._dir_e.setParentItem(self)
@@ -145,9 +145,9 @@ class Connector(QGraphicsObject):
 
         # Notify the application that the target handle has been updated:
         self.target.rename(self.origin.label)
-        self.target.sig_item_updated.emit(self.target)                  # Emit signal to notify application that `target` has been updated
+        self.target.sig_item_updated.emit(self.target)                  # Emit signal to notify the application that `target` has been updated
 
-        # Update color, and redraw path:
+        # Update color and redraw the connector:
         self.set_color(self.origin.color)
         self.draw(self.origin.scenePos(), self.target.scenePos(), self.geometry)
 
@@ -297,8 +297,8 @@ class Connector(QGraphicsObject):
         self._attr.path.clear()
         self._attr.path.moveTo(opos)
 
-        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 7, opos.y() - 7)
-        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 7, tpos.y() - 7)
+        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 16, opos.y() - 12)
+        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 16, tpos.y() - 12)
 
         # If the origin is to the left of the target, draw the path accordingly:
         if opos.x() < tpos.x():

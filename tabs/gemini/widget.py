@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 )
 
 from custom import Dialog
-from tabs.schema.jsonlib import JsonLib
+from tabs.schema.jsonio import JsonIO
 from tabs.gemini.gemini  import Gemini
 from tabs.gemini.thread  import Thread
 
@@ -93,7 +93,7 @@ class Gui(QFrame):
         if not bool(self._prompt.toPlainText()): return
 
         # First, try to encode the canvas as JSON:
-        _json = JsonLib.encode(self._canvas)
+        _json = JsonIO.encode(self._canvas)
 
         thread = Thread(self.gemini,
                         self._prompt.toPlainText(),

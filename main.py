@@ -4,16 +4,17 @@
 # Module(s) : PyQt6 (version 6.8.1), Google-AI (Gemini)
 #-----------------------------------------------------------------------------------------------------------------------
 
-import sys
 import logging
 import platform
+import sys
 
-from PyQt6.QtGui     import QFont, QFontDatabase
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QApplication
 
 from gui.splash import StartupWindow, StartupChoice
-from util            import *
-from gui.window      import Gui
+from gui.window import Gui
+from util import *
+
 
 # Application Subclass:
 class Climact(QApplication):
