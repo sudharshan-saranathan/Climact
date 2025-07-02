@@ -388,6 +388,7 @@ class Handle(QGraphicsObject, Entity):
         from tabs.schema.canvas import Canvas
 
         # Get stream-id:
+        action = self.sender()
         stream = action.label
         stream = canvas.find_stream(stream, create = True)      # Find the stream, create a new one if it doesn't exist.
 

@@ -44,7 +44,7 @@ class Tabber(QTabWidget):
 
     # Constants for the Tabber class:
     class Constants:
-        MAX_TABS = 4
+        MAX_TABS = 8
 
     # Initializer:
     def __init__(self, parent: QWidget | None = None):
