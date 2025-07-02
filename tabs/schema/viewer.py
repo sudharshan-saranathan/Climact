@@ -93,14 +93,14 @@ class Viewer(QGraphicsView):
         layout.insertStretch(0, 10)
 
         # Action shortcuts:
-        shortcut_ctrl_n = QShortcut(QKeySequence("Ctrl+N"), self, self.canvas.create_node)
-        shortcut_term_i = QShortcut(QKeySequence("Ctrl+["), self, lambda: self.canvas.create_terminal(EntityClass.OUT))
-        shortcut_term_o = QShortcut(QKeySequence("Ctrl+]"), self, lambda: self.canvas.create_terminal(EntityClass.INP))
-        shortcut_ctrl_a = QShortcut(QKeySequence.StandardKey.SelectAll, self, lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db))
-        shortcut_ctrl_f = QShortcut(QKeySequence.StandardKey.Find, self, self.canvas.find_items, context=Qt.ShortcutContext.WidgetWithChildrenShortcut)
-        shortcut_ctrl_v = QShortcut(QKeySequence.StandardKey.Paste, self, self.canvas.clone)
-        shortcut_ctrl_c = QShortcut(QKeySequence.StandardKey.Copy, self, self.canvas.store)
-        shortcut_delete = QShortcut(QKeySequence.StandardKey.Delete, self, lambda: self.canvas.delete_items(set(self.canvas.selectedItems())))
+        QShortcut(QKeySequence("Ctrl+N"), self, self.canvas.create_node)
+        QShortcut(QKeySequence("Ctrl+["), self, lambda: self.canvas.create_terminal(EntityClass.OUT))
+        QShortcut(QKeySequence("Ctrl+]"), self, lambda: self.canvas.create_terminal(EntityClass.INP))
+        QShortcut(QKeySequence.StandardKey.Paste, self, self.canvas.clone)
+        QShortcut(QKeySequence.StandardKey.Copy , self, self.canvas.store)
+        QShortcut(QKeySequence.StandardKey.Find , self, self.canvas.find_items)
+        QShortcut(QKeySequence.StandardKey.Delete   , self, lambda: self.canvas.delete_items(set(self.canvas.selectedItems())))
+        QShortcut(QKeySequence.StandardKey.SelectAll, self, lambda: self.canvas.select_items(self.canvas.node_db | self.canvas.term_db))
 
         shortcut_ctrl_z = QShortcut(QKeySequence.StandardKey.Undo, self, self.canvas.manager.undo)
         shortcut_ctrl_r = QShortcut(QKeySequence.StandardKey.Redo, self, self.canvas.manager.redo)
