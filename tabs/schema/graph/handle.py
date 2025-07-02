@@ -205,13 +205,8 @@ class Handle(QGraphicsObject, Entity):
         unpair = self._menu.findChild(QAction, name="Unpair")
         unpair.setEnabled(self.connected)
 
-        # Initialize menu-actions:
-        menu_actions = [
-            StreamMenuAction(stream, self.strid == stream.strid)
-            for stream in self.scene().type_db
-        ]
-
-        # Sort menu-actions by label:
+        # Initialize menu-actions and sort them:
+        menu_actions = [StreamMenuAction(stream, self.strid == stream.strid) for stream in self.scene().type_db]
         menu_actions.sort(key=lambda x: x.label)
             
         # Add streams dynamically to the submenu:

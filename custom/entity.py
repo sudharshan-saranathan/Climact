@@ -69,40 +69,19 @@ class Entity(Stream):
     def info(self)  -> str : return self._prop["info"]
 
     @info.setter
-    def info(self, _info: str):
-
-        # Validate input-type:
-        if  not isinstance(_info, str):
-            raise TypeError("Expected str")
-
-        # Set UID:
-        self._prop["info"] = _info
+    def info(self, info: str):  self._prop["info"] = info
 
     @property
     def label(self) -> str | None: return self._prop["label"]
 
     @label.setter
-    def label(self, _label: str):
-
-        # Validate input-type:
-        if  not isinstance(_label, str):
-            raise TypeError("Expected str")
-
-        # Set label:
-        self._prop["label"] = _label
+    def label(self, label: str):    self._prop["label"] = label
 
     @property
-    def units(self) -> str: return self._prop["units"]
+    def units(self) -> str: return self._units
 
     @units.setter
-    def units(self, _units: str):
-
-        # Validate input-type:
-        if  not isinstance(_units, str):
-            raise TypeError("Expected str")
-
-        # Set units:
-        self._prop["units"] = _units
+    def units(self, units: str):   self._units = units
 
     @property
     def eclass(self) -> EntityClass:
@@ -116,63 +95,31 @@ class Entity(Stream):
     def symbol(self) -> str: return self._prop["symbol"]
 
     @symbol.setter
-    def symbol(self, _symbol: str):
-
-        # Validate input-type:
-        if not isinstance(_symbol, str):
-            raise TypeError("Expected str")
-
-        # Set symbol:
-        self._prop["symbol"] = _symbol
+    def symbol(self, symbol: str): self._prop["symbol"] = symbol
 
     @property
     def value(self) -> str: return self._prop["value"]
 
     @value.setter
-    def value(self, _value: str):
-
-        # Validate input-type:
-        if not isinstance(_value, str):
-            raise TypeError("Expected argument of type `str`")
-
-        # Set value:
-        self._prop["value"] = _value
+    def value(self, value: str):   self._prop["value"] = value
 
     @property
     def sigma(self) -> str: return self._prop["sigma"]
 
     @sigma.setter
-    def sigma(self, _sigma: str):
-
-        # Validate input-type:
-        if not isinstance(_sigma, str):
-            raise TypeError("Expected argument of type `str`")
+    def sigma(self, sigma: str):
 
         # Set sigma:
-        self._prop["sigma"] = _sigma
+        self._prop["sigma"] = sigma
 
     @property
     def minimum(self) -> str: return self._prop["minimum"]
 
     @minimum.setter
-    def minimum(self, _minimum: str):
-
-        # Validate input-type:
-        if not isinstance(_minimum, str):
-            raise TypeError("Expected argument of type `str`")
-
-        # Set minimum:
-        self._prop["minimum"] = _minimum
+    def minimum(self, minimum: str):    self._prop["minimum"] = minimum
 
     @property
     def maximum(self) -> str: return self._prop["maximum"]
 
     @maximum.setter
-    def maximum(self, _maximum: str):
-
-        # Validate input-type:
-        if not isinstance(_maximum, str):
-            raise TypeError("Expected argument of type `str`")
-
-        # Set maximum:
-        self._prop["maximum"] = _maximum
+    def maximum(self, maximum: str):    self._prop["maximum"] = maximum

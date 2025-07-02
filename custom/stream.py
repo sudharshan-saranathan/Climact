@@ -32,25 +32,23 @@ class Stream:
     @property # Color (datatype = QColor): Color of the stream
     def color(self) -> QColor: return QColor(self._color)
 
+    @property # Units (datatype = str): Units of the stream
+    def units(self) -> str | None:  return self._units
+
     @color.setter # Color setter
-    def color(self, _color):
-
-        # Validate input-type:
-        if not isinstance(_color, QColor | Qt.GlobalColor):
-            raise TypeError("Expected QColor or Qt.GlobalColor")
-
+    def color(self, color):
         # Set color:
-        self._color = _color
+        self._color = color
 
     @strid.setter # String-ID setter
-    def strid(self, _strid):
-
-        # Validate input:
-        if not isinstance(_strid, str):
-            raise TypeError("Expected str")
-
+    def strid(self, strid):
         # Set string ID:
-        self._strid = _strid
+        self._strid = strid
+
+    @units.setter # Units setter
+    def units(self, units: str | None):
+        # Set units:
+        self._units = units
 
 class StreamActionLabel(QLabel):
 
@@ -58,24 +56,20 @@ class StreamActionLabel(QLabel):
     sig_label_hovered = pyqtSignal()
 
     # Initializer:
-    def __init__(self, 
-                _label: str,
-                _select: bool,
-                _parent: QWidget | None
-                ):
+    def __init__(self,
+                 label: str,
+                 select: bool,
+                 parent: QWidget | None
+                 ):
         """
         Initialize a category label.
-
-        Args:
-            _label (str): The label text.
-            _parent (QWidget | None): The parent widget.
         """
 
         # If selected, make the label bold:
-        _label = f"<b>{_label}</b>" if _select else _label
+        label = f"<b>{label}</b>" if select else label
 
         # Initialize base-class:
-        super().__init__(_label, _parent)
+        super().__init__(label, parent)
 
         # Customize:
         self.setIndent(4)
@@ -88,21 +82,10 @@ class StreamActionLabel(QLabel):
 class StreamMenuAction(QWidgetAction):
 
     # Initializer:
-    def __init__(self, 
-                _stream: Stream, 
-                _select: bool
-                ):
-        """
-        Initialize entry that goes into the `stream` sub-menu of a handle.
-
-        Args:
-            _stream (Stream): The stream to display in the action.
-            _select (bool): Whether to select the action.
-        """
-
-        # Validate arguments:
-        if not isinstance(_stream, Stream)  : raise TypeError("Expected argument `_stream` to be of type `Stream`")
-        if not isinstance(_select, bool)    : raise TypeError("Expected argument `_select` to be of type `bool`")
+    def __init__(self,
+                 stream: Stream,
+                 select: bool
+                 ):
 
         # Initialize base-class:
         super().__init__(None)
@@ -110,12 +93,12 @@ class StreamMenuAction(QWidgetAction):
         # Colored indicator:
         size = 16
         pixmap = QPixmap(size, size)      # Empty pixmap
-        pixmap.fill(QColor(0, 0, 0, 0))   # Fill with transparent background
+        pixmap.fill(QColor(0, 0, 0, 0))   # Fill with a transparent background
 
         # Draw colored circle:
         painter = QPainter(pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(_stream.color)
+        painter.setBrush(stream.color)
         painter.setPen(Qt.GlobalColor.black)
         painter.drawEllipse(2, 2, size-4, size-4)
         painter.end()
@@ -133,7 +116,7 @@ class StreamMenuAction(QWidgetAction):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # Set text-label:
-        self._text_label = StreamActionLabel(_stream.strid, _select, None)
+        self._text_label = StreamActionLabel(stream.strid, select, None)
 
         # Layout items:
         layout.addWidget(self._icon_label)
@@ -141,7 +124,7 @@ class StreamMenuAction(QWidgetAction):
 
         # Add widget to action:
         self.setCheckable(True)
-        self.setChecked(_select)
+        self.setChecked(select)
         self.setDefaultWidget(widget)
 
     @property

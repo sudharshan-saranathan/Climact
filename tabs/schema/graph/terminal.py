@@ -48,51 +48,35 @@ class StreamTerminal(QGraphicsObject):
             self.rect = QRectF(-60, -10, 120, 20)
 
     # Initializer:
-    def __init__(self, 
-                _eclass : EntityClass, 
-                _parent : QGraphicsObject | None
-                ):
-        """
-        Initialize a new stream terminal.
+    def __init__(self,
+                 eclass : EntityClass,
+                 parent : QGraphicsObject | None):
 
-        Parameters:
-            _eclass (EntityClass): EntityClass (INP or OUT), see custom/entity.py.
-            _parent (QGraphicsObject): Parent QGraphicsObject.
-
-        Returns: None
-        """
-
-        # Validate arguments:
-        if _eclass not in [EntityClass.INP, EntityClass.OUT]:
-            raise ValueError("Expected `EntityClass.INP` or `EntityClass.OUT` for argument `_eclass`")
-        
         # Initialize base-class:
-        super().__init__(_parent)
+        super().__init__(parent)
 
         # Initialize attribute(s):
-        self._tuid  = random_id(length=4, prefix='T')
-        self._attr  = self.Attr()
-        self._style = self.Style()
+        self._tuid   = random_id(length=4, prefix='T')
+        self._attr   = self.Attr()
+        self._style  = self.Style()
+        self._eclass = eclass
 
         # Load icon according to `_eclass`:
-        if  _eclass == EntityClass.OUT:
-            _xpos = self._attr.rect.left() + self.Constants.ICON_OFFSET
-            _ypos = -8
+        if  eclass == EntityClass.OUT:
+            icon = load_svg("rss/icons/source.svg", self.Constants.ICON_WIDTH)
+            xpos = self._attr.rect.left() + self.Constants.ICON_OFFSET
+            ypos = -8
 
-            _icon = load_svg("rss/icons/source.svg", self.Constants.ICON_WIDTH)
-            _icon.setPos(_xpos, _ypos)
-            _icon.setParentItem(self)
+            icon.setPos(xpos, ypos)
+            icon.setParentItem(self)
 
-        elif _eclass == EntityClass.INP:
-            _xpos = self._attr.rect.right() - self.Constants.ICON_WIDTH - self.Constants.ICON_OFFSET
-            _ypos = -8
+        elif eclass == EntityClass.INP:
+            icon = load_svg("rss/icons/sink.svg", self.Constants.ICON_WIDTH)
+            xpos = self._attr.rect.right() - self.Constants.ICON_WIDTH - self.Constants.ICON_OFFSET
+            ypos = -8
 
-            _icon = load_svg("rss/icons/sink.svg", self.Constants.ICON_WIDTH)
-            _icon.setPos(_xpos, _ypos)
-            _icon.setParentItem(self)
-
-        # Initialize entity-class:
-        self._eclass = _eclass
+            icon.setPos(xpos, ypos)
+            icon.setParentItem(self)
 
         # Customize behavior:
         self.setAcceptHoverEvents(True)
@@ -100,8 +84,8 @@ class StreamTerminal(QGraphicsObject):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
         # Create a new handle and position it:
-        self.offset = QPointF(self._attr.rect.right() - 5 if _eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
-        self.handle = Handle(_eclass, self.offset, "Resource", self)
+        self.offset = QPointF(self._attr.rect.right() - 5 if eclass == EntityClass.OUT else self._attr.rect.left() + 5, 0)
+        self.handle = Handle(eclass, self.offset, "Resource", self)
 
         self.handle.contrast = True
         self.handle.sig_item_updated.connect(self.on_handle_updated)

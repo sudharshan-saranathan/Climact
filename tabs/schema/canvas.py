@@ -133,10 +133,10 @@ class Canvas(QGraphicsScene):
         self.type_db = set()   # List of defined stream-types (e.g., Mass, Energy, Electricity, etc.)
 
         # Add default streams:
-        self.type_db.add(Stream("Default", Qt.GlobalColor.darkGray))   # Default
-        self.type_db.add(Stream("Energy", QColor("#F6AE2D")))          # Energy
-        self.type_db.add(Stream("Power", QColor("#474973")))           # Power
-        self.type_db.add(Stream("Mass", QColor("#028CB6")))            # Mass
+        self.type_db.add(Stream("Default", Qt.GlobalColor.darkGray))        # Default
+        self.type_db.add(Stream("Energy", QColor("#F6AE2D"), units="kJ"))   # Energy
+        self.type_db.add(Stream("Power", QColor("#474973"), units="kW"))    # Power
+        self.type_db.add(Stream("Mass", QColor("#028CB6"), units="kg"))     # Mass
 
         # Initialize menu:
         self._init_menu()
