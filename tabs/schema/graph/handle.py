@@ -16,8 +16,8 @@ from PyQt6.QtGui import (
     QBrush,
     QColor,
     QFont,
-    QPen
-    )
+    QPen, QPainter
+)
 
 from PyQt6.QtWidgets import (
     QGraphicsObject,
@@ -163,7 +163,7 @@ class Handle(QGraphicsObject, Entity):
         Re-implementation of `QGraphicsObject.boundingRect`. The returned rectangle is larger than the handle's actual size,
         to allow for a hover-indicator.
         """
-        return QRectF(-2.0 * self.Attr.size, -2.0 * self.Attr.size, 4.0 * self.Attr.size, 4.0 * self.Attr.size)
+        return QRectF(-self.Attr.size, -self.Attr.size, 2.0 * self.Attr.size, 2.0 * self.Attr.size)
 
     def paint(self, painter, option, widget = ...):
         """
@@ -174,16 +174,16 @@ class Handle(QGraphicsObject, Entity):
         :return:
         """
 
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
         painter.setPen(self._styl.pen_border)
         painter.setBrush(self._styl.bg_active)
         painter.drawEllipse(self._attr.rect)
 
     def itemChange(self, change, value):
 
-        if (
-            change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged and
-            self.connected and self.connector
-        ):
+        # If the handle was moved, redraw the connector:
+        handle_moved = QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged
+        if  change == handle_moved and self.connected:
             self.connector().redraw()
 
         return value

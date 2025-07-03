@@ -106,7 +106,6 @@ class Node(QGraphicsObject):
         })
 
         # Label to display the node's name:
-        print(self.property('name'))
         self._title = Label(self, self.property('name'), width=120, align=Qt.AlignmentFlag.AlignCenter, editable=True)
         self._title.sig_text_changed.connect(self.sig_item_updated.emit)  # Emit signal when the title is changed
         self._title.setPos(-60, -72)
@@ -212,16 +211,6 @@ class Node(QGraphicsObject):
         :param option:  Painting options, managed by Qt.
         :param widget:  Optional widget to paint on, defaults to `...` (not used here).
         """
-        import math
-
-        # Implement level-of-detail rendering:
-        transform = painter.worldTransform()
-        xs = transform.m11()
-        ys = transform.m22()
-        _s = math.sqrt(xs**2.0 + ys**2.0)
-
-        for item in self.childItems():
-            item.show() if _s >= 1.0 else item.hide()
 
         # Select different pens for selected and unselected states:
         pen = self._style.pen_select if self.isSelected() else self._style.pen_border
@@ -230,20 +219,17 @@ class Node(QGraphicsObject):
         painter.setBrush(QBrush(QColor(self._style.background)))
         painter.drawRoundedRect(self._attr.rect, 8, 8)
 
-        # When zoomed out, don't draw the node's contents:
-        if _s >= 1.0:
-            # Show the node's UID:
-            painter.setPen(QPen(Qt.GlobalColor.lightGray, 1.0))
-            painter.drawText(QPointF(-90, -56, ), self._nuid)
+        painter.setPen(QPen(Qt.GlobalColor.lightGray, 1.0))
+        painter.drawText(QPointF(-90, -56, ), self._nuid)
 
-            # Draw the separators:
-            pen = QPen(Qt.GlobalColor.black, 1.0)
-            painter.setPen(pen)
-            painter.drawLine(QPointF(-98, -48), QPointF(98, -48))                                    # Top separator
+        # Draw the separators:
+        pen = QPen(Qt.GlobalColor.black, 1.0)
+        painter.setPen(pen)
+        painter.drawLine(QPointF(-98, -48), QPointF(98, -48))                                    # Top separator
 
-            pen = QPen(Qt.GlobalColor.gray, 0.5)
-            painter.setPen(pen)
-            painter.drawLine(QPointF(0, -46), QPointF(0, self._attr.rect.bottom() - 2))              # Vertical separator
+        pen = QPen(Qt.GlobalColor.gray, 0.5)
+        painter.setPen(pen)
+        painter.drawLine(QPointF(0, -46), QPointF(0, self._attr.rect.bottom() - 2))              # Vertical separator
 
     def itemChange(self, change, value):
 
