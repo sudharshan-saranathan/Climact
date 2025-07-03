@@ -3,7 +3,7 @@ import weakref
 import numpy as np
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSlot, pyqtSignal
-from PyQt6.QtGui import QPainterPath, QPen, QColor
+from PyQt6.QtGui import QPainterPath, QPen, QColor, QPainter
 from PyQt6.QtWidgets import QGraphicsObject, QGraphicsItem, QGraphicsSceneMouseEvent
 
 from custom import Label, EntityClass
@@ -45,17 +45,7 @@ class BubbleLabel(QGraphicsObject):
         self._label.setPlainText(value)
 
     def paint(self, painter, option, widget = ...):
-        import math
-
-        # Implement level-of-detail rendering:
-        transform = painter.worldTransform()
-        xs = transform.m11()
-        ys = transform.m22()
-        _s = math.sqrt(xs ** 2.0 + ys ** 2.0)
-
-        for item in self.childItems():
-            item.show() if _s >= 1.0 else item.hide()
-
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         painter.setPen(QColor(0x000000))
         painter.setBrush(QColor(0xffffff))
         painter.drawRoundedRect(self._rect, 8, 8)
@@ -177,15 +167,21 @@ class Connector(QGraphicsObject):
     def boundingRect(self): return self._attr.path.boundingRect().adjusted(-10, -10, 10, 10)
 
     def paint(self, painter, option, widget=None):
+
+        import math
+
+        # Implement level-of-detail rendering:
+        transform = painter.worldTransform()
+        xs = transform.m11()
+        ys = transform.m22()
+        _s = math.sqrt(xs ** 2.0 + ys ** 2.0)
+
+        # Hide all children:
+        for item in self.childItems():
+            item.show() if _s >= 1.0 else item.hide()
+
         painter.setPen(self._styl.pen_border)
         painter.drawPath(self._attr.path)
-    
-    def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
-        
-        # Debugging:
-        print(f"Connector.mouseDoubleClickEvent(): {self.symbol} {self.origin.connected} {self.target.connected}")
-
-        return super().mouseDoubleClickEvent(event)
 
     def clear(self):
         self._dir_w.hide()

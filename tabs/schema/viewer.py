@@ -64,15 +64,15 @@ class Viewer(QGraphicsView):
         self._zoom = types.SimpleNamespace(
             exp = 1.4,                          # Zoom factor
             val = 1.0,                          # Current zoom value
-            max = kwargs.get("max_zoom", 5.0),  # Maximum zoom value
+            max = kwargs.get("max_zoom", 10.0),  # Maximum zoom value
             min = kwargs.get("min_zoom", 0.2)   # Minimum zoom value
         )
 
         # Zoom-animation:
         self._zoom_val  = self._zoom.val
         self._zoom_anim = QPropertyAnimation(self, b"animated_zoom")
-        self._zoom_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
-        self._zoom_anim.setDuration(200)  # Animation duration in milliseconds
+        self._zoom_anim.setEasingCurve(QEasingCurve.Type.OutExpo)
+        self._zoom_anim.setDuration(360)  # Animation duration in milliseconds
 
         # Initialize Canvas (QGraphicsScene derivative)
         self.canvas = Canvas(
@@ -110,15 +110,19 @@ class Viewer(QGraphicsView):
         shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(CanvasState.HAS_UNSAVED_CHANGES))
 
     # Handle user-driven zooming:
-    def zoom(self, delta: int | float | None):
+    def zoom(self, delta: int | float | None, animate: bool = True):
         factor = 1.0 / self._zoom.val if delta is None else self._zoom.exp ** (delta / 100.0)
-
         target_zoom = max(self._zoom.min, min(self._zoom.max, self._zoom.val * factor))
-        ViewerConfig["zoom"] = target_zoom  # Save zoom level to config
-        self._zoom_anim.stop()
-        self._zoom_anim.setStartValue(self._zoom.val)
-        self._zoom_anim.setEndValue(target_zoom)
-        self._zoom_anim.start()
+
+        if  animate:
+            self._zoom_anim.stop()
+            self._zoom_anim.setStartValue(self._zoom.val)
+            self._zoom_anim.setEndValue(target_zoom)
+            self._zoom_anim.start()
+
+        else:
+            self.scale(factor, factor)
+            self._zoom.val = target_zoom
 
     @pyqtProperty(float)
     def animated_zoom(self):
@@ -172,4 +176,7 @@ class Viewer(QGraphicsView):
     # Handle scroll-events:
     def wheelEvent(self, event):
         delta = event.angleDelta().y()
-        self.zoom(float(delta))         # Zoom by the desired amount
+        self.zoom(
+            delta,
+            animate = abs(delta) >= 100
+        )

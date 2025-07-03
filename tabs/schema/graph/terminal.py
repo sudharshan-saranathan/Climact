@@ -237,7 +237,6 @@ class StreamTerminal(QGraphicsObject):
         """
         Event handler for when the handle is updated.
         """
-        print(f"Terminal {self.uid} handle updated: {handle.color.name()}")
         self._style.background = self.handle.color
 
     # Properties -------------------------------------------------------------------------------------------------------

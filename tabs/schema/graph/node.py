@@ -7,7 +7,8 @@ from PyQt6.QtGui import (
     QFont,
     QIcon,
     QColor,
-    QBrush
+    QBrush,
+    QPainter
 )
 
 from PyQt6.QtCore import (
@@ -224,6 +225,7 @@ class Node(QGraphicsObject):
 
         # Select different pens for selected and unselected states:
         pen = self._style.pen_select if self.isSelected() else self._style.pen_border
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # Enable antialiasing for smoother edges
         painter.setPen(pen)
         painter.setBrush(QBrush(QColor(self._style.background)))
         painter.drawRoundedRect(self._attr.rect, 8, 8)
