@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
     QGraphicsView
 )
 
+from config import ViewerConfig
 from custom.entity  import EntityClass
 from custom.dialog import Dialog
 from dataclasses   import dataclass
@@ -39,7 +40,7 @@ from tabs.gemini   import widget
 from util          import *
 
 from .jsonio import JsonIO
-from .canvas  import Canvas, SaveState
+from .canvas  import Canvas, CanvasState
 
 # Class: Viewer
 class Viewer(QGraphicsView):
@@ -52,8 +53,8 @@ class Viewer(QGraphicsView):
 
         # Initialize base-class:
         super().__init__(_parent)
-        super().setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.MinimalViewportUpdate)
         super().setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        super().setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.MinimalViewportUpdate)
 
         # Assign keyword keys:
         x_bounds = kwargs.get("x_bounds", 10000)
@@ -105,14 +106,15 @@ class Viewer(QGraphicsView):
 
         shortcut_ctrl_z = QShortcut(QKeySequence.StandardKey.Undo, self, self.canvas.manager.undo)
         shortcut_ctrl_r = QShortcut(QKeySequence.StandardKey.Redo, self, self.canvas.manager.redo)
-        shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.MODIFIED))
-        shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(SaveState.MODIFIED))
+        shortcut_ctrl_z.activated.connect(lambda: self.canvas.sig_canvas_state.emit(CanvasState.HAS_UNSAVED_CHANGES))
+        shortcut_ctrl_r.activated.connect(lambda: self.canvas.sig_canvas_state.emit(CanvasState.HAS_UNSAVED_CHANGES))
 
     # Handle user-driven zooming:
     def zoom(self, delta: int | float | None):
         factor = 1.0 / self._zoom.val if delta is None else self._zoom.exp ** (delta / 100.0)
 
         target_zoom = max(self._zoom.min, min(self._zoom.max, self._zoom.val * factor))
+        ViewerConfig["zoom"] = target_zoom  # Save zoom level to config
         self._zoom_anim.stop()
         self._zoom_anim.setStartValue(self._zoom.val)
         self._zoom_anim.setEndValue(target_zoom)
@@ -139,7 +141,7 @@ class Viewer(QGraphicsView):
 
         try:
             JsonIO.decode(code, self.canvas, True)
-            self.canvas.sig_canvas_state.emit(SaveState.MODIFIED)
+            self.canvas.sig_canvas_state.emit(CanvasState.HAS_UNSAVED_CHANGES)
 
         except (RuntimeError, JSONDecodeError) as exception:
             Dialog.critical(None, "Error", f"Error decoding JSON: {exception}")

@@ -123,6 +123,17 @@ class StreamTerminal(QGraphicsObject):
 
         Returns: None
         """
+        import math
+
+        # Implement level-of-detail rendering:
+        transform = painter.worldTransform()
+        xs = transform.m11()
+        ys = transform.m22()
+        _s = math.sqrt(xs ** 2.0 + ys ** 2.0)
+
+        for item in self.childItems():
+            item.show() if _s >= 1.0 else item.hide()
+
         painter.setPen  (self._style.pen_select if self.isSelected() else self._style.pen_border)
         painter.setBrush(self._style.background)
         painter.drawRoundedRect(self._attr.rect, 12, 10)
@@ -133,13 +144,13 @@ class StreamTerminal(QGraphicsObject):
         Reimplementation of QGraphicsObject.itemChange()
         """
 
-        # Import SaveState from canvas-module:
-        from tabs.schema import SaveState
+        # Import CanvasState from canvas-module:
+        from tabs.schema import CanvasState
 
         # If terminal was added to a scene:
         if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged and value:
             self.handle.sig_item_clicked.connect(value.begin_transient)
-            self.handle.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(SaveState.MODIFIED))
+            self.handle.sig_item_updated.connect(lambda: value.sig_canvas_state.emit(CanvasState.HAS_UNSAVED_CHANGES))
             self.sig_item_removed.connect(value.on_item_removed)
 
         return value

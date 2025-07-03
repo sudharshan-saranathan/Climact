@@ -45,6 +45,17 @@ class BubbleLabel(QGraphicsObject):
         self._label.setPlainText(value)
 
     def paint(self, painter, option, widget = ...):
+        import math
+
+        # Implement level-of-detail rendering:
+        transform = painter.worldTransform()
+        xs = transform.m11()
+        ys = transform.m22()
+        _s = math.sqrt(xs ** 2.0 + ys ** 2.0)
+
+        for item in self.childItems():
+            item.show() if _s >= 1.0 else item.hide()
+
         painter.setPen(QColor(0x000000))
         painter.setBrush(QColor(0xffffff))
         painter.drawRoundedRect(self._rect, 8, 8)

@@ -268,19 +268,19 @@ class JsonIO:
                             node_json.get("node-scenepos").get("y")
                             )
 
-            _node = canvas.create_node(
+            new_node = canvas.create_node(
                 title,  # Title
                 npos,   # Coordinate
                 False   # Do not create a corresponding action
             )
 
-            _node.resize(int(height) - 150)                    # Adjust _node's height
-            _node.on_set_color(QColor(color))                  # Set the node's color
-            canvas.node_db[_node] = EntityState.ACTIVE         # Add node to canvas' database:
-            canvas.addItem(_node)                              # Add node to canvas
+            new_node.resize(int(height) - 150)                    # Adjust _node's height
+            new_node.on_set_color(QColor(color))                  # Set the node's color
+            canvas.node_db[new_node] = EntityState.ACTIVE         # Add node to canvas' database:
+            canvas.addItem(new_node)                              # Add node to canvas
 
             # Add action to batch:
-            batch.add_to_batch(CreateNodeAction(canvas, _node))
+            batch.add_to_batch(CreateNodeAction(canvas, new_node))
 
             # Add variable(s):
             for var_json in node_json.get("variables") or []:
@@ -299,7 +299,7 @@ class JsonIO:
                 )
 
                 # Instantiate new variable with given EntityClass and coordinate:
-                _var = _node.create_handle(eclass, hpos)
+                _var = new_node.create_handle(eclass, hpos)
 
                 # Read other attribute(s):
                 JsonIO.json_to_entity(
@@ -315,10 +315,10 @@ class JsonIO:
                 _var.sig_item_updated.emit(_var)    # Emit signal to notify application of changes
 
                 # Add the variable to the node's database and modify the node's equations to use the variable's new symbol:
-                _node[eclass][_var] = EntityState.ACTIVE
+                new_node[eclass][_var] = EntityState.ACTIVE
 
                 # Add action to batch:
-                batch.add_to_batch(CreateHandleAction(_node, _var))
+                batch.add_to_batch(CreateHandleAction(new_node, _var))
 
             # Add parameter(s):
             for par_json in node_json.get("parameters") or []:
@@ -331,11 +331,11 @@ class JsonIO:
                 JsonIO.json_to_entity(_par, EntityClass.PAR, par_json)
 
                 # Add parameter to _node's database:
-                _node[EntityClass.PAR][_par] = EntityState.ACTIVE
+                new_node[EntityClass.PAR][_par] = EntityState.ACTIVE
 
             # Add equations(s):
             if node_json.get("equations") or []:
-                _node[EntityClass.EQN, None] = [
+                new_node[EntityClass.EQN, None] = [
                     equation for equation in node_json.get("equations")
                 ]
 

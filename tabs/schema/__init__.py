@@ -1,2 +1,2 @@
 from .viewer import Viewer
-from .canvas import Canvas, SaveState
+from .canvas import Canvas, CanvasState

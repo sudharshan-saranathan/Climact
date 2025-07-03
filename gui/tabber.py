@@ -33,7 +33,7 @@ from pathlib import Path
 from custom.getter  import Getter
 from custom.dialog import Dialog
 from tabs.schema.viewer import Viewer
-from tabs.schema.canvas import SaveState
+from tabs.schema.canvas import CanvasState
 
 # Class Tabber: A custom QTabWidget for managing multiple Viewer tabs.
 class Tabber(QTabWidget):
@@ -230,16 +230,16 @@ class Tabber(QTabWidget):
             self.currentWidget().canvas.export_schema(filename + ".json")
             self.setTabText(self.currentIndex(), filename)
 
-    def on_canvas_state_change(self, state: SaveState):
+    def on_canvas_state_change(self, state: CanvasState):
         """
         Updates the tab icon based on the canvas state.
 
         :param state: The current state of the canvas.
         """
-        if  state == SaveState.EXPORTED:
+        if  state == CanvasState.SAVED_TO_DISK:
             self.setTabIcon(self.currentIndex(), qta.icon('mdi.circle', color='lightgreen'))
 
-        elif state == SaveState.MODIFIED:
+        elif state == CanvasState.HAS_UNSAVED_CHANGES:
             self.setTabIcon(self.currentIndex(), qta.icon('mdi.circle', color='orange'))
 
     @property

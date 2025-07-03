@@ -24,7 +24,7 @@ class Entity(Stream):
     def __init__(self):
 
         # Initialize super-class:
-        super().__init__("Default", QColor(Qt.GlobalColor.darkGray))
+        super().__init__("Generic", QColor(Qt.GlobalColor.darkGray))
 
         # Define properties:
         self._prop = dict({
