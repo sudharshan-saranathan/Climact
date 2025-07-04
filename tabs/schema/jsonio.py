@@ -247,9 +247,10 @@ class JsonIO:
         from tabs.schema.canvas import Canvas
 
         # Create a symbol map to track how variable-symbols are changed during JSON-decoding:
-        _symmap = dict()
+        symmap = dict()
 
         # Initialize convenience-variables:
+        mean  = list()
         root  = json.loads(code)
         batch = BatchActions([])
 
@@ -264,9 +265,11 @@ class JsonIO:
             height = node_json.get("node-height")
             color  = node_json.get("node-color") or 0xffffff
             title  = node_json.get("node-title")
-            npos   = QPointF(node_json.get("node-scenepos").get("x"),
-                            node_json.get("node-scenepos").get("y")
-                            )
+            npos   = QPointF(
+                node_json.get("node-scenepos").get("x"),
+                node_json.get("node-scenepos").get("y")
+            )
+            mean.append(npos)
 
             new_node = canvas.create_node(
                 title,  # Title
@@ -355,6 +358,8 @@ class JsonIO:
                 _term_json.get("terminal-scenepos").get("y")
             )
 
+            mean.append(tpos)
+
             # Create terminal:
             _terminal = canvas.create_terminal(eclass, tpos)
             _terminal.handle.rename(_term_json.get("terminal-label"))
@@ -410,5 +415,15 @@ class JsonIO:
         # Execute batch:
         if combine: canvas.manager.do(batch)
 
+        # Re-center the schematic:
+        import numpy as np
 
+        center = canvas.sceneRect().center()
+        mean   = QPointF(
+            sum([point.x() for point in mean]) / len(mean),
+            sum([point.y() for point in mean]) / len(mean)
+        )
 
+        # Center the schematic:
+        for item in canvas.node_db | canvas.term_db:
+            item.moveBy(center - mean)
