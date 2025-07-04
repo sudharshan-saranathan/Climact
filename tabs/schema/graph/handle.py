@@ -13,6 +13,7 @@ from PyQt6.QtGui import (
     QTextCursor,
     QAction,
     QCursor,
+    QPixmap,
     QBrush,
     QColor,
     QFont,
@@ -104,10 +105,8 @@ class Handle(QGraphicsObject, Entity):
         self._tags.hide()
 
         # Hover hint:
-        self._hint = QGraphicsEllipseItem(self._attr.mark, self)
-        self._hint.setBrush(Qt.GlobalColor.black)
-        self._hint.setPen(QPen())
-        self._hint.hide()
+        self._hover  = False
+        self._cursor = QCursor(QPixmap("rss/icons/click.svg").scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation), -1, -1)
 
         # Initialize menu:
         self._init_menu()
@@ -174,10 +173,14 @@ class Handle(QGraphicsObject, Entity):
         :return:
         """
 
-        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(self._styl.pen_border)
         painter.setBrush(self._styl.bg_active)
         painter.drawEllipse(self._attr.rect)
+
+        if  self._hover:
+            painter.setBrush(QBrush(0x0))
+            painter.drawEllipse(QRectF(-0.75, -0.75, 1.5, 1.5))
 
     def itemChange(self, change, value):
 
@@ -222,17 +225,14 @@ class Handle(QGraphicsObject, Entity):
         for action in menu_actions: self._subm.removeAction(action)
 
     def hoverEnterEvent(self, event):
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setToolTip(self._huid)
-
-        self._hint.show()
         super().hoverEnterEvent(event)
+        self.setCursor(Qt.CursorShape.SizeAllCursor if self.connected else Qt.CursorShape.PointingHandCursor)
+        self._hover = True
 
     def hoverLeaveEvent(self, event):
-
-        self._hint.hide()
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
         super().hoverLeaveEvent(event)
+        self.unsetCursor()
+        self._hover = False
 
     def mousePressEvent(self, event):
         """

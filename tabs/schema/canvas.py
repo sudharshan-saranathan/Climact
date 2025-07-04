@@ -315,12 +315,12 @@ class Canvas(QGraphicsScene):
             return
 
         # Create a new connection between the origin and target and add it to the canvas:
-        _connector = Connector(self.create_cuid(), origin, target)
-        self.conn_db[_connector] = EntityState.ACTIVE
-        self.addItem(_connector)
+        connector = Connector(self.create_cuid(), origin, target)
+        self.conn_db[connector] = EntityState.ACTIVE
+        self.addItem(connector)
 
         # Push action to undo-stack:
-        self.manager.do(ConnectHandleAction(self, _connector))
+        self.manager.do(ConnectHandleAction(self, connector))
 
         # Notify application of state-change:
         self.sig_canvas_state.emit(CanvasState.HAS_UNSAVED_CHANGES)
@@ -435,8 +435,8 @@ class Canvas(QGraphicsScene):
 
         # Get existing connector UIDs:
         id_set = {
-            int(_connector.symbol.split('X')[1])
-            for _connector, state in self.conn_db.items()
+            int(connector.symbol.split('X')[1])
+            for connector, state in self.conn_db.items()
             if  state == EntityState.ACTIVE
         }
 

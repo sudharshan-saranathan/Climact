@@ -54,14 +54,14 @@ class Anchor(QGraphicsObject):
 
     # Event-handler for paint-event:
     def paint(self, painter, option, widget = ...):
+
+        painter.setRenderHint(painter.RenderHint.Antialiasing)
         painter.setPen(self._style.background)
         painter.drawLine(self._attr.dims)
 
-        if self._hint:
-            pen = QPen(QColor(0x00), 0.75)
-            brs = QBrush(QColor(0xcfffb3))
-            painter.setPen  (pen)
-            painter.setBrush(brs)
+        if  self._hint:
+            painter.setPen  (QPen(QColor(0x00), 0.75))
+            painter.setBrush(QBrush(QColor(0xcfffb3)))
             painter.drawEllipse(QRectF(-2.5, -2.5 + self._hpos.y(), 5.0, 5.0))
 
     # Returns the anchor's stream:

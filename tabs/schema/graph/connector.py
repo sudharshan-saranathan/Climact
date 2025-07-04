@@ -2,8 +2,8 @@ import logging
 import weakref
 import numpy as np
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSlot, pyqtSignal
-from PyQt6.QtGui import QPainterPath, QPen, QColor, QPainter
+from PyQt6.QtCore import Qt, QPointF, QSizeF, QRectF, pyqtSlot, pyqtSignal
+from PyQt6.QtGui import QPainterPath, QPen, QFont, QColor, QBrush, QPainter
 from PyQt6.QtWidgets import QGraphicsObject, QGraphicsItem, QGraphicsSceneMouseEvent
 
 from custom import Label, EntityClass
@@ -17,41 +17,6 @@ class PathGeometry(Enum):
     RECT = 2
     BEZIER = 3
     HEXAGON = 4
-
-# Bubble-label:
-class BubbleLabel(QGraphicsObject):
-
-    # Constructor:
-    def __init__(self, _text: str, _parent: QGraphicsItem = None):
-
-        # Initialize super-class:
-        super().__init__(_parent)
-
-        # Text attributes:
-        self._rect  = QRectF(-18, -10, 36, 20)
-        self._label = Label(self, _text,
-                            align=Qt.AlignmentFlag.AlignCenter,
-                            width=30,
-                            editable=False)
-
-        self._label.setPos(-15, -11)
-
-    @property
-    def label(self):
-        return self._label.toPlainText()
-
-    @label.setter
-    def label(self, value: str):
-        self._label.setPlainText(value)
-
-    def paint(self, painter, option, widget = ...):
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        painter.setPen(QColor(0x000000))
-        painter.setBrush(QColor(0xffffff))
-        painter.drawRoundedRect(self._rect, 8, 8)
-
-    def boundingRect(self):
-        return self._rect
 
 class Connector(QGraphicsObject):
 
@@ -83,15 +48,20 @@ class Connector(QGraphicsObject):
         super().__init__(parent)
 
         # Attrib:
+        self._symb = symbol
         self._cuid = random_id(length=4, prefix='C')
         self._attr = self.Attr()
         self._styl = self.Style()
-        self._text = None
         self._is_obsolete = False
 
+        # Origin and Target:
+        # Store references:
+        self.origin = origin if origin and origin.eclass == EntityClass.OUT else target
+        self.target = target if target and target.eclass == EntityClass.INP else origin
+
         # Direction arrows:
-        self._dir_w = load_svg("rss/icons/arrow.svg", 24)
-        self._dir_e = load_svg("rss/icons/arrow.svg", 24)
+        self._dir_w = load_svg("rss/icons/arrow.svg", 16)
+        self._dir_e = load_svg("rss/icons/arrow.svg", 16)
 
         self._dir_w.setParentItem(self)
         self._dir_e.setParentItem(self)
@@ -112,13 +82,6 @@ class Connector(QGraphicsObject):
         if target.eclass == EntityClass.PAR:            raise ValueError("Target handle must be of INP/OUT stream")
         if origin.eclass == target.eclass:             raise ValueError("Origin and target handles must be of different streams")
         if origin.parentItem() == target.parentItem(): raise ValueError("Origin and target handles belong to different nodes or terminals")
-
-        # Initialize bubble-label and direction-arrows:
-        self._text  = BubbleLabel(symbol, self)
-
-        # Store references:
-        self.origin = origin if origin.eclass == EntityClass.OUT else target
-        self.target = target if target.eclass == EntityClass.INP else origin
 
         # Setup references in handles:
         self.origin.lock(self.target, self)
@@ -159,7 +122,7 @@ class Connector(QGraphicsObject):
     def uid(self):  return self._cuid
 
     @property
-    def symbol(self):   return self._text.label
+    def symbol(self):   return self._symb
 
     @property
     def geometry(self): return self._attr.geom
@@ -178,10 +141,25 @@ class Connector(QGraphicsObject):
 
         # Hide all children:
         for item in self.childItems():
-            item.show() if _s >= 1.0 else item.hide()
+            item.show() if _s >= 0.6 else item.hide()
 
-        painter.setPen(self._styl.pen_border)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen  (self._styl.pen_border)
         painter.drawPath(self._attr.path)
+
+        # Draw text:
+        if  self._symb:
+
+            point = self._attr.path.pointAtPercent(0.5)     # Get the midpoint of the path
+            rect  = QRectF(point, QSizeF(40, 20))           # Create a rectangle around the point
+            rect.moveCenter(point)                           # Center the rectangle at the point
+
+            painter.setPen  (QPen(self.origin.color, 1.5))
+            painter.setBrush(Qt.GlobalColor.white)
+            painter.drawRoundedRect(rect, 6, 6)
+
+            painter.setPen(Qt.GlobalColor.black)
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self._symb)
 
     def clear(self):
         self._dir_w.hide()
@@ -216,9 +194,6 @@ class Connector(QGraphicsObject):
 
         elif geometry == PathGeometry.RECT:
             self.construct_manhattan(opos, tpos)
-
-        if self._text:
-            self._text.setPos(self._attr.path.boundingRect().center())
 
     @pyqtSlot()
     @pyqtSlot(Handle)
@@ -304,8 +279,8 @@ class Connector(QGraphicsObject):
         self._attr.path.clear()
         self._attr.path.moveTo(opos)
 
-        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 16, opos.y() - 12)
-        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 16, tpos.y() - 12)
+        self._dir_w.setPos((opos.x() + xm - xd) / 2.0 - 16, opos.y() - 8)
+        self._dir_e.setPos((tpos.x() + xm + xd) / 2.0 - 16, tpos.y() - 8)
 
         # If the origin is to the left of the target, draw the path accordingly:
         if opos.x() < tpos.x():

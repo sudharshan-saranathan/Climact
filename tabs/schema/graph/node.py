@@ -379,10 +379,8 @@ class Node(QGraphicsObject):
         """
 
         # Instantiate a new node:
-        node = Node(self._title.toPlainText(),
-                     self.scenePos() + QPointF(25, 25),
-                     self.parentItem()
-                     )
+        node = Node(self.scenePos() + QPointF(25, 25))
+        node.setParentItem(self.parentItem())
 
         # Adjust node-height:
         diff = self.boundingRect().height() - node.boundingRect().height()
@@ -599,7 +597,6 @@ class Node(QGraphicsObject):
     @uid.setter
     def uid(self, value: str):
         self._nuid = value
-        self._label.setPlainText(value)
 
     @title.setter
     def title(self, value: str):
