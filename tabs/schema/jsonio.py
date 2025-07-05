@@ -426,4 +426,4 @@ class JsonIO:
 
         # Center the schematic:
         for item in canvas.node_db | canvas.term_db:
-            item.moveBy(center - mean)
+            item.moveBy(center.x() - mean.x(), center.y() - mean.y())
